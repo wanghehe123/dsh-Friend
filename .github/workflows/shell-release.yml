@@ -1,0 +1,61 @@
+# Tag-triggered friend-shell installers (macOS dmg + Windows msi).
+# Signing is a placeholder: unsigned artifacts unless secrets are added later.
+#
+# Triggers: v* / shell-v* tags, or manual workflow_dispatch.
+# Does not publish npm packages and does not touch ci.yml / canary.yml.
+
+name: Shell Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+      - 'shell-v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  CI: true
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            bundle: dmg
+          - os: windows-latest
+            bundle: msi
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: apps/friend-shell
+
+      - name: Install tauri-cli
+        run: cargo install tauri-cli --locked --version 2.11.4
+
+      - name: Build shell bundle
+        working-directory: apps/friend-shell
+        run: cargo tauri build --bundles ${{ matrix.bundle }}
+
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            apps/friend-shell/target/release/bundle/dmg/*.dmg
+            apps/friend-shell/target/release/bundle/msi/*.msi
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

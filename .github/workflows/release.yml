@@ -1,0 +1,80 @@
+# Tag-triggered npm publish for the 11 workspace packages (W-M8-8).
+#
+# Does not replace ci.yml / canary.yml / shell-release.yml.
+# v* tags also trigger shell-release.yml (dual publish). Use npm-v* for
+# registry-only, shell-v* for installers-only.
+#
+# Publish is gated by scripts/release-scan.mjs --require-publishable:
+# every package must have a license field and must not be private.
+# That gate fails on today's tree on purpose (packages are still private).
+#
+# Secrets: NPM_TOKEN (npm automation token). Do not commit tokens.
+# Provenance uses the job's id-token, not a long-lived secret.
+
+name: npm Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+      - 'npm-v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  CI: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.17.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+          scope: '@wish233'
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm -r build
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
+
+      - name: Aggregate drift check
+        run: node scripts/aggregate.mjs --check
+
+      - name: Release scan and version gate
+        run: |
+          set -euo pipefail
+          extra=()
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            extra+=(--tag "${{ github.ref_name }}")
+          fi
+          node scripts/release-scan.mjs --pack --check-versions --require-publishable "${extra[@]}"
+
+      - name: Publish npm packages
+        if: github.ref_type == 'tag'
+        run: pnpm publish -r --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true

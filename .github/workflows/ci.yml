@@ -1,0 +1,90 @@
+# PR and main: install → build → typecheck → test → aggregate --check
+# → host smoke → browser client-half gate
+#
+# pnpm 11 without a TTY aborts with ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY
+# unless CI=true. GitHub Actions already sets CI, but we pin it explicitly so
+# local `act` / other runners do not hit that trap.
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CI: true
+  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: 1
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.17.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      # pixi-live2d-display@0.4.0 can unpack as an empty shell on macOS
+      # (tarball directories lack the execute bit). Fail before the stage
+      # pet IIFE silently degrades. See docs/dev-loop.md §3.5.
+      - name: Check pixi-live2d-display unpack
+        run: node scripts/check-pixi-live2d.mjs
+
+      - name: Build
+        run: pnpm -r build
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
+
+      - name: Aggregate drift check
+        run: node scripts/aggregate.mjs --check
+
+      # Filename-only publish scan (W-M8-6). Must not use content rg for
+      # live2dcubismcore — lib/pet.iife.js legally mentions Live2DCubismCore.
+      - name: Release artifact scan
+        run: node scripts/release-scan.mjs --pack
+
+      # Host smoke + browser gate need a real dsh CLI. The runner image does
+      # not ship one; install the same rc the workspace pins. Do not skip:
+      # a missing CLI must fail these steps (--require-dsh / --require-browser).
+      - name: Install dsh CLI
+        run: npm install --global @deepseek-ai/dsh@0.1.0-rc.6
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Smoke
+        run: node scripts/smoke.mjs --require-dsh
+
+      - name: Browser smoke
+        run: node scripts/browser-smoke.mjs --require-dsh --require-browser

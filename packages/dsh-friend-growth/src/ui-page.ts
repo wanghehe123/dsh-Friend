@@ -1,3 +1,5 @@
+import { GROWTH_PAGE_CSS } from './ui-styles.ts'
+
 export function renderGrowthPage(): string {
   return `<!doctype html>
 <html lang="zh-CN">
@@ -5,38 +7,41 @@ export function renderGrowthPage(): string {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>dsh-Friend 成长</title>
-    <style>
-      :root { color-scheme: dark; font-family: ui-sans-serif, system-ui, sans-serif; }
-      body { margin: 0; background: #0f172a; color: #e2e8f0; }
-      main { max-width: 52rem; margin: 0 auto; padding: 1.25rem; }
-      h1 { font-size: 1.2rem; }
-      .toolbar, .prefs { display: flex; gap: .5rem; flex-wrap: wrap; margin: .75rem 0; align-items: center; }
-      button, input { font: inherit; }
-      input { background: #1e293b; color: inherit; border: 1px solid #475569; border-radius: .4rem; padding: .4rem .5rem; }
-      button { background: #1e293b; color: inherit; border: 1px solid #475569; border-radius: .4rem; padding: .4rem .7rem; cursor: pointer; }
-      button:hover { border-color: #38bdf8; }
-      progress { width: 100%; }
-      .status { color: #94a3b8; min-height: 1.4rem; }
-      ul { list-style: none; padding: 0; }
-      li { padding: .4rem 0; border-bottom: 1px solid #1e293b; }
-      label { display: flex; gap: .5rem; align-items: flex-start; }
-    </style>
+    <style>${GROWTH_PAGE_CSS}</style>
   </head>
   <body>
     <main>
-      <h1>人生故事</h1>
-      <p class="status" id="status">尚未生成</p>
-      <progress id="bar" max="100" value="0"></progress>
-      <div class="prefs">
-        <label>目标语言 <input id="language" value="中文"></label>
-        <label>模型 override <input id="model" placeholder="继承 dsh 默认"></label>
-      </div>
-      <div class="toolbar">
-        <button type="button" id="generate">生成</button>
-        <button type="button" id="continue">续写</button>
-        <button type="button" id="commit">提交</button>
-      </div>
-      <ul id="beats"></ul>
+      <h1>成长</h1>
+      <p class="intro">给伴侣一段自己走过的人生：先填基础设定和成长节点，让模型模拟完整经历，再逐条审核后才写入长期记忆。</p>
+      <section class="step" data-growth-step="1">
+        <h2>1. 基础设定</h2>
+        <div class="grid">
+          <label>出生年份 <input id="birthYear" type="number"></label>
+          <label>当前年龄 <input id="currentAge" type="number"></label>
+        </div>
+        <label>世界设定 <textarea id="worldSetting"></textarea></label>
+        <label>基础属性（出身 / 家庭 / 天赋 / 性情） <textarea id="baseAttributes"></textarea></label>
+        <div class="grid">
+          <label>目标语言 <input id="language" value="中文"></label>
+          <label>模型 override <input id="model" placeholder="继承 dsh 默认"></label>
+        </div>
+      </section>
+      <section class="step" data-growth-step="2">
+        <h2>2. 模拟人生</h2>
+        <p class="status" id="status">尚未生成</p>
+        <progress id="bar" max="100" value="0"></progress>
+        <div class="actions">
+          <button type="button" id="continue">续写</button>
+          <button type="button" class="primary" id="generate">开始模拟人生</button>
+        </div>
+      </section>
+      <section class="step" data-growth-step="3">
+        <h2>3. 草稿审核</h2>
+        <ul id="beats"></ul>
+        <div class="actions">
+          <button type="button" class="primary" id="commit">写入记忆库</button>
+        </div>
+      </section>
     </main>
     <script>
       const status = document.getElementById('status');
@@ -44,6 +49,10 @@ export function renderGrowthPage(): string {
       const beats = document.getElementById('beats');
       const language = document.getElementById('language');
       const model = document.getElementById('model');
+      const birthYear = document.getElementById('birthYear');
+      const currentAge = document.getElementById('currentAge');
+      const worldSetting = document.getElementById('worldSetting');
+      const baseAttributes = document.getElementById('baseAttributes');
       let excluded = new Set();
 
       const applyProgress = (snapshot) => {
@@ -59,6 +68,12 @@ export function renderGrowthPage(): string {
         if (body.preferences) {
           if (body.preferences.language) language.value = body.preferences.language;
           if (typeof body.preferences.model === 'string') model.value = body.preferences.model;
+        }
+        if (body.profile) {
+          if (body.profile.birthYear != null) birthYear.value = body.profile.birthYear;
+          if (body.profile.currentAge != null) currentAge.value = body.profile.currentAge;
+          if (body.profile.worldSetting) worldSetting.value = body.profile.worldSetting;
+          if (body.profile.baseAttributes) baseAttributes.value = body.profile.baseAttributes;
         }
         applyProgress(body.progress);
         beats.replaceChildren();
@@ -92,6 +107,10 @@ export function renderGrowthPage(): string {
             continue: continueLife,
             language: language.value,
             model: model.value || undefined,
+            birthYear: birthYear.value === '' ? undefined : Number(birthYear.value),
+            currentAge: currentAge.value === '' ? undefined : Number(currentAge.value),
+            worldSetting: worldSetting.value,
+            baseAttributes: baseAttributes.value,
           }),
         });
         const body = await response.json();

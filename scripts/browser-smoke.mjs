@@ -531,7 +531,6 @@ export async function runBrowserSmoke(options) {
   const port = options.port ?? await pickFreePort()
   const env = childEnv(options.env ?? process.env, isolatedHome === undefined ? {} : { DSH_HOME: isolatedHome })
 
-  let overlayPath
   if (isolatedHome !== undefined) {
     log(`using isolated DSH_HOME=${isolatedHome} (will not touch ~/.dsh)`)
     const prepared = await prepareIsolatedProfile({
@@ -541,17 +540,12 @@ export async function runBrowserSmoke(options) {
       profile,
       env,
     })
-    overlayPath = prepared.overlayPath
     for (const line of prepared.linkLines) {
       log(line)
     }
   }
 
-  const args = ['web']
-  if (overlayPath !== undefined) {
-    args.push('--patch', overlayPath)
-  }
-  args.push('--port', String(port))
+  const args = ['web', '--port', String(port)]
   log(`starting: ${dshBin} ${args.join(' ')}`)
 
   const child = spawn(dshBin, args, {

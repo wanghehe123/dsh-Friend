@@ -12,6 +12,12 @@
  *   $DSH_HOME/profiles/<profile>/node_modules/@wishp3/<pkg>
  *     → <repo>/packages/<pkg>
  *
+ * An empty profile `cordis.patch.yml` is rewritten with the Friend insert
+ * list so ordinary `dsh web` mounts the local packages. Do not also pass a
+ * `--patch` overlay with the same ids — that is `duplicate loader entry id`.
+ * `dsh.bundle.patch` on the aggregate is applied by `dsh plugin add`, not
+ * by a raw insert of `@wishp3/dsh-friend-all`.
+ *
  * Safety: this script never `rm -rf`s anything. The only destructive call is
  * `fs.unlink` on a path that `lstat` has just confirmed is a symbolic link
  * *we* created (it already points at this repo's `packages/`, or is a dangling
@@ -28,7 +34,7 @@ export const SCOPE = '@wishp3'
 export const DEFAULT_PROFILE = 'web'
 export const BUILD_HINT = 'export CI=true && pnpm -r build'
 export const PROFILE_PATCH_NAME = 'cordis.patch.yml'
-export const FRIEND_PATCH_MARKER = "id: dsh-friend-shared"
+export const FRIEND_PATCH_MARKER = 'Written by scripts/link-profile.mjs'
 
 export function usage() {
   return `Usage: node scripts/link-profile.mjs [--profile <name>] [--dry-run] [--unlink]
@@ -396,7 +402,7 @@ export function renderProfileFriendPatch(packageNames) {
     const id = name.replace(/^@[^/]+\//, '')
     return `    - id: ${id}\n      name: '${name}'`
   })
-  return `# dsh-Friend local install. Written by scripts/link-profile.mjs.\n# Ordinary \`dsh web\` reads this file; do not replace it with [].\n- insert:\n${rows.join('\n')}\n`
+  return `# dsh-Friend local install. Written by scripts/link-profile.mjs.\n# Ordinary \`dsh web\` reads this file; do not also pass --patch with the same ids.\n- insert:\n${rows.join('\n')}\n`
 }
 
 export function isDefaultEmptyPatch(text) {

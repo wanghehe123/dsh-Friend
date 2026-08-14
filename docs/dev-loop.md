@@ -38,7 +38,7 @@ dsh web
 - `--profile <name>`：默认 `web`（也就是 `dsh web`）。也认 `$DSH_HOME`（默认 `~/.dsh`）。
 - `--dry-run`：只打印 `linked / skipped / would link`，**不落盘**。
 - `--unlink`：拆掉本脚本创建的 symlink，还原；真实目录不会动。
-- 成功链接后，若 profile 的 `cordis.patch.yml` 还是默认空 `[]`，脚本会写入 Friend 的 insert 清单。这样普通 `dsh web` 就会挂上插件，不必每次加 `--patch`。已有自定义 patch 时拒绝覆盖。
+- 成功链接后，若 profile 的 `cordis.patch.yml` 还是默认空 `[]`，脚本会写入 Friend 的 insert 清单。这样普通 `dsh web` 就会挂上插件，不必再加 `--patch`。同一份清单不要叠第二层（profile patch + `--patch` overlay），否则会报 `duplicate loader entry id`。已有自定义 patch 时拒绝覆盖。
 
 如果 profile 目录还不存在，脚本会退出码非 0，并提示先跑一次 `dsh web`（`web` / `headless` 会在首次启动时自动初始化；其它名字要用 `dsh plugin --profile <name> …`）。
 
@@ -274,18 +274,14 @@ echo "isolated DSH_HOME=$DSH_HOME"
 dsh --profile web --dump-default-config
 node scripts/link-profile.mjs --profile web
 
-node --input-type=module -e \
-  "import { renderFriendOverlayPatch } from './scripts/smoke.mjs'; process.stdout.write(renderFriendOverlayPatch())" \
-  > "$DSH_HOME/friend-live.patch.yml"
-
 PORT="$(node --input-type=module -e \
   "import { pickFreePort } from './scripts/smoke.mjs'; console.log(await pickFreePort())")"
 echo "open http://127.0.0.1:$PORT"
 
-dsh web --patch "$DSH_HOME/friend-live.patch.yml" --port "$PORT"
+dsh web --port "$PORT"
 ```
 
-`link-profile` 认 `$DSH_HOME`。overlay 由 `renderFriendOverlayPatch()` 写出，把 11 个包插进插件清单。本机若已有实例占着 3099，`pickFreePort` 会另选空闲端口。
+`link-profile` 认 `$DSH_HOME`，并已经把 Friend 清单写进 profile 的 `cordis.patch.yml`。这里不要再加 `--patch`。本机若已有实例占着 3099，`pickFreePort` 会另选空闲端口。
 
 看完后停掉该 `dsh` 进程即可；临时目录可 `rm -rf "$DSH_HOME"`。
 

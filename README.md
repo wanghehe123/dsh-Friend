@@ -111,7 +111,7 @@ dsh plugin --profile web add @wishp3/dsh-friend-all@0.1.0
 
 > 版本钉在当前发布版 `0.1.0`。升级时把 `@0.1.0` 换成新版本号。
 >
-> 如果这个 profile 以前跑过 `link-profile`，先把 `~/.dsh/profiles/web/cordis.patch.yml` 恢复成 `[]`，再装 npm 包。两套清单叠在一起会报 `duplicate loader entry id: dsh-friend-asr`。
+> 如果这个 profile 以前跑过 `link-profile`，先把 `~/.dsh/profiles/web/cordis.patch.yml` 恢复成 `[]`，再装 npm 包。两套清单叠在一起会报 `duplicate loader entry id`。
 
 ### 方式二：从 GitHub 仓库安装（改代码调试）
 

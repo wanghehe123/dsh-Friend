@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { formatPluginMountLog as sharedFormatPluginMountLog } from '../packages/dsh-friend-shared/src/plugin-mount.ts'
 import { formatPresetReadyLog as personaFormatPresetReadyLog } from '../packages/dsh-friend-persona/src/presets.ts'
 
+import { renderProfileFriendPatch } from './link-profile.mjs'
 import {
   FRIEND_PACKAGES,
   FRIEND_PET_PATH,
@@ -214,6 +215,16 @@ describe('renderFriendOverlayPatch', () => {
     expect(yaml.startsWith('- insert:')).toBe(true)
     for (const name of FRIEND_PACKAGES) {
       expect(yaml).toContain(`name: '${name}'`)
+    }
+  })
+
+  it('shares loader ids with the profile patch, so the two must not be stacked', () => {
+    const overlay = renderFriendOverlayPatch()
+    const profile = renderProfileFriendPatch([...FRIEND_PACKAGES])
+    for (const name of FRIEND_PACKAGES) {
+      const id = name.replace(/^@[^/]+\//, '')
+      expect(overlay).toContain(`id: ${id}`)
+      expect(profile).toContain(`id: ${id}`)
     }
   })
 })

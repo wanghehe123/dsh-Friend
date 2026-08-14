@@ -25,7 +25,7 @@
  * CI=true; workflows still pin it explicitly for `act` and similar.
  */
 import { spawn } from 'node:child_process'
-import { access, constants, mkdtemp, writeFile } from 'node:fs/promises'
+import { access, constants, mkdtemp } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { delimiter, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -288,6 +288,11 @@ export function killProcessTree(pid, options = {}) {
   }
 }
 
+/**
+ * Insert list for an *empty* profile. Do not pass this as `dsh web --patch`
+ * after `link-profile` — that file already wrote the same ids, and dsh
+ * fails with `duplicate loader entry id: dsh-friend-shared`.
+ */
 export function renderFriendOverlayPatch(packageNames = FRIEND_PACKAGES) {
   const rows = packageNames.map((name) => {
     const id = name.replace(/^@[^/]+\//, '')
@@ -355,9 +360,10 @@ export async function prepareIsolatedProfile(options) {
     throw new Error(`link-profile failed in isolated home:\n${[...linked.lines, ...linked.errors].join('\n')}`)
   }
 
-  const overlayPath = join(home, 'friend-smoke.patch.yml')
-  await writeFile(overlayPath, renderFriendOverlayPatch(), 'utf8')
-  return { profileRoot, overlayPath, linkLines: linked.lines }
+  // link-profile already wrote the Friend insert list into the profile patch.
+  // A second `--patch` overlay with the same ids is what CI failed on:
+  // `duplicate loader entry id: dsh-friend-shared`.
+  return { profileRoot, linkLines: linked.lines }
 }
 
 export async function runLiveSmoke(options) {
@@ -373,7 +379,6 @@ export async function runLiveSmoke(options) {
   const port = options.port ?? await pickFreePort()
   const env = childEnv(options.env ?? process.env, isolatedHome === undefined ? {} : { DSH_HOME: isolatedHome })
 
-  let overlayPath
   if (isolatedHome !== undefined) {
     log(`using isolated DSH_HOME=${isolatedHome} (will not touch ~/.dsh)`)
     const prepared = await prepareIsolatedProfile({
@@ -383,17 +388,12 @@ export async function runLiveSmoke(options) {
       profile,
       env,
     })
-    overlayPath = prepared.overlayPath
     for (const line of prepared.linkLines) {
       log(line)
     }
   }
 
-  const args = ['web']
-  if (overlayPath !== undefined) {
-    args.push('--patch', overlayPath)
-  }
-  args.push('--port', String(port))
+  const args = ['web', '--port', String(port)]
 
   log(`starting: ${dshBin} ${args.join(' ')}`)
 

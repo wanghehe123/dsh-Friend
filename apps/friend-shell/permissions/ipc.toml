@@ -1,0 +1,16 @@
+[[permission]]
+identifier = "allow-ipc"
+description = "Guide page and injected pet-page bridge"
+commands.allow = [
+  "get_shell_config",
+  "save_shell_config",
+  "retry_probe",
+  "set_spawn_dsh",
+  "report_hit_regions",
+  "set_cursor_ignore",
+  "set_click_through",
+  "toggle_muted",
+  "open_settings",
+  "start_os_drag",
+  "start_os_resize"
+]

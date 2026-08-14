@@ -1,0 +1,48 @@
+[package]
+name = "friend-shell"
+version = "0.1.0"
+description = "Thin Tauri desktop shell for dsh-Friend"
+authors = ["dsh-Friend contributors"]
+edition = "2021"
+license = "MIT"
+publish = false
+default-run = "friend-shell"
+
+[lib]
+name = "friend_shell_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[[bin]]
+name = "friend-shell"
+path = "src/main.rs"
+
+[build-dependencies]
+# MIT OR Apache-2.0
+tauri-build = { version = "=2.6.3", features = [] }
+
+[dependencies]
+# MIT OR Apache-2.0
+tauri = { version = "=2.11.5", features = ["macos-private-api", "tray-icon"] }
+# MIT OR Apache-2.0
+tauri-plugin-autostart = "=2.5.1"
+# MIT OR Apache-2.0
+tauri-plugin-global-shortcut = "=2.3.2"
+# MIT OR Apache-2.0
+tauri-plugin-opener = "=2.5.4"
+# MIT OR Apache-2.0
+serde = { version = "=1.0.229", features = ["derive"] }
+# MIT OR Apache-2.0
+serde_json = "=1.0.151"
+# MIT
+mouse_position = "=0.1.4"
+
+[dev-dependencies]
+# MIT OR Apache-2.0
+tempfile = "=3.27.0"
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true

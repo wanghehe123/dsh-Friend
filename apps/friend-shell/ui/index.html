@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-CN" data-friend-shell-guide="1">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>dsh-Friend</title>
+    <style>
+      :root { color-scheme: dark; font-family: ui-rounded, "SF Pro Rounded", system-ui, sans-serif; }
+      html, body { margin: 0; min-height: 100%; background: transparent; color: #e2e8f0; }
+      body { display: grid; place-items: center; min-height: 100vh; }
+      .card {
+        width: min(22rem, calc(100vw - 24px));
+        padding: 1.1rem 1.15rem 1.2rem;
+        border-radius: 1.1rem;
+        border: 1px solid rgb(148 163 184 / .28);
+        background: rgb(15 23 42 / .92);
+        box-shadow: 0 18px 40px rgb(2 6 23 / .35);
+      }
+      h1 { margin: 0 0 .4rem; font-size: 1.15rem; }
+      p { margin: .35rem 0; line-height: 1.55; color: #cbd5e1; font-size: .92rem; }
+      code { color: #a7f3d0; font-size: .84rem; }
+      .row { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: .75rem; }
+      button {
+        appearance: none; cursor: pointer; padding: .45rem .7rem;
+        border: 1px solid #475569; border-radius: .65rem;
+        color: #e2e8f0; background: #1e293b; font: inherit;
+      }
+      button:hover, button:focus-visible { background: #334155; border-color: #38bdf8; outline: none; }
+      label { display: flex; gap: .45rem; align-items: flex-start; margin-top: .85rem; font-size: .9rem; }
+      #status { min-height: 1.3rem; color: #bae6fd; font-size: .85rem; }
+    </style>
+  </head>
+  <body>
+    <section class="card" data-friend-shell-guide-card>
+      <h1>还没有连上 dsh</h1>
+      <p>桌面壳只负责窗口。请先在本机启动 DeepSeek dsh，壳会在 5 秒内自动切入形象页。</p>
+      <p>启动命令：<code id="cmd">npx @deepseek-ai/dsh web</code></p>
+      <div class="row">
+        <button type="button" id="copy">复制命令</button>
+        <button type="button" id="retry">重试连接</button>
+      </div>
+      <label>
+        <input type="checkbox" id="spawn">
+        <span>由壳代启动 dsh（默认关；开启后会托管子进程日志）</span>
+      </label>
+      <p id="status" role="status">正在探测 http://127.0.0.1:3080/friend/pet …</p>
+    </section>
+    <script>
+      const invoke = (cmd, args) => {
+        const core = window.__TAURI__ && window.__TAURI__.core;
+        return core && core.invoke ? core.invoke(cmd, args || {}) : Promise.resolve();
+      };
+      const status = document.getElementById('status');
+      const cmd = document.getElementById('cmd').textContent;
+      document.getElementById('copy').addEventListener('click', async () => {
+        try {
+          const ta = document.createElement('textarea');
+          ta.value = cmd;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          ta.remove();
+          status.textContent = '已复制启动命令';
+        } catch (error) {
+          status.textContent = '复制失败，请手动选中命令';
+        }
+      });
+      document.getElementById('retry').addEventListener('click', () => {
+        status.textContent = '正在重试…';
+        invoke('retry_probe');
+      });
+      const spawn = document.getElementById('spawn');
+      spawn.addEventListener('change', () => {
+        invoke('set_spawn_dsh', { enabled: spawn.checked });
+        status.textContent = spawn.checked ? '已请求由壳启动 dsh' : '已关闭代启动';
+      });
+      invoke('get_shell_config').then((config) => {
+        if (config && config.spawn_dsh) spawn.checked = true;
+        if (config && config.base_url) {
+          status.textContent = '正在探测 ' + config.base_url.replace(/\/$/, '') + '/friend/pet …';
+        }
+      }).catch(() => {});
+    </script>
+  </body>
+</html>

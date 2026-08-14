@@ -1,0 +1,5 @@
+/target
+/gen
+.DS_Store
+*.profraw
+/icons/icon.iconset

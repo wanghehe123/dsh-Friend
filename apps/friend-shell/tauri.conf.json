@@ -1,0 +1,41 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "dsh-Friend",
+  "version": "0.1.0",
+  "identifier": "ai.wish233.dsh-friend-shell",
+  "build": {
+    "frontendDist": "./ui"
+  },
+  "app": {
+    "macOSPrivateApi": true,
+    "withGlobalTauri": true,
+    "windows": [],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["dmg", "msi"],
+    "category": "Lifestyle",
+    "shortDescription": "dsh-Friend desktop pet shell",
+    "longDescription": "Transparent always-on-top window that loads the dsh /friend/pet page. No Live2D assets are bundled.",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "macOS": {
+      "signingIdentity": null,
+      "minimumSystemVersion": "10.15",
+      "entitlements": null
+    },
+    "windows": {
+      "certificateThumbprint": null,
+      "digestAlgorithm": "sha256",
+      "timestampUrl": ""
+    }
+  }
+}

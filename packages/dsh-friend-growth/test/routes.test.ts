@@ -47,8 +47,8 @@ describe('growth routes', () => {
     const get = createResponse()
     await route(routes, '/friend/growth').handler({ method: 'GET', url: '/friend/growth' } as never, get as never)
     expect(get.statusCode).toBe(200)
-    expect(get.body).toContain('人生故事')
-    expect(get.body).toContain('生成')
+    expect(get.body).toContain('成长')
+    expect(get.body).toContain('开始模拟人生')
 
     const post = createResponse()
     await route(routes, '/friend/growth').handler({ method: 'POST', url: '/friend/growth' } as never, post as never)

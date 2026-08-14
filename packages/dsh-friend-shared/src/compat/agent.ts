@@ -33,6 +33,14 @@ export interface FriendUserMessage {
 export interface FriendAgentHandle {
   readonly id: string
   followup(message: FriendUserMessage): void
+  /**
+   * Official `Agent.options` (`@deepseek-ai/dsh-agent`). Absent or empty
+   * provider/model means prompt assembly has no `{{model}}` route.
+   */
+  readonly options?: {
+    readonly provider?: string
+    readonly model?: string
+  }
 }
 
 /**
@@ -49,8 +57,10 @@ export interface FriendAgentCreateResult {
 
 /**
  * Subset of official `CreateAgentOptions`.
- * `meta.agentPreset` is persisted on the session header so resume keeps
- * the companion composition.
+ *
+ * `meta.agentPreset` is only a header stamp. The standing companion
+ * composition is joined in {@link FriendCreateAgentOptions.setup} via
+ * `ctx.agentPresets.mount(agentCtx, id)` — the one supported call site.
  */
 export interface FriendCreateAgentOptions {
   readonly sessionId: string
@@ -62,7 +72,20 @@ export interface FriendCreateAgentOptions {
     readonly provider?: string
     readonly model?: string
     readonly maxTokens?: number
+    readonly reasoningEffort?: string
   }
+  /**
+   * Official: `CreateAgentOptions.setup` (`@deepseek-ai/dsh-agent`).
+   * Awaited after `agentCtx` is minted and before the session is published.
+   */
+  readonly setup?: (agentCtx: unknown) => void | Promise<void>
+}
+
+/** Subset of official `ResumeAgentOptions`. */
+export interface FriendResumeAgentOptions {
+  readonly resumeSessionId: string
+  readonly agentOptions?: FriendCreateAgentOptions['agentOptions']
+  readonly setup?: FriendCreateAgentOptions['setup']
 }
 
 /**
@@ -76,7 +99,7 @@ export interface FriendCreateAgentOptions {
 export interface FriendAgentRegistry {
   get(id: string): FriendAgentHandle | undefined
   create(options: FriendCreateAgentOptions): Promise<FriendAgentCreateResult>
-  resume?(options: { resumeSessionId: string }): Promise<FriendAgentCreateResult>
+  resume?(options: FriendResumeAgentOptions): Promise<FriendAgentCreateResult>
 }
 
 /**
@@ -129,12 +152,16 @@ export async function createAgent(
 export async function resumeAgent(
   registry: FriendAgentRegistry,
   sessionId: string,
+  extras?: Pick<FriendCreateAgentOptions, 'agentOptions' | 'setup'>,
 ): Promise<FriendAgentHandle | undefined> {
   if (registry.resume === undefined) {
     return undefined
   }
   try {
-    return unwrapCreatedAgent(await registry.resume({ resumeSessionId: sessionId }))
+    return unwrapCreatedAgent(await registry.resume({
+      resumeSessionId: sessionId,
+      ...extras,
+    }))
   } catch {
     return undefined
   }

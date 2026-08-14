@@ -50,10 +50,13 @@ export const COMPANION_HOST_TOOLS = ['notify', 'get_current_time'] as const
  */
 export const PLUS_EXTRA_TOOLS = ['web_search', 'read'] as const
 
-/** `friend-companion` restrict allowlist. */
+/**
+ * `friend-companion` restrict allowlist: inherited host tools only.
+ * Official `tools.restrict()` rejects names that are not already global.
+ * Memory / stage tools register on this standing scope and stay visible
+ * without being named here.
+ */
 export const COMPANION_TOOL_ALLOWLIST = [
-  ...MEMORY_TOOLS,
-  ...STAGE_TOOLS,
   ...COMPANION_HOST_TOOLS,
 ] as const
 
@@ -137,14 +140,23 @@ export async function assertFriendPresets(
 /**
  * Restrict inherited global tools on the **calling** scoped context.
  *
- * Official `tools.restrict` throws on a host-global ctx. Call only from the
- * companion preset standing mount. Same-scope registrations (memory / stage
- * tools, once those packages implement them) stay visible even if they are
- * also named here — restrict only filters inherited globals.
+ * Official `tools.restrict` throws on a host-global ctx, and also throws when
+ * the allowlist names a tool that is not a **global** tool. Memory / stage
+ * names are same-scope registrations — they must not appear here. Host tools
+ * that this deployment never registered (`notify` on a stock web profile)
+ * are dropped so an empty inherited catalog still mounts.
+ *
+ * `allow: []` is valid official input: inherit nothing. Same-scope tools
+ * stay visible.
  */
 export function restrictCompanionTools(
   ctx: FriendToolContext,
   kind: CompanionAllowlistKind,
 ): () => void {
-  return restrictTools(ctx, { allow: [...allowlistFor(kind)] })
+  const wanted = allowlistFor(kind)
+  const get = ctx.tools.get
+  const allow = typeof get === 'function'
+    ? wanted.filter((name) => get.call(ctx.tools, name) !== undefined)
+    : [...wanted]
+  return restrictTools(ctx, { allow })
 }

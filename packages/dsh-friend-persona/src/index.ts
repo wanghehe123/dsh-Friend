@@ -1,8 +1,10 @@
 import {
   bindHostSettings,
   FRIEND_SETTINGS_NAMESPACES,
+  readDefaultModelSelection,
   registerFriendSettings,
   type FriendAgentRegistry,
+  type FriendDefaultModelContext,
   type FriendPresetContext,
   type FriendPromptContext,
   type FriendToolContext,
@@ -46,10 +48,18 @@ export const name = '@wish233/dsh-friend-persona'
 
 /**
  * Cordis service names this plugin reads. Accessing `ctx.agentPresets`
- * (or `systemPrompt` / `tools` / `agents` / `settings`) without inject throws
- * `cannot get property "…" without inject` and takes down the host tree.
+ * (or `systemPrompt` / `tools` / `agents` / `settings` / `agentDefaultModel`)
+ * without inject throws `cannot get property "…" without inject` and takes
+ * down the host tree.
  */
-export const inject = ['agentPresets', 'systemPrompt', 'tools', 'agents', 'settings'] as const
+export const inject = [
+  'agentPresets',
+  'systemPrompt',
+  'tools',
+  'agents',
+  'settings',
+  'agentDefaultModel',
+] as const
 
 export {
   COMPANION_HOST_TOOLS,
@@ -87,7 +97,10 @@ export {
   createMemorySessionIdStore,
   createSettingsSessionIdStore,
   getOrCreateCompanionSession,
+  liveAgentHasModelRoute,
   sendToCompanion,
+  type CompanionSendResult,
+  type CompanionSessionDeps,
 } from './session.ts'
 export {
   SESSION_EVENT_NAME,
@@ -144,6 +157,11 @@ export interface FriendPersonaContext {
     get(namespace: string): unknown
     update(namespace: string, patch: Record<string, unknown>): Promise<void>
   }
+  /**
+   * Official: `ctx.agentDefaultModel` (`@deepseek-ai/dsh-agent-default-model`).
+   * Companion create/resume stamps this onto `agentOptions`.
+   */
+  agentDefaultModel?: FriendDefaultModelContext['agentDefaultModel']
   /**
    * Cordis `Context.on`. Not a service — do not add it to `inject`.
    * Official: `ctx.on('session/event', …)` (`@deepseek-ai/dsh-session`).
@@ -332,6 +350,8 @@ function bindSessionDeps(ctx: FriendPersonaContext): CompanionSessionDeps | unde
     return undefined
   }
   const settings = ctx.settings
+  const presets = ctx.agentPresets
+  const defaultModel = ctx.agentDefaultModel
   return {
     registry: agents,
     store: settings === undefined
@@ -340,6 +360,18 @@ function bindSessionDeps(ctx: FriendPersonaContext): CompanionSessionDeps | unde
           set: () => undefined,
         }
       : createSettingsSessionIdStore(bindHostSettings(settings)),
+    ...(presets !== undefined && typeof presets.mount === 'function'
+      ? {
+          mountPreset: async (agentCtx: unknown, id: string) => {
+            await presets.mount?.(agentCtx, id)
+          },
+        }
+      : {}),
+    ...(defaultModel !== undefined
+      ? {
+          getDefaultModel: () => readDefaultModelSelection({ agentDefaultModel: defaultModel }),
+        }
+      : {}),
   }
 }
 

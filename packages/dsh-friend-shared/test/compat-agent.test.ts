@@ -46,6 +46,23 @@ describe('resumeAgent', () => {
       resumeAgent({ get: vi.fn(), create: vi.fn(), resume }, 'resumed'),
     ).resolves.toBe(agent)
   })
+
+  it('forwards setup and agentOptions on resume', async () => {
+    const agent = fakeAgent('resumed')
+    const resume = vi.fn(async () => created(agent))
+    const setup = vi.fn()
+    await expect(
+      resumeAgent({ get: vi.fn(), create: vi.fn(), resume }, 'resumed', {
+        agentOptions: { provider: 'opencode-go', model: 'deepseek-v4-pro' },
+        setup,
+      }),
+    ).resolves.toBe(agent)
+    expect(resume).toHaveBeenCalledWith({
+      resumeSessionId: 'resumed',
+      agentOptions: { provider: 'opencode-go', model: 'deepseek-v4-pro' },
+      setup,
+    })
+  })
 })
 
 describe('createAgent', () => {

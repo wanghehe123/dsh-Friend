@@ -66,7 +66,14 @@ function hostCtx(overrides: {
 
 describe('cordis inject', () => {
   it('declares the services apply() reads so the host proxy does not throw', () => {
-    expect(inject).toEqual(['agentPresets', 'systemPrompt', 'tools', 'agents', 'settings'])
+    expect(inject).toEqual([
+      'agentPresets',
+      'systemPrompt',
+      'tools',
+      'agents',
+      'settings',
+      'agentDefaultModel',
+    ])
   })
 })
 
@@ -142,6 +149,42 @@ describe('apply() host wiring', () => {
     expect(handle.sessionDeps).toBeDefined()
     expect(handle.sessionDeps?.registry).toBe(ctx.agents)
     expect(create).not.toHaveBeenCalled()
+    handle.dispose()
+  })
+
+  it('wires companion create to mount the preset and inherit the default model', async () => {
+    const { dataDir, dshHome } = await isolatedHomes()
+    const mounted: Array<[unknown, string]> = []
+    const ctx = hostCtx({
+      agents: {
+        get: () => undefined,
+        create: vi.fn(),
+      },
+    })
+    ctx.agentPresets = {
+      resolve: ctx.resolve,
+      list: vi.fn(async () => []),
+      mount: async (agentCtx, id) => {
+        mounted.push([agentCtx, id ?? ''])
+      },
+    }
+    ctx.agentDefaultModel = {
+      currentSelection: () => ({
+        provider: 'opencode-go',
+        model: 'deepseek-v4-pro',
+        reasoningEffort: 'max',
+      }),
+    }
+
+    const handle = await applyPersona(ctx, { dataDir, dshHome, env: {} })
+    expect(handle.sessionDeps?.getDefaultModel?.()).toEqual({
+      provider: 'opencode-go',
+      model: 'deepseek-v4-pro',
+      reasoningEffort: 'max',
+    })
+    expect(handle.sessionDeps?.mountPreset).toBeTypeOf('function')
+    await handle.sessionDeps?.mountPreset?.({ id: 'agent-ctx' }, FRIEND_PRESET_IDS.companion)
+    expect(mounted).toEqual([[{ id: 'agent-ctx' }, FRIEND_PRESET_IDS.companion]])
     handle.dispose()
   })
 

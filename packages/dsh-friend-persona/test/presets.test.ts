@@ -27,12 +27,6 @@ afterEach(async () => {
 describe('tool allowlists', () => {
   it('lists the companion whitelist as a constant array', () => {
     expect([...COMPANION_TOOL_ALLOWLIST]).toEqual([
-      'memory_append',
-      'memory_search',
-      'memory_get',
-      'set_expression',
-      'play_motion',
-      'play_cue',
       'notify',
       'get_current_time',
     ])
@@ -145,6 +139,40 @@ describe('restrictCompanionTools', () => {
     expect(restrict).toHaveBeenCalledWith({ allow: [...COMPANION_TOOL_ALLOWLIST] })
     dispose()
     expect(disposeRestrict).toHaveBeenCalledOnce()
+  })
+
+  it('drops inherited names that are not global so official restrict can mount', () => {
+    const restrict = vi.fn(() => () => undefined)
+    restrictCompanionTools(
+      {
+        tools: {
+          register: vi.fn(),
+          restrict,
+          get(name: string) {
+            return name === 'notify' ? { name } : undefined
+          },
+        },
+      },
+      'plus',
+    )
+    expect(restrict).toHaveBeenCalledWith({ allow: ['notify'] })
+  })
+
+  it('allows an empty inherited catalog', () => {
+    const restrict = vi.fn(() => () => undefined)
+    restrictCompanionTools(
+      {
+        tools: {
+          register: vi.fn(),
+          restrict,
+          get() {
+            return undefined
+          },
+        },
+      },
+      'companion',
+    )
+    expect(restrict).toHaveBeenCalledWith({ allow: [] })
   })
 })
 

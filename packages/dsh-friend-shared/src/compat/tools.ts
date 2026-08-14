@@ -15,6 +15,11 @@ export interface FriendToolContext {
   tools: {
     register(definition: ToolDefinition): () => void
     restrict(filter: ToolRestriction): () => void
+    /**
+     * Official: `ctx.tools.get(name)` (`@deepseek-ai/dsh-tools`).
+     * Omitted scope is the global view — the only names `restrict()` may cite.
+     */
+    get?(name: string): unknown
   }
 }
 

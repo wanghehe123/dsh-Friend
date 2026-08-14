@@ -18,6 +18,12 @@ export interface FriendPresetContext {
   agentPresets: {
     resolve(id?: string): Promise<{ id: string; broken?: string }>
     list(): Promise<ReadonlyArray<{ id: string; broken?: string }>>
+    /**
+     * Official: `ctx.agentPresets.mount(agentCtx, id)`
+     * (`@deepseek-ai/dsh-agent-presets`). Joins the agent to the standing
+     * preset scope. Header `agentPreset` alone does not parent the agent.
+     */
+    mount?(agentCtx: unknown, id?: string): Promise<unknown>
   }
 }
 

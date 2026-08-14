@@ -5,7 +5,9 @@
  */
 import {
   FRIEND_TTS_BROWSER_PROVIDER,
+  FRIEND_TTS_DASHSCOPE_PROVIDER,
   FRIEND_TTS_DEFAULT_PROVIDER,
+  FRIEND_TTS_MINIMAX_PROVIDER,
   FRIEND_TTS_OPENAI_COMPAT_PROVIDER,
   type FriendTtsVoice,
 } from './seam.ts'
@@ -27,10 +29,29 @@ export const OPENAI_COMPAT_VOICES: readonly FriendTtsVoice[] = [
   { id: 'shimmer', name: 'Shimmer', language: 'en', gender: 'female' },
 ]
 
+export const DASHSCOPE_VOICES: readonly FriendTtsVoice[] = [
+  { id: 'Cherry', name: 'Cherry', language: 'zh', gender: 'female' },
+  { id: 'Serena', name: 'Serena', language: 'zh', gender: 'female' },
+  { id: 'Ethan', name: 'Ethan', language: 'en', gender: 'male' },
+  { id: 'Chelsie', name: 'Chelsie', language: 'en', gender: 'female' },
+]
+
+export const MINIMAX_VOICES: readonly FriendTtsVoice[] = [
+  { id: 'male-qn-qingse', name: '青涩青年', language: 'zh', gender: 'male' },
+  { id: 'female-shaonv', name: '少女', language: 'zh', gender: 'female' },
+  { id: 'Chinese (Mandarin)_Lyrical_Voice', name: 'Lyrical Voice', language: 'zh', gender: 'female' },
+]
+
 export function listCatalogVoices(provider: string | undefined): readonly FriendTtsVoice[] {
   const id = provider?.trim() || FRIEND_TTS_DEFAULT_PROVIDER
   if (id === FRIEND_TTS_OPENAI_COMPAT_PROVIDER) {
     return OPENAI_COMPAT_VOICES
+  }
+  if (id === FRIEND_TTS_DASHSCOPE_PROVIDER) {
+    return DASHSCOPE_VOICES
+  }
+  if (id === FRIEND_TTS_MINIMAX_PROVIDER) {
+    return MINIMAX_VOICES
   }
   if (id === FRIEND_TTS_BROWSER_PROVIDER) {
     return []

@@ -11,6 +11,8 @@
 export const FRIEND_TTS_DEFAULT_PROVIDER = 'edge' as const
 export const FRIEND_TTS_BROWSER_PROVIDER = 'browser' as const
 export const FRIEND_TTS_OPENAI_COMPAT_PROVIDER = 'openai-compat' as const
+export const FRIEND_TTS_DASHSCOPE_PROVIDER = 'dashscope' as const
+export const FRIEND_TTS_MINIMAX_PROVIDER = 'minimax' as const
 
 export type FriendTtsVoiceGender = 'male' | 'female' | 'neutral'
 

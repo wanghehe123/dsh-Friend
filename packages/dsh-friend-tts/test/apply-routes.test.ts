@@ -20,7 +20,7 @@ describe('createFriendTtsHost + apply routes', () => {
     expect(inject).toEqual(['webServer', 'settings'])
   })
 
-  it('registers openai-compat next to edge and disposes both', () => {
+  it('registers edge, openai-compat, dashscope, and minimax and disposes them', () => {
     const host = createFriendTtsHost({
       edge: {
         connect: () => {
@@ -30,9 +30,13 @@ describe('createFriendTtsHost + apply routes', () => {
     })
     expect(host.registry.get('edge')?.id).toBe('edge')
     expect(host.registry.get('openai-compat')?.id).toBe('openai-compat')
+    expect(host.registry.get('dashscope')?.id).toBe('dashscope')
+    expect(host.registry.get('minimax')?.id).toBe('minimax')
     host.dispose()
     expect(host.registry.get('edge')).toBeUndefined()
     expect(host.registry.get('openai-compat')).toBeUndefined()
+    expect(host.registry.get('dashscope')).toBeUndefined()
+    expect(host.registry.get('minimax')).toBeUndefined()
   })
 
   it('speakReply follows live getConfig().autoSpeak without synthesizing when off', async () => {

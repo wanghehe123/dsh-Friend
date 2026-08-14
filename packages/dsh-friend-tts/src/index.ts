@@ -18,7 +18,9 @@ import {
 } from '@wish233/dsh-friend-shared'
 
 import { createFriendTtsCache, type FriendTtsCache } from './cache.ts'
+import { createDashScopeTtsProvider, type DashScopeProviderOptions } from './providers/dashscope.ts'
 import { createEdgeTtsProvider, type EdgeTtsProviderOptions } from './providers/edge.ts'
+import { createMiniMaxTtsProvider, type MiniMaxProviderOptions } from './providers/minimax.ts'
 import { createOpenAiCompatProvider, type OpenAiCompatProviderOptions } from './providers/openai.ts'
 import { createFriendTtsQueue, type FriendTtsQueue } from './queue.ts'
 import type { FriendTtsReadySink } from './playback-events.ts'
@@ -51,7 +53,9 @@ export const inject = ['webServer', 'settings'] as const
 
 export {
   FRIEND_TTS_BROWSER_PROVIDER,
+  FRIEND_TTS_DASHSCOPE_PROVIDER,
   FRIEND_TTS_DEFAULT_PROVIDER,
+  FRIEND_TTS_MINIMAX_PROVIDER,
   FRIEND_TTS_OPENAI_COMPAT_PROVIDER,
   createFriendTtsRegistry,
   type FriendTtsAudio,
@@ -86,6 +90,40 @@ export {
   createEdgeTtsProvider,
   type EdgeTtsProviderOptions,
 } from './providers/edge.ts'
+
+export {
+  DASHSCOPE_COSYVOICE_PATH,
+  DASHSCOPE_DEFAULT_BASE_URL,
+  DASHSCOPE_DEFAULT_MODEL,
+  DASHSCOPE_DEFAULT_VOICE,
+  DASHSCOPE_PROVIDER_ID,
+  DASHSCOPE_QWEN_TTS_PATH,
+  DASHSCOPE_TIMEOUT_MS,
+  DASHSCOPE_VOICES,
+  createDashScopeTtsProvider,
+  dashscopeSpeechUrl,
+  isCosyVoiceModel,
+  normalizeDashScopeRoot,
+  type DashScopeCredentials,
+  type DashScopeProviderOptions,
+} from './providers/dashscope.ts'
+
+export {
+  MINIMAX_DEFAULT_BASE_URL,
+  MINIMAX_DEFAULT_FORMAT,
+  MINIMAX_DEFAULT_MODEL,
+  MINIMAX_DEFAULT_VOICE,
+  MINIMAX_PATH,
+  MINIMAX_PROVIDER_ID,
+  MINIMAX_TIMEOUT_MS,
+  MINIMAX_VOICES,
+  createMiniMaxTtsProvider,
+  decodeMiniMaxHex,
+  mapPitchToMiniMax,
+  mapRateToMiniMaxSpeed,
+  type MiniMaxCredentials,
+  type MiniMaxProviderOptions,
+} from './providers/minimax.ts'
 
 export {
   OPENAI_COMPAT_DEFAULT_FORMAT,
@@ -267,28 +305,39 @@ export type CreateFriendTtsHostOptions = {
   log?: FriendTtsLog
   edge?: EdgeTtsProviderOptions
   openai?: Omit<OpenAiCompatProviderOptions, 'getCredentials'>
+  dashscope?: Omit<DashScopeProviderOptions, 'getCredentials'>
+  minimax?: Omit<MiniMaxProviderOptions, 'getCredentials'>
   cacheDir?: string
   now?: () => number
 }
 
-/** Wire Edge + openai-compat into a live registry, router, cache, and queue. */
+/** Wire Edge, openai-compat, DashScope, and MiniMax into the live registry. */
 export function createFriendTtsHost(options: CreateFriendTtsHostOptions = {}): FriendTtsHost {
   const registry = createFriendTtsRegistry()
   const getConfig: FriendTtsConfigSource = options.getConfig ?? (() => ({}))
   const readSettings = (): unknown => options.getHostSettings?.()
 
+  const endpointCredentials = () => {
+    const host = readFriendTtsHostSettings(readSettings())
+    return {
+      ...(host.openaiApiKey !== undefined ? { apiKey: host.openaiApiKey } : {}),
+      ...(host.openaiBaseURL !== undefined ? { baseURL: host.openaiBaseURL } : {}),
+      ...(host.openaiModel !== undefined ? { model: host.openaiModel } : {}),
+      ...(host.openaiFormat !== undefined ? { format: host.openaiFormat } : {}),
+    }
+  }
   const unregisterEdge = registry.register(createEdgeTtsProvider(options.edge))
   const unregisterOpenAi = registry.register(createOpenAiCompatProvider({
-    getCredentials: () => {
-      const host = readFriendTtsHostSettings(readSettings())
-      return {
-        ...(host.openaiApiKey !== undefined ? { apiKey: host.openaiApiKey } : {}),
-        ...(host.openaiBaseURL !== undefined ? { baseURL: host.openaiBaseURL } : {}),
-        ...(host.openaiModel !== undefined ? { model: host.openaiModel } : {}),
-        ...(host.openaiFormat !== undefined ? { format: host.openaiFormat } : {}),
-      }
-    },
+    getCredentials: endpointCredentials,
     ...(options.openai ?? {}),
+  }))
+  const unregisterDashScope = registry.register(createDashScopeTtsProvider({
+    getCredentials: endpointCredentials,
+    ...(options.dashscope ?? {}),
+  }))
+  const unregisterMiniMax = registry.register(createMiniMaxTtsProvider({
+    getCredentials: endpointCredentials,
+    ...(options.minimax ?? {}),
   }))
 
   const router = createFriendTtsRouter({
@@ -339,6 +388,8 @@ export function createFriendTtsHost(options: CreateFriendTtsHostOptions = {}): F
     dispose() {
       queue.dispose()
       cache.dispose()
+      unregisterMiniMax()
+      unregisterDashScope()
       unregisterOpenAi()
       unregisterEdge()
     },

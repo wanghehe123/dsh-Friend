@@ -1,0 +1,28 @@
+schema: spec-driven
+
+context: |
+  dsh-Friend：DeepSeek Harness（dsh）的 AI 伴侣插件套件，Kokoro-Engine（Tauri+Rust）的 TypeScript 迁移版。
+  技术栈：TypeScript + Cordis 插件（host/client 双半区）、pnpm monorepo（11 个 npm 包 + apps/friend-shell Tauri 薄壳）、
+  tsdown 构建、vitest 测试、client 半区 React 19 + __ModuleLoader__。
+  核心文档：
+  - 总体设计：docs/migration-plan.md（架构、决策记录、里程碑 M0-M8）
+  - 执行清单：docs/work-breakdown.md（工作项 W-<里程碑>-<序号> = 改动点+测试+验收）
+  - 行为契约：openspec/specs/<capability>/spec.md（本目录，12 个能力域）
+  硬约束：
+  - dsh 处于 developer preview，所有易变 API 一律经 packages/dsh-friend-shared/src/dsh-compat.ts 调用，禁止直接 import。
+  - 记忆为 Markdown 明文（~/.dsh/friend/），默认不依赖 embedding；检索经 MemoryRetriever 接口。
+  - 零配置原则：文本模型继承 dsh 当前模型；TTS 默认 Edge；ASR 默认 Web Speech；不强制任何 API key。
+  - API key 只存 host 侧，永不下发 client。
+  - npm 包不得内嵌 Live2D Cubism Core 与 Hiyori 素材（首启下载）。
+  引导说明：specs/ 第一版于实现前整体制定，作为 v1 目标契约（greenfield bootstrap）；
+  自第一版起，任何行为变更必须走 changes/ 提案流程（openspec-propose → apply → archive）。
+
+rules:
+  proposal:
+    - 提案必须引用受影响的工作项 ID（docs/work-breakdown.md 的 W-*）或显式声明新增工作项
+    - 必须包含 Non-goals 一节
+  specs:
+    - Requirement 正文必须包含 SHALL；每个 Requirement 至少一个 Scenario
+    - 场景步骤使用 GIVEN/WHEN/THEN 加粗英文关键字，正文中文
+  tasks:
+    - 每个任务必须附带可二值判定的验收标准，并回链 W-* 工作项

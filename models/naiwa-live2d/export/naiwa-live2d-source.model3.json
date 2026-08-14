@@ -1,0 +1,10 @@
+{
+	"Version": 3,
+	"FileReferences": {
+		"Moc": "naiwa-live2d-source.moc3",
+		"Textures": [
+			"naiwa-live2d-source.1024/texture_00.png"
+		],
+		"DisplayInfo": "naiwa-live2d-source.cdi3.json"
+	}
+}

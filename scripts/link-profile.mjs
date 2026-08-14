@@ -18,7 +18,7 @@
  * leftover at our managed path). A real directory or a live foreign symlink
  * (for example a pnpm store link from `dsh plugin add`) is a hard error.
  */
-import { lstat, mkdir, readFile, readdir, readlink, symlink, unlink } from 'node:fs/promises'
+import { lstat, mkdir, readFile, readdir, readlink, symlink, unlink, writeFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -27,6 +27,8 @@ export const DEFAULT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..
 export const SCOPE = '@wish233'
 export const DEFAULT_PROFILE = 'web'
 export const BUILD_HINT = 'export CI=true && pnpm -r build'
+export const PROFILE_PATCH_NAME = 'cordis.patch.yml'
+export const FRIEND_PATCH_MARKER = "id: dsh-friend-shared"
 
 export function usage() {
   return `Usage: node scripts/link-profile.mjs [--profile <name>] [--dry-run] [--unlink]
@@ -371,7 +373,98 @@ export async function runLinkProfile(options) {
     }
   }
 
+  const patch = await planFriendPatch({
+    profileRoot,
+    packageNames: packages.map((pkg) => pkg.name),
+    dryRun,
+    unlink: unlinkMode,
+  })
+  lines.push(formatLine(patch.status, PROFILE_PATCH_NAME, patch.detail))
+  if (patch.error !== undefined) {
+    errors.push(patch.error)
+    return { ok: false, lines, errors }
+  }
+  if (!dryRun && patch.apply === 'write' && patch.contents !== undefined) {
+    await writeFile(join(profileRoot, PROFILE_PATCH_NAME), patch.contents, 'utf8')
+  }
+
   return { ok: true, lines, errors }
+}
+
+export function renderProfileFriendPatch(packageNames) {
+  const rows = packageNames.map((name) => {
+    const id = name.replace(/^@[^/]+\//, '')
+    return `    - id: ${id}\n      name: '${name}'`
+  })
+  return `# dsh-Friend local install. Written by scripts/link-profile.mjs.\n# Ordinary \`dsh web\` reads this file; do not replace it with [].\n- insert:\n${rows.join('\n')}\n`
+}
+
+export function isDefaultEmptyPatch(text) {
+  const stripped = text.replace(/^\s*#.*$/gm, '').trim()
+  return stripped === '' || stripped === '[]'
+}
+
+export async function planFriendPatch(options) {
+  const patchPath = join(options.profileRoot, PROFILE_PATCH_NAME)
+  const contents = renderProfileFriendPatch(options.packageNames)
+  const kind = await pathKind(patchPath)
+
+  if (options.unlink === true) {
+    if (kind === 'missing') {
+      return { status: options.dryRun ? 'skipped' : 'skipped', detail: '(no patch)', apply: 'none' }
+    }
+    const current = await readFile(patchPath, 'utf8')
+    if (!current.includes(FRIEND_PATCH_MARKER)) {
+      return { status: 'skipped', detail: '(foreign patch left in place)', apply: 'none' }
+    }
+    if (options.dryRun) {
+      return { status: 'would unlink', detail: patchPath, apply: 'none' }
+    }
+    return {
+      status: 'unlinked',
+      detail: 'restored empty patch',
+      apply: 'write',
+      contents: '# Your patch layer for this dsh profile.\n[]\n',
+    }
+  }
+
+  if (kind === 'missing' || (kind === 'file' && isDefaultEmptyPatch(await readFile(patchPath, 'utf8')))) {
+    return {
+      status: options.dryRun ? 'would link' : 'linked',
+      detail: 'install friend plugin list',
+      apply: options.dryRun ? 'none' : 'write',
+      contents,
+    }
+  }
+
+  if (kind !== 'file') {
+    return {
+      status: 'error',
+      detail: `refusing to overwrite ${kind}`,
+      apply: 'none',
+      error: `Refusing to overwrite ${kind}: ${patchPath}`,
+    }
+  }
+
+  const current = await readFile(patchPath, 'utf8')
+  if (current.includes(FRIEND_PATCH_MARKER)) {
+    if (current === contents) {
+      return { status: 'skipped', detail: '(already installed)', apply: 'none' }
+    }
+    return {
+      status: options.dryRun ? 'would link' : 'linked',
+      detail: 'refresh friend plugin list',
+      apply: options.dryRun ? 'none' : 'write',
+      contents,
+    }
+  }
+
+  return {
+    status: 'error',
+    detail: 'refusing to replace a custom cordis.patch.yml',
+    apply: 'none',
+    error: `Refusing to replace custom ${patchPath}. Add the dsh-friend insert list yourself, or move the file aside.`,
+  }
 }
 
 /**

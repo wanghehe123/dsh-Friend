@@ -6,7 +6,18 @@
     "access": "public"
   },
   "type": "module",
-  "description": "聚合 bundle（cordis.patch.yml + 依赖清单）",
+  "description": "dsh-Friend 聚合包：人格化伴侣、Live2D、语音与记忆。DeepSeek Harness dsh-plugin。",
+  "keywords": [
+    "dsh-plugin",
+    "dsh",
+    "deepseek-harness",
+    "live2d"
+  ],
+  "homepage": "https://github.com/wanghehe123/dsh-Friend",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wanghehe123/dsh-Friend.git"
+  },
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "exports": {

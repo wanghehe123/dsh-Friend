@@ -62,8 +62,8 @@
 
 ## 3. 尚未闭环
 
-- [ ] 3.1 四条待拍板决策 D1–D4（静音别名去留、growth preset 分支、`toolLongMs` 去留、openai-compat 回落策略）
-  - 阻塞：需项目负责人拍板
+- [x] 3.1 四条待拍板决策 D1–D4（2026-08-14：维持现状）
+  - D1-A 保留静音写穿别名；D2 不改 growth preset；D3-A 保留隐藏的 `toolLongMs`；试听钉死 provider 保持 D4-A（422，不回落）
 - [x] 3.2 托盘静音的 Tauri 端单测已跑
   - 验收：`cd apps/friend-shell && cargo test` 60 passed。真机托盘点静音仍需人工跑 Tauri
   - 回链：W-M6-4

@@ -38,6 +38,7 @@ dsh web
 - `--profile <name>`：默认 `web`（也就是 `dsh web`）。也认 `$DSH_HOME`（默认 `~/.dsh`）。
 - `--dry-run`：只打印 `linked / skipped / would link`，**不落盘**。
 - `--unlink`：拆掉本脚本创建的 symlink，还原；真实目录不会动。
+- 成功链接后，若 profile 的 `cordis.patch.yml` 还是默认空 `[]`，脚本会写入 Friend 的 insert 清单。这样普通 `dsh web` 就会挂上插件，不必每次加 `--patch`。已有自定义 patch 时拒绝覆盖。
 
 如果 profile 目录还不存在，脚本会退出码非 0，并提示先跑一次 `dsh web`（`web` / `headless` 会在首次启动时自动初始化；其它名字要用 `dsh plugin --profile <name> …`）。
 

@@ -2,6 +2,22 @@
   "name": "dsh-friend",
   "version": "0.1.0",
   "private": true,
+  "description": "人格化伴侣插件 for DeepSeek Harness (DSH)：角色卡、语音、Live2D 舞台、本地记忆与工作陪伴。",
+  "keywords": [
+    "dsh-plugin",
+    "dsh",
+    "deepseek-harness",
+    "live2d",
+    "companion"
+  ],
+  "homepage": "https://github.com/wanghehe123/dsh-Friend",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wanghehe123/dsh-Friend.git"
+  },
+  "bugs": {
+    "url": "https://github.com/wanghehe123/dsh-Friend/issues"
+  },
   "type": "module",
   "packageManager": "pnpm@11.17.0",
   "engines": {

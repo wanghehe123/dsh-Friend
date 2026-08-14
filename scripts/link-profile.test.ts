@@ -1,4 +1,4 @@
-import { lstat, mkdir, mkdtemp, realpath, rm, symlink, writeFile } from 'node:fs/promises'
+import { lstat, mkdir, mkdtemp, readFile, realpath, rm, symlink, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 
@@ -101,7 +101,8 @@ describe('runLinkProfile', () => {
 
     const second = await runLinkProfile({ repoRoot, profileRoot })
     expect(second.ok).toBe(true)
-    expect(second.lines.every((line) => line.startsWith('skipped') && line.includes('already linked'))).toBe(true)
+    expect(second.lines.filter((line) => line.includes('@wish233/')).every((line) => line.startsWith('skipped') && line.includes('already linked'))).toBe(true)
+    expect(second.lines.some((line) => line.includes('cordis.patch.yml') && line.includes('already installed'))).toBe(true)
 
     const unlinked = await runLinkProfile({ repoRoot, profileRoot, unlink: true })
     expect(unlinked.ok).toBe(true)
@@ -196,6 +197,19 @@ describe('runLinkProfile', () => {
     expect(result.ok).toBe(true)
     expect(result.lines.every((line) => line.startsWith('would unlink'))).toBe(true)
     expect((await lstat(target)).isSymbolicLink()).toBe(true)
+  })
+
+  it('writes the friend plugin list into an empty profile cordis.patch.yml', async () => {
+    const { repoRoot, profileRoot } = await makeWorkspace()
+    const patchPath = join(profileRoot, 'cordis.patch.yml')
+    await writeFile(patchPath, '# Your patch layer for this dsh profile.\n[]\n')
+
+    const result = await runLinkProfile({ repoRoot, profileRoot })
+    expect(result.ok).toBe(true)
+    const written = await readFile(patchPath, 'utf8')
+    expect(written).toContain("id: dsh-friend-shared")
+    expect(written).toContain("name: '@wish233/dsh-friend-persona'")
+    expect(written).not.toMatch(/^\[\]$/m)
   })
 })
 

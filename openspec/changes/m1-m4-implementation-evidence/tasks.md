@@ -45,8 +45,9 @@
 
 ## 3. 负责人拍板与归档（本轮不做）
 
-- [ ] 3.1 批复 proposal「需人工确认的决策」四条（D-A / H-A / I-A / G-A）
-  - 验收：每条有明确选项；若改选则另开 change 回滚对应 SHALL
+- [x] 3.1 批复 proposal「需人工确认的决策」四条（2026-08-14）
+  - 拍板：D-A / H-A / I-A / G-A。其余生产接线项维持现状（D1-A 别名、D2 不改 preset、D3-A 隐藏 `toolLongMs`、试听钉死 provider 走 D4-A）
+  - H-A 配套：README 写明 Safari 语音输入暂不支持，后续会补
   - 回链：W-M1-3、W-M1-4、W-M3-1、W-M4-6、W-M2-3
 - [ ] 3.2 归档本 change 并 sync 主 spec（先归档或合并 `m0-sdk-evidence-corrections`，避免重叠 Requirement 丢场景）
   - 验收：`openspec/specs/` 下五域含本 delta 终态；主 spec 无 `## ADDED/MODIFIED` 标题

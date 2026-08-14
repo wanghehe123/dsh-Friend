@@ -20,7 +20,7 @@ dsh-Friend 是 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harnes
 
 > Cubism 5.3（moc v5+）目前画不出来，请用 SDK 4.2 导出。奶龙已是 moc v4。
 
-奶龙 runtime 在仓库 `models/naiwa-live2d/naiwa-live2d-v3-sdk4.2-runtime.zip`，首次挂载解压到本机 `vendor/nailong/`。素材整理自 [Diyeego/naiwa-pet](https://github.com/Diyeego/naiwa-pet/)。官方 Cubism Core 与 Hiyori FREE 的下载约定见 [docs/assets-compliance.md](docs/assets-compliance.md)。
+奶龙 runtime 在仓库 `models/naiwa-live2d/naiwa-live2d-v3-sdk4.2-runtime.zip`，首次挂载解压到本机 `vendor/nailong/`。
 
 ## 人设
 
@@ -189,7 +189,6 @@ node scripts/release-scan.mjs --pack
 | 部分 | 来源 | 许可 |
 | --- | --- | --- |
 | 插件逻辑 | 衍生自 [Kokoro Engine](https://github.com/chyinan/Kokoro-Engine) | MIT（chyinan；本项目追加版权行） |
-| 奶龙 Live2D | 整理自 [Diyeego/naiwa-pet](https://github.com/Diyeego/naiwa-pet/) | 保留上游署名；runtime zip 只进 git，不进 npm |
 | Hiyori FREE / Cubism Core | Live2D 官方 | 用户同意条款后本机下载，不进仓库 |
 | 本仓库其余源码 | wanghehe123 | MIT |
 

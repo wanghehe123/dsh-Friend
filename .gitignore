@@ -12,10 +12,11 @@ coverage/
 /playwright/.cache/
 __pycache__/
 apps/friend-shell/target/
+.github/
+.agents/
 models/**/*.png
 models/**/*.psd
 models/**/*.moc3
 models/**/*.cmo3
-models/naiwa-live2d/export-v3/
-models/naiwa-live2d/naiwa-live2d-v3.zip
-models/naiwa-live2d/naiwa-live2d-v3-sdk4.2.zip
+models/naiwa-live2d/**
+!models/naiwa-live2d/naiwa-live2d-v3-sdk4.2-runtime.zip

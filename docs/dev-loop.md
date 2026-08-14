@@ -93,7 +93,7 @@ minimumReleaseAgeExclude:
   - '@deepseek-ai/*'
 ```
 
-**不要删这行。** 周 canary（`.github/workflows/canary.yml`）还会额外把 `minimumReleaseAge` 置 0，专门用来抓「刚发布就破坏我们」的上游变更。
+**不要删这行。** 本地要抓上游破坏时，可临时把 `minimumReleaseAge` 置 0 再重装 `@deepseek-ai/*@latest`。
 
 ### 3.3 symlink 下 Node 解析回退到 npm 行为 →「改了没生效」
 

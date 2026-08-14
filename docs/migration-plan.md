@@ -6,7 +6,7 @@
 >
 > 本文是项目唯一权威蓝图。实现过程中的任何决策变更都应回写本文档。
 >
-> **配套文档**：执行清单见 `docs/work-breakdown.md`（M0–M8 全部 66 个工作项，每项 = 改动点+测试+验收标准，ID 形如 `W-M2-5`）；行为契约见 `openspec/specs/`（12 个能力域第一版 spec，`openspec validate --specs` 全绿）。分工：本文管「为什么与怎么设计」，work-breakdown 管「做什么与怎么验收」，openspec 管「系统必须表现出什么行为」；第一版 spec 之后的行为变更走 `changes/` 提案流程（`.agents/skills/openspec-*`）。
+> **配套文档**：执行清单见 `docs/work-breakdown.md`（M0–M8 全部 66 个工作项，每项 = 改动点+测试+验收标准，ID 形如 `W-M2-5`）；行为契约见 `openspec/specs/`（12 个能力域第一版 spec，`openspec validate --specs` 全绿）。分工：本文管「为什么与怎么设计」，work-breakdown 管「做什么与怎么验收」，openspec 管「系统必须表现出什么行为」；第一版 spec 之后的行为变更走 `changes/` 提案流程。
 
 ---
 

@@ -11,7 +11,7 @@
 | pixi-live2d-display 0.4.0 | MIT | 打进 pet IIFE | 同上 |
 | fflate 0.8.3 | MIT | stage **运行时**依赖（解压官方 zip），不进 IIFE | 已在 stage `THIRD-PARTY-NOTICES.md` |
 | Hiyori Momose FREE 样例 | Live2D Free Material License；NOTICE 须随行；不得改角色设计 | **不得**进包。与 Core 一并下载到本机 `vendor/` | **负责人已接受样例素材许可**（2026-08-14）。下载器负责取 NOTICE；仓库 / tarball 不得出现 `.moc3` / `.model3.json` |
-| 奶龙 Live2D（`models/naiwa-live2d/naiwa-live2d-v3-sdk4.2-runtime.zip`） | 一作整理自 [Diyeego/naiwa-pet](https://github.com/Diyeego/naiwa-pet/)；Cubism 4.2 runtime（moc v4） | **可进 git**，作为源码安装的内置模型。host 首次挂载解压到本机 `vendor/nailong/`。**不得**进 npm tarball（`files` 不含 zip；扫描仍禁 `.moc3` / `.model3.json` 散文件） | 产品名「奶龙」；保留上游署名 |
+| 奶龙 Live2D（`models/naiwa-live2d/naiwa-live2d-v3-sdk4.2-runtime.zip`） | 一作整理自 [Diyeego/naiwa-pet](https://github.com/Diyeego/naiwa-pet/)；Cubism 4.2 runtime（moc v4） | **只进这一个 runtime zip**。host 首次挂载解压到本机 `vendor/nailong/`。源 PSD / 重建脚本 / 其它 zip **不进 git**。**不得**进 npm tarball | 产品名「奶龙」；保留上游署名 |
 | 台词库 / 提示词 | 自撰或改写自旧仓（MIT） | 源码 | 无第三方素材义务 |
 | `ws` 8.21.3（Edge TTS） | MIT | tts **运行时**依赖 | 已有 `packages/dsh-friend-tts/THIRD-PARTY-NOTICES.md` |
 

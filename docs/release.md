@@ -1,17 +1,6 @@
 # 发布流水线
 
-W-M8-6 / W-M8-8。本文件说明现有 GitHub Actions、需要配置的 secrets，以及**尚未在真实 CI 上跑过**。
-
-## 工作流（不要互相踩）
-
-| 文件 | 触发 | 做什么 |
-|---|---|---|
-| `.github/workflows/ci.yml` | `pull_request`、`push` 到 `main` | install → build → typecheck → test → `aggregate --check` → **`release-scan.mjs --pack`** → smoke（无 dsh 则跳过） |
-| `.github/workflows/canary.yml` | 每周日 / `workflow_dispatch` | 用 `@deepseek-ai/*@latest` 重装后 build/test；失败开 issue。本轮**未改**步骤语义 |
-| `.github/workflows/shell-release.yml` | `v*`、`shell-v*`、`workflow_dispatch` | macOS dmg + Windows msi，上传 GitHub Release。本轮**未改**触发与打包命令 |
-| `.github/workflows/release.yml` | `v*`、`npm-v*`、`workflow_dispatch` | 版本一致性 → 合规扫描 →（包可发布时）`pnpm publish -r` + provenance |
-
-`v1.2.3` 会同时打壳安装包和走 npm job，这是双发布。只要壳、不要 npm 时打 `shell-v1.2.3`。只要 npm、不要壳时打 `npm-v1.2.3`。
+W-M8-6 / W-M8-8。GitHub Actions YAML 已从公开仓库拿掉（本地 `.github/workflows/`，被 gitignore）。发版走本机脚本。
 
 ## npm 发布 job 在做什么
 
@@ -72,7 +61,6 @@ tar -tzf /tmp/dsh-friend-pack/wishp3-dsh-friend-stage-0.1.0.tgz
 
 ## 尚未验证
 
-- 本轮新增 / 修改的 workflow **没有**在 GitHub Actions 上跑过。本地可用 `actionlint`（若已安装）看 YAML；未安装则只做人工对照。
-- 首次 registry 发布已完成：`@wishp3/dsh-friend-*@0.1.0`。后续发版用本机 `node scripts/publish-npm.mjs`，或给仓库配置 `NPM_TOKEN` 后打 `npm-v*` tag。
-- `dsh plugin --profile friend-npm-smoke add @wishp3/dsh-friend-all@0.1.0` 已在干净 profile 跑通（bundle 已挂上 10 个功能包）。`dsh plugin add github:<owner>/dsh-Friend` 全流程 **未做**。
-- 壳 dmg/msi 构建 **未在本轮 CI 跑**（`shell-release.yml` 原样保留）。
+- 首次 registry 发布已完成：`@wishp3/dsh-friend-*@0.1.0`。后续发版：`node scripts/publish-npm.mjs`。
+- `dsh plugin --profile friend-npm-smoke add @wishp3/dsh-friend-all@0.1.0` 已在干净 profile 跑通。
+- 壳 dmg/msi 构建未在本轮打包。

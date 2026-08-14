@@ -1,0 +1,11 @@
+packages:
+  - packages/*
+  - apps/*
+
+linkWorkspacePackages: true
+
+# DSH RC packages are often published inside the default 24h minimumReleaseAge
+# window. CI=true disables the interactive exclude prompt, so the scope is
+# allowlisted here (W-M0-1 gap).
+minimumReleaseAgeExclude:
+  - '@deepseek-ai/*'

@@ -1,0 +1,37 @@
+{
+  "name": "dsh-friend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.17.0",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "build": "node scripts/check-pixi-live2d.mjs && pnpm -r --if-present run build",
+    "typecheck": "pnpm -r --if-present run typecheck",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "aggregate": "node scripts/aggregate.mjs",
+    "check:aggregate": "node scripts/aggregate.mjs --check",
+    "check:pixi": "node scripts/check-pixi-live2d.mjs",
+    "smoke": "node scripts/smoke.mjs",
+    "browser-smoke": "node scripts/browser-smoke.mjs"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "4.0.1",
+    "@deepseek-ai/dsh-client-connection": "0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-runtime": "0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-ui-conversation": "0.1.0-rc.6",
+    "@deepseek-ai/dsh-client-ui-slots": "0.1.0-rc.6",
+    "@deepseek-ai/dsh-host-webserver": "0.1.0-rc.6",
+    "@deepseek-ai/dsh-settings": "0.1.0-rc.6",
+    "@deepseek-ai/schemastery": "3.18.1",
+    "@types/node": "^22.20.0",
+    "playwright": "1.62.1",
+    "tsdown": "^0.22.2",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.8",
+    "yaml": "^2.8.1"
+  }
+}

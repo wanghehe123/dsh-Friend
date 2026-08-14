@@ -31,7 +31,7 @@ dsh web
 `link-profile` 做的事情：
 
 ```text
-~/.dsh/profiles/<profile>/node_modules/@wish233/dsh-friend-<name>
+~/.dsh/profiles/<profile>/node_modules/@wishp3/dsh-friend-<name>
   → <repo>/packages/dsh-friend-<name>
 ```
 
@@ -50,7 +50,7 @@ dsh 加载的是各包 `lib/`，不是 `src/`。改 TypeScript 之后必须重�
 
 ```bash
 export CI=true
-pnpm --filter @wish233/dsh-friend-stage build
+pnpm --filter @wishp3/dsh-friend-stage build
 # 刷新浏览器
 ```
 
@@ -58,17 +58,17 @@ pnpm --filter @wish233/dsh-friend-stage build
 
 | 包 | 典型改动 |
 |---|---|
-| `@wish233/dsh-friend-shared` | compat、SSE、schema |
-| `@wish233/dsh-friend-persona` | 角色卡、预设 |
-| `@wish233/dsh-friend-memory` | 记忆 |
-| `@wish233/dsh-friend-tts` | 语音输出 |
-| `@wish233/dsh-friend-asr` | 语音输入 |
-| `@wish233/dsh-friend-stage` | Live2D / pet 页 |
-| `@wish233/dsh-friend-growth` | 人生故事 |
-| `@wish233/dsh-friend-reactions` | 工作陪伴反应 |
-| `@wish233/dsh-friend-settings` | 设置卡 / 配置中心 |
-| `@wish233/dsh-friend-perception` | 视觉 seam |
-| `@wish233/dsh-friend-all` | 聚合 bundle（patch + 依赖清单） |
+| `@wishp3/dsh-friend-shared` | compat、SSE、schema |
+| `@wishp3/dsh-friend-persona` | 角色卡、预设 |
+| `@wishp3/dsh-friend-memory` | 记忆 |
+| `@wishp3/dsh-friend-tts` | 语音输出 |
+| `@wishp3/dsh-friend-asr` | 语音输入 |
+| `@wishp3/dsh-friend-stage` | Live2D / pet 页 |
+| `@wishp3/dsh-friend-growth` | 人生故事 |
+| `@wishp3/dsh-friend-reactions` | 工作陪伴反应 |
+| `@wishp3/dsh-friend-settings` | 设置卡 / 配置中心 |
+| `@wishp3/dsh-friend-perception` | 视觉 seam |
+| `@wishp3/dsh-friend-all` | 聚合 bundle（patch + 依赖清单） |
 
 改了 `shared` 时，依赖它的包不必重编（它们 `neverBundle` 运行时引用 workspace 包），但 **shared 自己要 build**。改了某个功能包的 `src/index.ts`（host）或 `src/client.ts`（client）只 build 那一个包即可。
 
@@ -109,8 +109,8 @@ dsh 的模块解析是双锚点：
 | 现象 | 原因 | 怎么办 |
 |---|---|---|
 | 改了 `src/` 刷新没变化 | dsh 加载的是 `lib/` | 重新 `pnpm --filter <pkg> build` |
-| 链接过，但日志里仍是旧行为 | 进程带着 `--preserve-symlinks` 启动，或 profile 里根本没链上，解析掉进了 `$DSH_HOME/profiles/node_modules` 那份**安装体**拷贝 | `ls -l ~/.dsh/profiles/web/node_modules/@wish233/` 确认是指向本仓的 symlink；重启 `dsh web` |
-| `dsh plugin add @wish233/dsh-friend-all` 之后 link-profile 报错 | pnpm 在同一路径放下了**真实目录**或指向 store 的外来 symlink。`link-profile` **拒绝覆盖**，以免 `rm -rf` 用户数据 | 先 `dsh plugin --profile web remove @wish233/dsh-friend-all`（或把真实目录自己挪走），再跑 link-profile |
+| 链接过，但日志里仍是旧行为 | 进程带着 `--preserve-symlinks` 启动，或 profile 里根本没链上，解析掉进了 `$DSH_HOME/profiles/node_modules` 那份**安装体**拷贝 | `ls -l ~/.dsh/profiles/web/node_modules/@wishp3/` 确认是指向本仓的 symlink；重启 `dsh web` |
+| `dsh plugin add @wishp3/dsh-friend-all` 之后 link-profile 报错 | pnpm 在同一路径放下了**真实目录**或指向 store 的外来 symlink。`link-profile` **拒绝覆盖**，以免 `rm -rf` 用户数据 | 先 `dsh plugin --profile web remove @wishp3/dsh-friend-all`（或把真实目录自己挪走），再跑 link-profile |
 | 只重启了浏览器 | host 半区在 Node 进程里，不会热替换 | 重启 `dsh web` |
 
 `link-profile` 的安全规则（刻意与 dsh 自己的 `ensureSymlink` 对齐）：
@@ -144,14 +144,14 @@ ls packages/dsh-friend-stage/lib/client.js
 ls packages/dsh-friend-all/lib/index.js
 ```
 
-修复：对缺 chunk 的包再跑一次完整 `pnpm --filter @wish233/dsh-friend-<name> build`，然后**硬刷新**浏览器。
+修复：对缺 chunk 的包再跑一次完整 `pnpm --filter @wishp3/dsh-friend-<name> build`，然后**硬刷新**浏览器。
 
 ### 3.5 `pixi-live2d-display@0.4.0` 在 macOS 上解包成空壳
 
 **症状**
 
 - `packages/dsh-friend-stage/node_modules/pixi-live2d-display`（或 pnpm virtual store 里对应目录）只有空文件夹，没有 `package.json` / `dist/`。
-- `pnpm --filter @wish233/dsh-friend-stage build` **不报错**，但 `lib/pet.iife.js` 变成半成品：Live2D 渲染整体失效。
+- `pnpm --filter @wishp3/dsh-friend-stage build` **不报错**，但 `lib/pet.iife.js` 变成半成品：Live2D 渲染整体失效。
 - `packages/dsh-friend-stage/test/pet-iife-guard.test.ts` 在 **IIFE 已经降级** 时会红（断言 `pixi-live2d-display` 被打进 bundle）。只挪掉依赖的 `dist`、不重编 IIFE 时，这份守卫仍看旧产物，所以不会红。
 - `node scripts/check-pixi-live2d.mjs` 与 `packages/dsh-friend-stage/test/pixi-live2d-unpack-guard.test.ts` 在依赖空壳时**立刻红**，不依赖是否重编。
 
@@ -194,7 +194,7 @@ cp -R extract/package/dist "$DEST/"
 # 4. 确认守卫绿，再重编 stage
 cd /path/to/dsh-Friend
 node scripts/check-pixi-live2d.mjs
-pnpm --filter @wish233/dsh-friend-stage build
+pnpm --filter @wishp3/dsh-friend-stage build
 ```
 
 `pnpm build` 与 CI 会先跑 `node scripts/check-pixi-live2d.mjs`；空壳时明确失败并打印修复步骤，不会静默通过。
@@ -204,23 +204,23 @@ pnpm --filter @wish233/dsh-friend-stage build
 1. **symlink 本身**
 
    ```bash
-   ls -l ~/.dsh/profiles/web/node_modules/@wish233/
+   ls -l ~/.dsh/profiles/web/node_modules/@wishp3/
    ```
 
    应看到 11 条指向本仓 `packages/dsh-friend-*` 的 symlink，没有真实目录。
 
 2. **启动日志**（host 半区，机器可解析）
 
-   重启 `dsh web` 后，冒烟脚本与人工核对都认下面两类行，**不要**再找 `[@wish233/dsh-friend-shared] apply()` 这种旧格式：
+   重启 `dsh web` 后，冒烟脚本与人工核对都认下面两类行，**不要**再找 `[@wishp3/dsh-friend-shared] apply()` 这种旧格式：
 
-   - `dsh-friend:plugin-mount <包名>` —— 每个包 host `apply()` 输出一行（helper：`packages/dsh-friend-shared/src/plugin-mount.ts`）。`<包名>` 可以是 scoped npm 名（如 `@wish233/dsh-friend-stage`）或短 id。11 个包各应出现一行。
+   - `dsh-friend:plugin-mount <包名>` —— 每个包 host `apply()` 输出一行（helper：`packages/dsh-friend-shared/src/plugin-mount.ts`）。`<包名>` 可以是 scoped npm 名（如 `@wishp3/dsh-friend-stage`）或短 id。11 个包各应出现一行。
    - `dsh-friend:preset-ready <预设 id>` —— persona 启动期 `resolve()` 成功后输出。应看到 `friend-companion` 与 `friend-companion-plus`。
 
    例：
 
    ```text
-   dsh-friend:plugin-mount @wish233/dsh-friend-shared
-   dsh-friend:plugin-mount @wish233/dsh-friend-persona
+   dsh-friend:plugin-mount @wishp3/dsh-friend-shared
+   dsh-friend:plugin-mount @wishp3/dsh-friend-persona
    dsh-friend:preset-ready friend-companion
    dsh-friend:preset-ready friend-companion-plus
    ```

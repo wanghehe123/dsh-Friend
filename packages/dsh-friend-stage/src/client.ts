@@ -2,11 +2,11 @@
  * DSH web-module entry. Pixi / Live2D stay out of this factory — the
  * renderer is an iframe of `/friend/pet` (Core script + pet IIFE).
  */
-import { FRIEND_SETTINGS_NAMESPACES } from '@wish233/dsh-friend-shared/universal'
+import { FRIEND_SETTINGS_NAMESPACES } from '@wishp3/dsh-friend-shared/universal'
 
 import { bindCoreSettings, bindOverlaySettings, mountFriendStageOverlay } from './overlay.ts'
 
-export const name = '@wish233/dsh-friend-stage/client'
+export const name = '@wishp3/dsh-friend-stage/client'
 export const inject = ['settingsScope'] as const
 
 export type FriendStageClientContext = {

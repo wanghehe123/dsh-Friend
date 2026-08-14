@@ -7,7 +7,7 @@ import {
   createFriendSettingsInstallProbe,
   createStrictCordisCtx,
   FRIEND_SETTINGS_NAMESPACES,
-} from '@wish233/dsh-friend-shared'
+} from '@wishp3/dsh-friend-shared'
 
 import { apply, applyMemory, inject, name, type FriendMemoryContext } from '../src/index.ts'
 import { MEMORY_SECTION_NAME } from '../src/sections.ts'
@@ -18,7 +18,7 @@ import { tempDataDir } from './helpers/tmp.ts'
 describe('cordis inject', () => {
   it('declares the services apply() may read', () => {
     expect(inject).toEqual(['webServer', 'tools', 'systemPrompt', 'settings', 'agentDefaultModel', 'llm'])
-    expect(name).toBe('@wish233/dsh-friend-memory')
+    expect(name).toBe('@wishp3/dsh-friend-memory')
   })
 })
 

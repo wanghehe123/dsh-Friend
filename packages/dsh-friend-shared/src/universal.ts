@@ -1,7 +1,7 @@
 /**
- * Platform-neutral half of `@wish233/dsh-friend-shared`.
+ * Platform-neutral half of `@wishp3/dsh-friend-shared`.
  *
- * Import from `@wish233/dsh-friend-shared/universal`. Built as ordinary ESM
+ * Import from `@wishp3/dsh-friend-shared/universal`. Built as ordinary ESM
  * (`lib/universal.js`) — no `window.__ModuleLoader__` wrapper, no `node:`
  * builtins, no browser globals. Safe in Node, vitest, and client-half source.
  *

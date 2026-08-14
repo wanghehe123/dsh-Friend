@@ -1,4 +1,4 @@
-import { FRIEND_SETTINGS_NAMESPACES } from '@wish233/dsh-friend-shared'
+import { FRIEND_SETTINGS_NAMESPACES } from '@wishp3/dsh-friend-shared'
 
 import { DEFAULT_CHARACTER_SLUG, PERSONA_CURRENT_SLUG_FIELD } from './paths.ts'
 

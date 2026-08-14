@@ -7,10 +7,10 @@ export {
   resolveFriendDataDir,
   type FriendDataDirEnv,
   type ResolveFriendDataDirOptions,
-} from '@wish233/dsh-friend-shared'
+} from '@wishp3/dsh-friend-shared'
 
 /**
- * Must stay equal to `@wish233/dsh-friend-persona` `CURRENT_PERSONA_SLUG_FIELD`.
+ * Must stay equal to `@wishp3/dsh-friend-persona` `CURRENT_PERSONA_SLUG_FIELD`.
  * Memory cannot import persona (cycle / package boundary); the field name is
  * the settings contract, not a copied allowlist.
  */

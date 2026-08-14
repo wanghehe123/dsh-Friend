@@ -6,7 +6,6 @@
 #
 # Publish is gated by scripts/release-scan.mjs --require-publishable:
 # every package must have a license field and must not be private.
-# That gate fails on today's tree on purpose (packages are still private).
 #
 # Secrets: NPM_TOKEN (npm automation token). Do not commit tokens.
 # Provenance uses the job's id-token, not a long-lived secret.
@@ -46,7 +45,7 @@ jobs:
           node-version: 24
           cache: pnpm
           registry-url: https://registry.npmjs.org
-          scope: '@wish233'
+          scope: '@wishp3'
 
       - name: Install
         run: pnpm install --frozen-lockfile

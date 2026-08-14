@@ -2,7 +2,7 @@
  * Client apply without importing React. The real `client.ts` supplies
  * render functions that call `createElement`; unit tests pass stubs.
  */
-import { FRIEND_SETTINGS_NAMESPACES } from '@wish233/dsh-friend-shared/universal'
+import { FRIEND_SETTINGS_NAMESPACES } from '@wishp3/dsh-friend-shared/universal'
 
 import { readCoreSettings } from './core-settings.ts'
 import {

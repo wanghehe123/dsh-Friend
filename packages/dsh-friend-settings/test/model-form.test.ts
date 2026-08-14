@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import { buildModelInheritViews } from '../src/host-models.ts'
 import { createModelSectionForm } from '../src/model-form.ts'
-import { FRIEND_SETTINGS_NAMESPACES } from '@wish233/dsh-friend-shared'
+import { FRIEND_SETTINGS_NAMESPACES } from '@wishp3/dsh-friend-shared'
 
 describe('model section form', () => {
   it('stages three purpose overrides and links them to resolveModel inherit views', async () => {

@@ -5,14 +5,14 @@ import {
   subscribeCompanionReplies,
   wrapContextSessionEvents,
   type FriendSessionEventContext,
-} from '@wish233/dsh-friend-persona'
+} from '@wishp3/dsh-friend-persona'
 import {
   bindHostSettings,
   readDefaultModelSelection,
   type FriendAgentRegistry,
   type FriendDefaultModelContext,
   type FriendPresetContext,
-} from '@wish233/dsh-friend-shared'
+} from '@wishp3/dsh-friend-shared'
 
 import { StreamingTagParser } from './tag-parser.ts'
 

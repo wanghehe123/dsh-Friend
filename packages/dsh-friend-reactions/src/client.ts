@@ -1,8 +1,8 @@
 /**
- * Client half. Must stay free of `node:` and `@wish233/dsh-friend-shared`
+ * Client half. Must stay free of `node:` and `@wishp3/dsh-friend-shared`
  * (host). Namespace constants come from `/universal`.
  */
-import { FRIEND_SETTINGS_NAMESPACES } from '@wish233/dsh-friend-shared/universal'
+import { FRIEND_SETTINGS_NAMESPACES } from '@wishp3/dsh-friend-shared/universal'
 
 import {
   applyPetPerformance,
@@ -13,7 +13,7 @@ import {
 } from './dispatch.ts'
 import { enqueueReactionTts } from './enqueue-tts.ts'
 
-export const name = '@wish233/dsh-friend-reactions/client'
+export const name = '@wishp3/dsh-friend-reactions/client'
 export const inject: string[] = []
 
 export const REACTIONS_SETTINGS_NAMESPACE = FRIEND_SETTINGS_NAMESPACES.reactions

@@ -1,11 +1,11 @@
 /**
  * Settings namespace from the platform-neutral shared barrel.
- * `@wish233/dsh-friend-shared` (host) pulls `node:` into the client factory.
- * `@wish233/dsh-friend-shared/client` is a `window.__ModuleLoader__` payload
- * (throws in Node). `@wish233/dsh-friend-shared/universal` is naked ESM and
+ * `@wishp3/dsh-friend-shared` (host) pulls `node:` into the client factory.
+ * `@wishp3/dsh-friend-shared/client` is a `window.__ModuleLoader__` payload
+ * (throws in Node). `@wishp3/dsh-friend-shared/universal` is naked ESM and
  * is inlined by the client build (not a platform seed).
  */
-import { FRIEND_SETTINGS_NAMESPACES } from '@wish233/dsh-friend-shared/universal'
+import { FRIEND_SETTINGS_NAMESPACES } from '@wishp3/dsh-friend-shared/universal'
 
 import type { AsrEnginePreference, AsrListenMode } from './engine.ts'
 import { ASR_DEFAULT_HOTKEY, ASR_HOTKEY_FIELD, type AsrHotkeyStore } from './hotkey.ts'
@@ -72,8 +72,8 @@ export const ASR_SETTINGS_DEFAULTS: FriendAsrSettings = {
 /**
  * Structural settings-scope binder. Same `{ namespace }` shape as shared
  * `bindSettingsClient`; kept local so the client half never imports
- * `@wish233/dsh-friend-shared/client` (that payload starts with `window.`).
- * `@wish233/dsh-friend-shared/universal` is the allowed shared import.
+ * `@wishp3/dsh-friend-shared/client` (that payload starts with `window.`).
+ * `@wishp3/dsh-friend-shared/universal` is the allowed shared import.
  */
 export type AsrSettingsScope = {
   getSnapshot(): {

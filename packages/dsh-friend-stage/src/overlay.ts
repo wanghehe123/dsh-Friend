@@ -1,4 +1,4 @@
-import { FRIEND_SETTINGS_NAMESPACES, type FriendSettingsNamespace } from '@wish233/dsh-friend-shared/universal'
+import { FRIEND_SETTINGS_NAMESPACES, type FriendSettingsNamespace } from '@wishp3/dsh-friend-shared/universal'
 
 import { createBubbleController, handleBubbleKeydown } from './bubble.ts'
 import { CORE_SETTINGS_NAMESPACE, readCoreStageVisible } from './core-gate.ts'

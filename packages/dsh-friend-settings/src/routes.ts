@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 
 import type { WebRoute } from '@deepseek-ai/dsh-host-webserver'
-import { bindHostSettings, registerRoute, type FriendRouteContext } from '@wish233/dsh-friend-shared'
+import { bindHostSettings, registerRoute, type FriendRouteContext } from '@wishp3/dsh-friend-shared'
 
 import { createAboutPayload, FRIEND_PACKAGE_VERSION } from './about.ts'
 import { defaultPersonaCard, listCharacters, readPersonaCard, writePersonaCard } from './characters.ts'

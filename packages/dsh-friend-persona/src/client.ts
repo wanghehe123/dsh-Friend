@@ -1,4 +1,4 @@
-export const name = '@wish233/dsh-friend-persona/client'
+export const name = '@wishp3/dsh-friend-persona/client'
 export const inject: string[] = []
 
 export function apply(_ctx: unknown): void {

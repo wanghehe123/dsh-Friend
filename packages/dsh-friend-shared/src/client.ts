@@ -1,7 +1,7 @@
 /**
- * Client half of `@wish233/dsh-friend-shared`.
+ * Client half of `@wishp3/dsh-friend-shared`.
  *
- * Import from `@wish233/dsh-friend-shared/client` **only** inside the dsh web
+ * Import from `@wishp3/dsh-friend-shared/client` **only** inside the dsh web
  * loader. Built `lib/client.js` is a classic-script
  * `window.__ModuleLoader__.load({...})` payload — Node, vitest, and bundlers
  * cannot treat it as ordinary ESM.
@@ -10,7 +10,7 @@
  * binders. Do not add `node:` or host adapters here.
  *
  * Client packages that need only constants must import
- * `@wish233/dsh-friend-shared/universal` (inlined at build time), not this
+ * `@wishp3/dsh-friend-shared/universal` (inlined at build time), not this
  * payload and not the host `.` export.
  *
  * @see `./universal.ts` — naked ESM constants / pure helpers

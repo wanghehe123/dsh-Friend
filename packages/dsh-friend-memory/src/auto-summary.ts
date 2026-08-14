@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises'
 
-import { FRIEND_PRESET_IDS } from '@wish233/dsh-friend-shared'
+import { FRIEND_PRESET_IDS } from '@wishp3/dsh-friend-shared'
 
 import { lockedAtomicWrite } from './atomic.ts'
 import { runPrompt, type MemoryLlm } from './llm.ts'

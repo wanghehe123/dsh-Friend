@@ -1,5 +1,5 @@
 {
-  "name": "@wish233/dsh-friend-shared",
+  "name": "@wishp3/dsh-friend-shared",
   "version": "0.1.0",
   "license": "MIT",
   "publishConfig": {
@@ -30,7 +30,8 @@
   ],
   "scripts": {
     "build": "tsdown --config tsdown.config.ts",
-    "typecheck": "tsc --noEmit -p tsconfig.json"
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "prepublishOnly": "pnpm run build"
   },
   "dsh": {
     "client": {
@@ -51,5 +52,18 @@
     "@deepseek-ai/dsh-settings": "0.1.0-rc.6",
     "@deepseek-ai/dsh-tools": "0.1.0-rc.6",
     "@deepseek-ai/schemastery": "3.18.1"
-  }
+  },
+  "homepage": "https://github.com/wanghehe123/dsh-Friend",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wanghehe123/dsh-Friend.git"
+  },
+  "bugs": {
+    "url": "https://github.com/wanghehe123/dsh-Friend/issues"
+  },
+  "keywords": [
+    "dsh-plugin",
+    "dsh",
+    "deepseek-harness"
+  ]
 }

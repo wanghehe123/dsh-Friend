@@ -3,7 +3,7 @@
  *
  * Secret fields are dropped. Model overrides keep a `hasApiKey` flag only.
  */
-import { FRIEND_SETTINGS_NAMESPACES } from '@wish233/dsh-friend-shared/universal'
+import { FRIEND_SETTINGS_NAMESPACES } from '@wishp3/dsh-friend-shared/universal'
 
 import { readCoreSettings, readCurrentSlug, type FriendCoreSettings } from './core-settings.ts'
 import {

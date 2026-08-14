@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import type { ToolDefinition } from '@wish233/dsh-friend-shared'
+import type { ToolDefinition } from '@wishp3/dsh-friend-shared'
 
 import { apply, name } from '../src/index.ts'
 import { createPerformanceTracker } from '../src/performance-state.ts'
@@ -91,7 +91,7 @@ describe('performance tools are companion-preset scoped', () => {
       { role: 'host', performanceTracker: createPerformanceTracker() },
     )
 
-    expect(name).toBe('@wish233/dsh-friend-stage')
+    expect(name).toBe('@wishp3/dsh-friend-stage')
     expect(pipeline.visible()).not.toContain('set_expression')
     expect(pipeline.visible()).not.toContain('play_motion')
     expect(pipeline.visible()).not.toContain('play_cue')

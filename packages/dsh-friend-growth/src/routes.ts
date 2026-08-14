@@ -1,7 +1,7 @@
 import type { ServerResponse } from 'node:http'
 
 import type { WebRoute } from '@deepseek-ai/dsh-host-webserver'
-import { registerRoute, type FriendRouteContext } from '@wish233/dsh-friend-shared'
+import { registerRoute, type FriendRouteContext } from '@wishp3/dsh-friend-shared'
 
 import { commitGrowthDraft } from './commit.ts'
 import { cause, isGet, readJsonBody, writeHtml, writeJson, writeText } from './http.ts'

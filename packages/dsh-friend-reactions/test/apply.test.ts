@@ -4,7 +4,7 @@ import {
   createFriendSettingsInstallProbe,
   createStrictCordisCtx,
   FRIEND_SETTINGS_NAMESPACES,
-} from '@wish233/dsh-friend-shared'
+} from '@wishp3/dsh-friend-shared'
 
 import {
   applyReactions,
@@ -42,7 +42,7 @@ function hostCtx(values: Record<string, unknown> = {}): FriendReactionsContext {
 describe('cordis inject', () => {
   it('declares the services apply() may read', () => {
     expect(inject).toEqual(['webServer', 'settings'])
-    expect(name).toBe('@wish233/dsh-friend-reactions')
+    expect(name).toBe('@wishp3/dsh-friend-reactions')
   })
 })
 

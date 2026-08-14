@@ -1,4 +1,4 @@
-# @wish233/dsh-friend-perception
+# @wishp3/dsh-friend-perception
 
 视觉感知 seam 预留（v1 无实现）
 

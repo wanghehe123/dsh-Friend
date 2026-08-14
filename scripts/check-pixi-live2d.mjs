@@ -72,7 +72,7 @@ export function repairSteps() {
     '     and package/dist without the execute bit).',
     '  4. Copy package.json and dist/ into the pnpm virtual-store path:',
     `     node_modules/.pnpm/${PACKAGE_NAME}@${EXPECTED_VERSION}_*/node_modules/${PACKAGE_NAME}/`,
-    '  5. Re-run: node scripts/check-pixi-live2d.mjs && pnpm --filter @wish233/dsh-friend-stage build',
+    '  5. Re-run: node scripts/check-pixi-live2d.mjs && pnpm --filter @wishp3/dsh-friend-stage build',
     'See docs/dev-loop.md §3.5.',
   ].join('\n')
 }

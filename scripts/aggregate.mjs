@@ -12,8 +12,8 @@ import { parse } from 'yaml'
 
 const DEFAULT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const AGGREGATE_PACKAGE = 'dsh-friend-all'
-const AGGREGATE_NAME = '@wish233/dsh-friend-all'
-const FRIEND_PACKAGE_PREFIX = '@wish233/dsh-friend-'
+const AGGREGATE_NAME = '@wishp3/dsh-friend-all'
+const FRIEND_PACKAGE_PREFIX = '@wishp3/dsh-friend-'
 
 function usage() {
   return 'Usage: node scripts/aggregate.mjs [--check] [--root <workspace-root>]'

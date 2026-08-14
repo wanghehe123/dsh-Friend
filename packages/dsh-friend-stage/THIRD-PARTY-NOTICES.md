@@ -2,7 +2,7 @@
 
 `lib/pet.iife.js` is a standalone browser bundle. The following third-party
 code is compiled into that IIFE at build time. They are **not** runtime
-`dependencies` of this package — installing `@wish233/dsh-friend-stage` does
+`dependencies` of this package — installing `@wishp3/dsh-friend-stage` does
 not pull them from npm.
 
 ## Runtime dependency (not bundled into the pet IIFE)

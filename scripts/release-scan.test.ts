@@ -55,7 +55,7 @@ async function createPackage(files: Record<string, string>) {
 function manifest(overrides: Record<string, unknown> = {}) {
   return `${JSON.stringify(
     {
-      name: '@wish233/dsh-friend-scan-fixture',
+      name: '@wishp3/dsh-friend-scan-fixture',
       version: '0.1.0',
       files: ['lib'],
       ...overrides,
@@ -147,11 +147,11 @@ describe('pack file-name scan', { timeout: 30_000 }, () => {
 
   it('fails for .model3.json and live2dcubismcore.min.js file names', async () => {
     const modelDir = await createPackage({
-      'package.json': manifest({ name: '@wish233/scan-model' }),
+      'package.json': manifest({ name: '@wishp3/scan-model' }),
       'lib/Hiyori.model3.json': '{}',
     })
     const coreDir = await createPackage({
-      'package.json': manifest({ name: '@wish233/scan-core' }),
+      'package.json': manifest({ name: '@wishp3/scan-core' }),
       'lib/live2dcubismcore.min.js': 'proprietary',
     })
 
@@ -194,11 +194,11 @@ describe('pack file-name scan', { timeout: 30_000 }, () => {
 describe('version and publishable gates', () => {
   it('flags diverging versions and a tag mismatch', async () => {
     const a = await createPackage({
-      'package.json': manifest({ name: '@wish233/a', version: '0.1.0' }),
+      'package.json': manifest({ name: '@wishp3/a', version: '0.1.0' }),
       'lib/index.js': 'export {}\n',
     })
     const b = await createPackage({
-      'package.json': manifest({ name: '@wish233/b', version: '0.2.0' }),
+      'package.json': manifest({ name: '@wishp3/b', version: '0.2.0' }),
       'lib/index.js': 'export {}\n',
     })
     const diverged = await scan({

@@ -11,5 +11,5 @@ import { dshClientBuild, hostBuild, universalBuild } from '../../shared/tsdown.c
 export default defineConfig([
   hostBuild(),
   universalBuild(),
-  dshClientBuild({ packageName: '@wish233/dsh-friend-shared' }),
+  dshClientBuild({ packageName: '@wishp3/dsh-friend-shared' }),
 ])

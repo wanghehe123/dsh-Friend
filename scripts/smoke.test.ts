@@ -86,8 +86,8 @@ describe('parseListenAddress', () => {
 
 describe('findMissingPluginMounts', () => {
   it('stays aligned with the shared mount helper', () => {
-    expect(formatPluginMountLog('@wish233/dsh-friend-tts')).toBe(
-      sharedFormatPluginMountLog('@wish233/dsh-friend-tts'),
+    expect(formatPluginMountLog('@wishp3/dsh-friend-tts')).toBe(
+      sharedFormatPluginMountLog('@wishp3/dsh-friend-tts'),
     )
   })
 
@@ -98,7 +98,7 @@ describe('findMissingPluginMounts', () => {
 
   it('accepts stage logging its unscoped host name', () => {
     const lines = FRIEND_PACKAGES.map((name) => (
-      name === '@wish233/dsh-friend-stage'
+      name === '@wishp3/dsh-friend-stage'
         ? formatPluginMountLog('dsh-friend-stage')
         : formatPluginMountLog(name)
     ))
@@ -106,15 +106,15 @@ describe('findMissingPluginMounts', () => {
   })
 
   it('reports plugins that never printed the mount line', () => {
-    const log = `${formatPluginMountLog('@wish233/dsh-friend-shared')}\nloaded dsh-friend-stage\n`
-    expect(findMissingPluginMounts(log)).toContain('@wish233/dsh-friend-persona')
-    expect(findMissingPluginMounts(log)).toContain('@wish233/dsh-friend-stage')
-    expect(findMissingPluginMounts(log)).not.toContain('@wish233/dsh-friend-shared')
+    const log = `${formatPluginMountLog('@wishp3/dsh-friend-shared')}\nloaded dsh-friend-stage\n`
+    expect(findMissingPluginMounts(log)).toContain('@wishp3/dsh-friend-persona')
+    expect(findMissingPluginMounts(log)).toContain('@wishp3/dsh-friend-stage')
+    expect(findMissingPluginMounts(log)).not.toContain('@wishp3/dsh-friend-shared')
   })
 
   it('does not treat a leftover apply() role log as a mount line', () => {
-    const log = '[@wish233/dsh-friend-persona] apply() role=host\n'
-    expect(findMissingPluginMounts(log)).toContain('@wish233/dsh-friend-persona')
+    const log = '[@wishp3/dsh-friend-persona] apply() role=host\n'
+    expect(findMissingPluginMounts(log)).toContain('@wishp3/dsh-friend-persona')
   })
 })
 

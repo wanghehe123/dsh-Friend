@@ -38,17 +38,17 @@ export const FRIEND_PET_PATH = '/friend/pet'
 export const SMOKE_SKIP_MESSAGE = '未检测到 dsh CLI，跳过冒烟。安装 dsh 后重新运行 `node scripts/smoke.mjs`；CI 可用 `--require-dsh` 强制要求 CLI 存在。'
 
 export const FRIEND_PACKAGES = Object.freeze([
-  '@wish233/dsh-friend-shared',
-  '@wish233/dsh-friend-persona',
-  '@wish233/dsh-friend-memory',
-  '@wish233/dsh-friend-tts',
-  '@wish233/dsh-friend-asr',
-  '@wish233/dsh-friend-stage',
-  '@wish233/dsh-friend-growth',
-  '@wish233/dsh-friend-reactions',
-  '@wish233/dsh-friend-settings',
-  '@wish233/dsh-friend-perception',
-  '@wish233/dsh-friend-all',
+  '@wishp3/dsh-friend-shared',
+  '@wishp3/dsh-friend-persona',
+  '@wishp3/dsh-friend-memory',
+  '@wishp3/dsh-friend-tts',
+  '@wishp3/dsh-friend-asr',
+  '@wishp3/dsh-friend-stage',
+  '@wishp3/dsh-friend-growth',
+  '@wishp3/dsh-friend-reactions',
+  '@wishp3/dsh-friend-settings',
+  '@wishp3/dsh-friend-perception',
+  '@wishp3/dsh-friend-all',
 ])
 
 export const FRIEND_PRESET_IDS = Object.freeze([

@@ -1,4 +1,4 @@
-import type { FriendPromptSection } from '@wish233/dsh-friend-shared'
+import type { FriendPromptSection } from '@wishp3/dsh-friend-shared'
 
 /**
  * Mock of the official assemble pipeline (`agent → preset → global`).

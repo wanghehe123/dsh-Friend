@@ -10,7 +10,7 @@ M0 校正了 SDK 探路阶段的五处猜测；M1–M4 落地后又积累了一�
 
 1. **A. 工具 schema 不是 zod**。`defineTool({ parameters })` 是 `ParameterSchemaSpec` 属性表（每项 `{ type, enum?, required?, description? }`），编译成 JSON Schema；`output.schema` + `output.render` 必填。schemastery 只给 settings 用。
 2. **B. 发布物合规扫描**。禁止按 tarball 全文 `rg live2dcubismcore`（`lib/pet.iife.js` 合法引用全局名 `Live2DCubismCore`）。改为按文件扫描：不得存在 `.moc3` / `.model3.json` / `live2dcubismcore.min.js` 等专有文件。
-3. **C. 挂载与预设就绪标记**。冒烟依赖 `dsh-friend:plugin-mount <包名>` 与 `dsh-friend:preset-ready <预设 id>`；替换 `docs/dev-loop.md` 里旧的 `[@wish233/dsh-friend-shared] apply()` 说法。
+3. **C. 挂载与预设就绪标记**。冒烟依赖 `dsh-friend:plugin-mount <包名>` 与 `dsh-friend:preset-ready <预设 id>`；替换 `docs/dev-loop.md` 里旧的 `[@wishp3/dsh-friend-shared] apply()` 说法。
 4. **D. rc.6 无法进程外枚举预设的工具/提示词**。W-M1-3 / W-M1-4 / W-M4-7 中依赖 inspect 的验收改写成「真实伴侣会话行为 + mock 组装管线单测」，并标注等官方查询能力后升级。**不删**这些验收意图。
 5. **E. Cordis `inject` 是硬性要求**。读 `ctx.<service>` 前必须模块级 `export const inject = [...]`，否则代理在读属性（含 `=== undefined`）时抛错并拖垮插件树。
 6. **F. shared 三个出口 + 包边界**。`.` / `./universal` / `./client` 用途不可混；跨包禁止相对 import，必须走包名 subpath。

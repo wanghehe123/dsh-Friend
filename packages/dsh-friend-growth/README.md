@@ -1,4 +1,4 @@
-# @wish233/dsh-friend-growth
+# @wishp3/dsh-friend-growth
 
 人生故事流水线（outline → expand → reflect），草稿审阅后写入 `story.md` / `beliefs.md` / MEMORY.md「近期主题」。**不是** XP / 等级系统。
 

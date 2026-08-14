@@ -17,18 +17,18 @@
       You may use web_search and read when the user asks.
 
 - id: dsh-friend-persona
-  name: '@wish233/dsh-friend-persona'
+  name: '@wishp3/dsh-friend-persona'
   config:
     role: companion-preset
     allowlist: plus
 
 - id: dsh-friend-stage
-  name: '@wish233/dsh-friend-stage'
+  name: '@wishp3/dsh-friend-stage'
   config:
     role: companion-preset
 
 - id: dsh-friend-memory
-  name: '@wish233/dsh-friend-memory'
+  name: '@wishp3/dsh-friend-memory'
   config:
     role: companion-preset
 

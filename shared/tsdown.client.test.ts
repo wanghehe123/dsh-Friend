@@ -153,12 +153,12 @@ function materializeLoaderPayload(
 describe('dsh client build preset', () => {
   it('wrapDshClientModule emits the loader handoff the classic script must call', () => {
     const wrapped = wrapDshClientModule(
-      '@wish233/dsh-friend-stage',
+      '@wishp3/dsh-friend-stage',
       'exports.answer = 42;\n',
     )
 
     expect(wrapped.startsWith(LOADER_PREFIX)).toBe(true)
-    expect(wrapped).toContain('id: "@wish233/dsh-friend-stage"')
+    expect(wrapped).toContain('id: "@wishp3/dsh-friend-stage"')
     expect(wrapped).toContain('factory: (require) => {')
     expect(wrapped).toContain('var module = { exports: {} };')
     expect(wrapped).toContain('var exports = module.exports;')
@@ -168,10 +168,10 @@ describe('dsh client build preset', () => {
 
   it('materializes the wrapped CJS factory the way ClientModuleSystem does', () => {
     const wrapped = wrapDshClientModule(
-      '@wish233/dsh-friend-stage',
+      '@wishp3/dsh-friend-stage',
       'exports.apply = function apply() { return require("react").version };\n',
     )
-    const exported = materializeLoaderPayload(wrapped, '@wish233/dsh-friend-stage', {
+    const exported = materializeLoaderPayload(wrapped, '@wishp3/dsh-friend-stage', {
       react: { version: '19.0.0' },
     }) as { apply: () => string }
 
@@ -180,12 +180,12 @@ describe('dsh client build preset', () => {
 
   it('normalizes require("<pkg>/client") to "<pkg>" like the real loader', () => {
     const wrapped = wrapDshClientModule(
-      '@wish233/dsh-friend-shared',
+      '@wishp3/dsh-friend-shared',
       'exports.from = "shared";\n',
     )
     const consumer = wrapDshClientModule(
-      '@wish233/dsh-friend-stage',
-      'exports.shared = require("@wish233/dsh-friend-shared/client");\n',
+      '@wishp3/dsh-friend-stage',
+      'exports.shared = require("@wishp3/dsh-friend-shared/client");\n',
     )
     const factories = new Map<string, (require: (spec: string) => unknown) => unknown>()
     const loader = {
@@ -221,13 +221,13 @@ describe('dsh client build preset', () => {
       return exported
     }
 
-    expect(requireFn('@wish233/dsh-friend-stage')).toEqual({
+    expect(requireFn('@wishp3/dsh-friend-stage')).toEqual({
       shared: { from: 'shared' },
     })
   })
 
   it('emits CJS client.js into lib and leaves platform modules as require() externals', () => {
-    const config = dshClientBuild({ packageName: '@wish233/dsh-friend-stage' })
+    const config = dshClientBuild({ packageName: '@wishp3/dsh-friend-stage' })
 
     expect(config.format).toBe('cjs')
     expect(config.outDir).toBe('lib')
@@ -245,7 +245,7 @@ describe('dsh client build preset', () => {
     expect(config.deps?.neverBundle).toEqual([...CLIENT_EXTERNALS])
     expect(config.deps?.alwaysBundle).toEqual([...CLIENT_ALWAYS_BUNDLE])
     expect(config.deps?.alwaysBundle).toEqual(expect.arrayContaining([
-      '@wish233/dsh-friend-shared/universal',
+      '@wishp3/dsh-friend-shared/universal',
     ]))
     expect(config.deps?.neverBundle).toEqual(expect.arrayContaining([
       'react',
@@ -266,7 +266,7 @@ describe('dsh client build preset', () => {
       intro: 'var module = { exports: {} }; var exports = module.exports;',
       footer: 'return module.exports; } });',
     })
-    expect((jsOutput as { banner: string }).banner).toContain('id: "@wish233/dsh-friend-stage"')
+    expect((jsOutput as { banner: string }).banner).toContain('id: "@wishp3/dsh-friend-stage"')
     expect(dtsOutput).toBeUndefined()
   })
 

@@ -26,6 +26,6 @@
 
 ## 包元数据
 
-- 11 个 `@wish233/dsh-friend-*` 均声明 `license: MIT`、`publishConfig.access: public`，已去掉 `private`。
+- 11 个 `@wishp3/dsh-friend-*` 均声明 `license: MIT`、`publishConfig.access: public`，已去掉 `private`。
 - `dsh-friend-tts` 的 `ws@8.21.3` 声明在包内 `THIRD-PARTY-NOTICES.md`。
 - 其余功能包运行时只依赖 workspace 包；stage 的 fflate / Pixi / Framework / Core 已在其 NOTICE 里。

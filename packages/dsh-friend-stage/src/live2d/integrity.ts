@@ -65,7 +65,7 @@ export function integrityFromExpected(expected: Live2DExpectedDigests): Live2DIn
 export function resolveIntegrityManifestPath(): string {
   try {
     const require = createRequire(import.meta.url)
-    return join(dirname(require.resolve('@wish233/dsh-friend-stage/package.json')), 'vendor-integrity.json')
+    return join(dirname(require.resolve('@wishp3/dsh-friend-stage/package.json')), 'vendor-integrity.json')
   } catch {
     return fileURLToPath(new URL('../../vendor-integrity.json', import.meta.url))
   }

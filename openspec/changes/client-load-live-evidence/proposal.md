@@ -6,11 +6,11 @@ M1–M8 的单测、typecheck、`aggregate --check`、`scripts/smoke.mjs` 全绿
 
 ```
 Failed to load plugins
-@wish233/dsh-friend-tts
-@wish233/dsh-friend-asr
-@wish233/dsh-friend-reactions
-@wish233/dsh-friend-settings
-failed to apply loader entry 800dcc2e (@wish233/dsh-friend-tts): cannot get property "speechSynthesis" without inject
+@wishp3/dsh-friend-tts
+@wishp3/dsh-friend-asr
+@wishp3/dsh-friend-reactions
+@wishp3/dsh-friend-settings
+failed to apply loader entry 800dcc2e (@wishp3/dsh-friend-tts): cannot get property "speechSynthesis" without inject
 ```
 
 整个 dsh 界面没有渲染，11 个包里有 4 个客户端半区**完全加载失败**——配置中心、语音输出、语音输入、工作反应在浏览器里一行都没跑起来。
@@ -57,7 +57,7 @@ failed to apply loader entry 800dcc2e (@wish233/dsh-friend-tts): cannot get prop
 
 ### L2. 11 个包现在就解除 `private`，还是等首次发布前再解
 
-**背景**：W-M8-8 的 DoD 要求 `npm view` 可见 11 包同版本；`release.yml` 的 `--require-publishable` 闸门现在会**故意失败**。解除 `private` 后，任何人在本地误跑 `pnpm publish -r` 就能推到 npm（`@wish233` scope 需要发布权限，但仓库协作者可能有）。
+**背景**：W-M8-8 的 DoD 要求 `npm view` 可见 11 包同版本；`release.yml` 的 `--require-publishable` 闸门现在会**故意失败**。解除 `private` 后，任何人在本地误跑 `pnpm publish -r` 就能推到 npm（`@wishp3` scope 需要发布权限，但仓库协作者可能有）。
 
 | 选项 | 做法 | 利 | 弊 |
 |---|---|---|---|

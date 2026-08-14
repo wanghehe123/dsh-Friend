@@ -8,8 +8,8 @@ import {
   sendToCompanion,
   type CompanionSessionDeps,
 } from '../src/session.ts'
-import { FRIEND_PRESET_IDS, FRIEND_SETTINGS_NAMESPACES } from '@wish233/dsh-friend-shared'
-import type { FriendAgentHandle, FriendCreateAgentOptions } from '@wish233/dsh-friend-shared'
+import { FRIEND_PRESET_IDS, FRIEND_SETTINGS_NAMESPACES } from '@wishp3/dsh-friend-shared'
+import type { FriendAgentHandle, FriendCreateAgentOptions } from '@wishp3/dsh-friend-shared'
 
 function agent(id: string, followup = vi.fn()): FriendAgentHandle & {
   options?: { provider?: string; model?: string }

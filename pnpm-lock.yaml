@@ -53,86 +53,86 @@ importers:
 
   packages/dsh-friend-all:
     dependencies:
-      '@wish233/dsh-friend-asr':
+      '@wishp3/dsh-friend-asr':
         specifier: workspace:*
         version: link:../dsh-friend-asr
-      '@wish233/dsh-friend-growth':
+      '@wishp3/dsh-friend-growth':
         specifier: workspace:*
         version: link:../dsh-friend-growth
-      '@wish233/dsh-friend-memory':
+      '@wishp3/dsh-friend-memory':
         specifier: workspace:*
         version: link:../dsh-friend-memory
-      '@wish233/dsh-friend-perception':
+      '@wishp3/dsh-friend-perception':
         specifier: workspace:*
         version: link:../dsh-friend-perception
-      '@wish233/dsh-friend-persona':
+      '@wishp3/dsh-friend-persona':
         specifier: workspace:*
         version: link:../dsh-friend-persona
-      '@wish233/dsh-friend-reactions':
+      '@wishp3/dsh-friend-reactions':
         specifier: workspace:*
         version: link:../dsh-friend-reactions
-      '@wish233/dsh-friend-settings':
+      '@wishp3/dsh-friend-settings':
         specifier: workspace:*
         version: link:../dsh-friend-settings
-      '@wish233/dsh-friend-shared':
+      '@wishp3/dsh-friend-shared':
         specifier: workspace:*
         version: link:../dsh-friend-shared
-      '@wish233/dsh-friend-stage':
+      '@wishp3/dsh-friend-stage':
         specifier: workspace:*
         version: link:../dsh-friend-stage
-      '@wish233/dsh-friend-tts':
+      '@wishp3/dsh-friend-tts':
         specifier: workspace:*
         version: link:../dsh-friend-tts
 
   packages/dsh-friend-asr:
     dependencies:
-      '@wish233/dsh-friend-shared':
+      '@wishp3/dsh-friend-shared':
         specifier: workspace:*
         version: link:../dsh-friend-shared
 
   packages/dsh-friend-growth:
     dependencies:
-      '@wish233/dsh-friend-shared':
+      '@wishp3/dsh-friend-shared':
         specifier: workspace:*
         version: link:../dsh-friend-shared
 
   packages/dsh-friend-memory:
     dependencies:
-      '@wish233/dsh-friend-shared':
+      '@wishp3/dsh-friend-shared':
         specifier: workspace:*
         version: link:../dsh-friend-shared
 
   packages/dsh-friend-perception:
     dependencies:
-      '@wish233/dsh-friend-shared':
+      '@wishp3/dsh-friend-shared':
         specifier: workspace:*
         version: link:../dsh-friend-shared
 
   packages/dsh-friend-persona:
     dependencies:
-      '@wish233/dsh-friend-shared':
+      '@wishp3/dsh-friend-shared':
         specifier: workspace:*
         version: link:../dsh-friend-shared
     devDependencies:
-      '@wish233/dsh-friend-memory':
+      '@wishp3/dsh-friend-memory':
         specifier: workspace:*
         version: link:../dsh-friend-memory
 
   packages/dsh-friend-reactions:
     dependencies:
-      '@wish233/dsh-friend-shared':
+      '@wishp3/dsh-friend-shared':
         specifier: workspace:*
         version: link:../dsh-friend-shared
 
   packages/dsh-friend-settings:
     dependencies:
-      '@wish233/dsh-friend-asr':
+      '@wishp3/dsh-friend-asr':
         specifier: workspace:*
         version: link:../dsh-friend-asr
-      '@wish233/dsh-friend-shared':
+      '@wishp3/dsh-friend-shared':
         specifier: workspace:*
         version: link:../dsh-friend-shared
-      '@wish233/dsh-friend-tts':
+      '@wishp3/dsh-friend-tts':
         specifier: workspace:*
         version: link:../dsh-friend-tts
 
@@ -156,13 +156,13 @@ importers:
 
   packages/dsh-friend-stage:
     dependencies:
-      '@wish233/dsh-friend-asr':
+      '@wishp3/dsh-friend-asr':
         specifier: workspace:*
         version: link:../dsh-friend-asr
-      '@wish233/dsh-friend-persona':
+      '@wishp3/dsh-friend-persona':
         specifier: workspace:*
         version: link:../dsh-friend-persona
-      '@wish233/dsh-friend-shared':
+      '@wishp3/dsh-friend-shared':
         specifier: workspace:*
         version: link:../dsh-friend-shared
       fflate:
@@ -184,13 +184,13 @@ importers:
 
   packages/dsh-friend-tts:
     dependencies:
-      '@wish233/dsh-friend-persona':
+      '@wishp3/dsh-friend-persona':
         specifier: workspace:*
         version: link:../dsh-friend-persona
-      '@wish233/dsh-friend-shared':
+      '@wishp3/dsh-friend-shared':
         specifier: workspace:*
         version: link:../dsh-friend-shared
-      '@wish233/dsh-friend-stage':
+      '@wishp3/dsh-friend-stage':
         specifier: workspace:*
         version: link:../dsh-friend-stage
       ws:

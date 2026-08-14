@@ -8,9 +8,9 @@ export default defineConfig([
     name: 'tags',
     entry: { tags: 'src/tags.ts' },
   }),
-  dshClientBuild({ packageName: '@wish233/dsh-friend-stage' }),
+  dshClientBuild({ packageName: '@wishp3/dsh-friend-stage' }),
   {
-    name: '@wish233/dsh-friend-stage/pet',
+    name: '@wishp3/dsh-friend-stage/pet',
     entry: { pet: 'src/pet.ts' },
     outDir: 'lib',
     platform: 'browser',
@@ -24,8 +24,8 @@ export default defineConfig([
       alwaysBundle: [
         'pixi.js',
         /^pixi-live2d-display(?:\/|$)/u,
-        '@wish233/dsh-friend-asr/browser',
-        '@wish233/dsh-friend-shared/universal',
+        '@wishp3/dsh-friend-asr/browser',
+        '@wishp3/dsh-friend-shared/universal',
       ],
     },
   },

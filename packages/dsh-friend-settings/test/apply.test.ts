@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { createFriendSettingsInstallProbe, FRIEND_SETTINGS_NAMESPACES } from '@wish233/dsh-friend-shared'
+import { createFriendSettingsInstallProbe, FRIEND_SETTINGS_NAMESPACES } from '@wishp3/dsh-friend-shared'
 
 import { apply, inject, name } from '../src/index.ts'
 import {
@@ -24,7 +24,7 @@ describe('settings host apply', () => {
   })
 
   it('declares webServer and settings inject so Cordis will not throw', () => {
-    expect(name).toBe('@wish233/dsh-friend-settings')
+    expect(name).toBe('@wishp3/dsh-friend-settings')
     expect(inject).toEqual(['webServer', 'settings', 'agentDefaultModel', 'llm'])
   })
 

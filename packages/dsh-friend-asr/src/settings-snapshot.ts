@@ -3,7 +3,7 @@
  * (standalone pet IIFE). Reads GET /friend/settings/snapshot and writes
  * POST /friend/settings/patch so hotkey/language survive host restart.
  */
-import { FRIEND_SETTINGS_NAMESPACES } from '@wish233/dsh-friend-shared/universal'
+import { FRIEND_SETTINGS_NAMESPACES } from '@wishp3/dsh-friend-shared/universal'
 
 import {
   readFriendAsrSettings,

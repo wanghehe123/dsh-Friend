@@ -1,4 +1,4 @@
-# @wish233/dsh-friend-persona
+# @wishp3/dsh-friend-persona
 
 角色卡存取、酒馆卡导入、预设注册、人格提示词分区。
 

@@ -9,7 +9,7 @@ import {
   FRIEND_SETTINGS_NAMESPACES,
   type FriendHostSettings,
   type FriendSettingsNamespace,
-} from '@wish233/dsh-friend-shared'
+} from '@wishp3/dsh-friend-shared'
 
 import type { SettingsReader } from './project.ts'
 import { isRecord } from './sanitize.ts'

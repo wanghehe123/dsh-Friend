@@ -15,7 +15,7 @@ import {
   type FriendToolContext,
   type ResolveFriendDataDirOptions,
   type ResolveModelDeps,
-} from '@wish233/dsh-friend-shared'
+} from '@wishp3/dsh-friend-shared'
 
 import {
   bindTurnEndSource,
@@ -45,7 +45,7 @@ import { createMemoryStore, type MemoryStore } from './store.ts'
 import { registerMemoryTools } from './tools.ts'
 import { wrapHostTurnEndSource, type FriendSessionEventContext } from './turn-end.ts'
 
-export const name = '@wish233/dsh-friend-memory'
+export const name = '@wishp3/dsh-friend-memory'
 
 /**
  * Cordis services this plugin may read. Accessing `ctx.webServer` /

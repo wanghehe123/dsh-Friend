@@ -2,7 +2,7 @@ import {
   resolveModel,
   type FriendResolvedModel,
   type ResolveModelDeps,
-} from '@wish233/dsh-friend-shared'
+} from '@wishp3/dsh-friend-shared'
 
 export type GrowthStage = 'outline' | 'expand' | 'reflect'
 

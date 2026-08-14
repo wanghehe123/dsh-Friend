@@ -8,7 +8,7 @@ import { postFriendStageChat } from './send.ts'
 import type { AsrSettingsBinder, AsrSettingsScope } from './settings.ts'
 import { createSnapshotAsrSettingsBinder } from './settings-snapshot.ts'
 
-export const name = '@wish233/dsh-friend-asr/client'
+export const name = '@wishp3/dsh-friend-asr/client'
 export const inject = ['settingsScope'] as const
 export const ASR_CLIENT_SETTINGS_POLL_MS = 1_000
 

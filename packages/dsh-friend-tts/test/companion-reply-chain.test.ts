@@ -9,14 +9,14 @@ import {
   createCompanionSessionFilter,
   subscribeCompanionReplies,
   type SessionEventSource,
-} from '@wish233/dsh-friend-persona'
-import { FRIEND_PRESET_IDS } from '@wish233/dsh-friend-shared'
+} from '@wishp3/dsh-friend-persona'
+import { FRIEND_PRESET_IDS } from '@wishp3/dsh-friend-shared'
 import {
   createBubbleController,
   createChatTracker,
   createCompanionStageSink,
   createPerformanceTracker,
-} from '@wish233/dsh-friend-stage'
+} from '@wishp3/dsh-friend-stage'
 
 import { createFriendTtsCache } from '../src/cache.ts'
 import { createFriendTtsQueue } from '../src/queue.ts'

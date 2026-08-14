@@ -5,7 +5,7 @@ import {
   startAsrClient,
   type EndpointGlobals,
   type FriendAsrBrowserGlobals,
-} from '@wish233/dsh-friend-asr/browser'
+} from '@wishp3/dsh-friend-asr/browser'
 
 import {
   FRIEND_ASR_GLOBAL,

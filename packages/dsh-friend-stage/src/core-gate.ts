@@ -1,4 +1,4 @@
-import { FRIEND_SETTINGS_NAMESPACES } from '@wish233/dsh-friend-shared/universal'
+import { FRIEND_SETTINGS_NAMESPACES } from '@wishp3/dsh-friend-shared/universal'
 
 export const CORE_SETTINGS_NAMESPACE = FRIEND_SETTINGS_NAMESPACES.core
 export const CORE_ENABLED_FIELD = 'enabled' as const

@@ -7,11 +7,11 @@ export const CLIENT_EXTERNALS: readonly string[] = [...PLATFORM_MODULES]
 
 /**
  * Workspace specifiers that are **not** platform seeds. Production deps are
- * external by default; without this, `require("@wish233/dsh-friend-shared/universal")`
+ * external by default; without this, `require("@wishp3/dsh-friend-shared/universal")`
  * lands in the client factory and the loader throws at runtime.
  */
 export const CLIENT_ALWAYS_BUNDLE: readonly string[] = [
-  '@wish233/dsh-friend-shared/universal',
+  '@wishp3/dsh-friend-shared/universal',
 ]
 
 /**

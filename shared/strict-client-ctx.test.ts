@@ -24,15 +24,15 @@ const CLIENTS: ReadonlyArray<{
   apply: ClientApply
   inject: readonly string[]
 }> = [
-  { name: '@wish233/dsh-friend-shared', apply: applyShared, inject: injectShared },
-  { name: '@wish233/dsh-friend-tts', apply: applyTts, inject: injectTts },
-  { name: '@wish233/dsh-friend-asr', apply: applyAsr, inject: injectAsr },
-  { name: '@wish233/dsh-friend-settings', apply: applySettings, inject: injectSettings },
-  { name: '@wish233/dsh-friend-reactions', apply: applyReactions, inject: injectReactions },
-  { name: '@wish233/dsh-friend-stage', apply: applyStage, inject: injectStage },
-  { name: '@wish233/dsh-friend-growth', apply: applyGrowth, inject: injectGrowth },
-  { name: '@wish233/dsh-friend-memory', apply: applyMemory, inject: injectMemory },
-  { name: '@wish233/dsh-friend-persona', apply: applyPersona, inject: injectPersona },
+  { name: '@wishp3/dsh-friend-shared', apply: applyShared, inject: injectShared },
+  { name: '@wishp3/dsh-friend-tts', apply: applyTts, inject: injectTts },
+  { name: '@wishp3/dsh-friend-asr', apply: applyAsr, inject: injectAsr },
+  { name: '@wishp3/dsh-friend-settings', apply: applySettings, inject: injectSettings },
+  { name: '@wishp3/dsh-friend-reactions', apply: applyReactions, inject: injectReactions },
+  { name: '@wishp3/dsh-friend-stage', apply: applyStage, inject: injectStage },
+  { name: '@wishp3/dsh-friend-growth', apply: applyGrowth, inject: injectGrowth },
+  { name: '@wishp3/dsh-friend-memory', apply: applyMemory, inject: injectMemory },
+  { name: '@wishp3/dsh-friend-persona', apply: applyPersona, inject: injectPersona },
 ]
 
 function disposeApplyResult(result: unknown, effectDisposers: Array<() => void>): void {

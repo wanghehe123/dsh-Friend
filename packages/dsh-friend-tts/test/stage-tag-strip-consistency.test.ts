@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises'
 
 import { describe, expect, it } from 'vitest'
 
-import { parseStageTags } from '@wish233/dsh-friend-stage/tags'
+import { parseStageTags } from '@wishp3/dsh-friend-stage/tags'
 
 import { prepareTtsText, stripStageProtocolTags } from '../src/prepare.ts'
 
@@ -61,9 +61,9 @@ describe('tts protocol strip matches stage ttsText', () => {
     expect(prepareTtsText(text, { stripStageDirections: false }).displayText).toBe(stageTts)
   })
 
-  it('strips via @wish233/dsh-friend-stage/tags, not a local closed-tag regex', async () => {
+  it('strips via @wishp3/dsh-friend-stage/tags, not a local closed-tag regex', async () => {
     const source = await readFile(new URL('../src/prepare.ts', import.meta.url), 'utf8')
-    expect(source).toContain('@wish233/dsh-friend-stage/tags')
+    expect(source).toContain('@wishp3/dsh-friend-stage/tags')
     expect(source).toContain('StreamingTagParser')
     expect(source).not.toContain('parseStageTags')
     expect(source).not.toMatch(/CLOSED_STAGE_TAG/)

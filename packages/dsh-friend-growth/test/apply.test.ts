@@ -7,7 +7,7 @@ import {
   createFriendSettingsInstallProbe,
   createStrictCordisCtx,
   FRIEND_SETTINGS_NAMESPACES,
-} from '@wish233/dsh-friend-shared'
+} from '@wishp3/dsh-friend-shared'
 
 import { applyGrowth, inject, name, type FriendGrowthContext } from '../src/index.ts'
 import { tempDataDir } from './helpers/tmp.ts'
@@ -15,7 +15,7 @@ import { tempDataDir } from './helpers/tmp.ts'
 describe('cordis inject', () => {
   it('declares the services apply() may read', () => {
     expect(inject).toEqual(['webServer', 'settings', 'agentDefaultModel', 'llm'])
-    expect(name).toBe('@wish233/dsh-friend-growth')
+    expect(name).toBe('@wishp3/dsh-friend-growth')
   })
 })
 

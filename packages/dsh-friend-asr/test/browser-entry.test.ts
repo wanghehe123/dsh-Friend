@@ -9,8 +9,8 @@ const SPECIFIER_RE = /(?:\bfrom\s+|import\s*\(\s*)['"]([^'"]+)['"]/g
 
 const FORBIDDEN_SOURCE = [
   /from ['"]node:/,
-  /from ['"]@wish233\/dsh-friend-shared['"]/,
-  /from ['"]@wish233\/dsh-friend-shared\/client['"]/,
+  /from ['"]@wishp3\/dsh-friend-shared['"]/,
+  /from ['"]@wishp3\/dsh-friend-shared\/client['"]/,
   /from ['"]@deepseek-ai\//,
 ] as const
 
@@ -72,9 +72,9 @@ describe('asr ./browser lean export', () => {
       for (const pattern of FORBIDDEN_SOURCE) {
         expect(source, `${file} matches ${pattern}`).not.toMatch(pattern)
       }
-      const sharedImports = [...source.matchAll(/from ['"](@wish233\/[^'"]+)['"]/g)].map((row) => row[1])
+      const sharedImports = [...source.matchAll(/from ['"](@wishp3\/[^'"]+)['"]/g)].map((row) => row[1])
       for (const spec of sharedImports) {
-        expect(spec).toBe('@wish233/dsh-friend-shared/universal')
+        expect(spec).toBe('@wishp3/dsh-friend-shared/universal')
       }
     }
   })

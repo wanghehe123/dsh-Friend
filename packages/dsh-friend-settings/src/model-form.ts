@@ -2,7 +2,7 @@
  * Model section form (W-M8-3). Three purpose overrides + inherit display.
  * Connection test is injected so unit tests never open a network socket.
  *
- * Types are local so the client half never imports `@wish233/dsh-friend-shared`
+ * Types are local so the client half never imports `@wishp3/dsh-friend-shared`
  * (host / Node builtins). Host `resolveModel` uses the same purpose names.
  */
 export type FriendModelPurpose = 'chat' | 'summarize' | 'growth'

@@ -5,7 +5,7 @@
  * snapshots are produced by {@link toClientTtsSnapshot} / {@link sanitizeTtsSettingsForClient}
  * and MUST drop every secret field. Do not put `apiKey` on synthesize opts.
  */
-import { FRIEND_SETTINGS_NAMESPACES } from '@wish233/dsh-friend-shared/universal'
+import { FRIEND_SETTINGS_NAMESPACES } from '@wishp3/dsh-friend-shared/universal'
 
 export const TTS_SETTINGS_NAMESPACE = FRIEND_SETTINGS_NAMESPACES.tts
 

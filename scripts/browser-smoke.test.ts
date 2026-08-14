@@ -16,15 +16,15 @@ import {
   resolveBrowserSmokePlan,
 } from './browser-smoke.mjs'
 
-const REAL_APPLY_ERROR = 'failed to apply loader entry 800dcc2e (@wish233/dsh-friend-tts): cannot get property "speechSynthesis" without inject'
+const REAL_APPLY_ERROR = 'failed to apply loader entry 800dcc2e (@wishp3/dsh-friend-tts): cannot get property "speechSynthesis" without inject'
 
 const FAILED_PAGE = [
   'HARNESS',
   FAILED_TO_LOAD_PLUGINS,
-  '@wish233/dsh-friend-tts',
-  '@wish233/dsh-friend-asr',
-  '@wish233/dsh-friend-reactions',
-  '@wish233/dsh-friend-settings',
+  '@wishp3/dsh-friend-tts',
+  '@wishp3/dsh-friend-asr',
+  '@wishp3/dsh-friend-reactions',
+  '@wishp3/dsh-friend-settings',
   REAL_APPLY_ERROR,
 ].join('\n')
 
@@ -122,8 +122,8 @@ describe('parseClientLoadFailures', () => {
   it('extracts the package, property, and verbatim apply error', () => {
     const parsed = parseClientLoadFailures(FAILED_PAGE)
     expect(parsed.failed).toBe(true)
-    expect(parsed.packages).toContain('@wish233/dsh-friend-tts')
-    expect(parsed.namedPackage).toBe('@wish233/dsh-friend-tts')
+    expect(parsed.packages).toContain('@wishp3/dsh-friend-tts')
+    expect(parsed.namedPackage).toBe('@wishp3/dsh-friend-tts')
     expect(parsed.property).toBe('speechSynthesis')
     expect(parsed.applyError).toBe(REAL_APPLY_ERROR)
   })
@@ -144,12 +144,12 @@ describe('listBootEntryIds', () => {
     expect(listBootEntryIds({
       rev: 'x',
       entries: [
-        { id: '@wish233/dsh-friend-tts', url: '/plugins/tts', rev: '1' },
-        { id: '@wish233/dsh-friend-asr', url: '/plugins/asr', rev: '1' },
+        { id: '@wishp3/dsh-friend-tts', url: '/plugins/tts', rev: '1' },
+        { id: '@wishp3/dsh-friend-asr', url: '/plugins/asr', rev: '1' },
       ],
     })).toEqual([
-      '@wish233/dsh-friend-tts',
-      '@wish233/dsh-friend-asr',
+      '@wishp3/dsh-friend-tts',
+      '@wishp3/dsh-friend-asr',
     ])
   })
 
@@ -188,7 +188,7 @@ describe('assertClientHalvesLoaded', () => {
       assertClientHalvesLoaded({ pageText: FAILED_PAGE, bootEntryIds: bootIds() })
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)
-      expect(message).toContain('@wish233/dsh-friend-tts')
+      expect(message).toContain('@wishp3/dsh-friend-tts')
       expect(message).toContain('speechSynthesis')
       expect(message).toContain(REAL_APPLY_ERROR)
       expect(formatClientLoadFailure(parseClientLoadFailures(FAILED_PAGE))).toContain(REAL_APPLY_ERROR)
@@ -198,17 +198,17 @@ describe('assertClientHalvesLoaded', () => {
   })
 
   it('fails when a client half is absent from the boot graph even if the page looks settled', () => {
-    const withoutTts = FRIEND_CLIENT_PACKAGES.filter((name) => name !== '@wish233/dsh-friend-tts')
+    const withoutTts = FRIEND_CLIENT_PACKAGES.filter((name) => name !== '@wishp3/dsh-friend-tts')
     expect(() => assertClientHalvesLoaded({
       pageText: DIALOG_PAGE,
       bootEntryIds: withoutTts,
-    })).toThrow(/missing friend client halves: @wish233\/dsh-friend-tts/)
+    })).toThrow(/missing friend client halves: @wishp3\/dsh-friend-tts/)
   })
 
   it('covers every package that ships a client half, not the host-only two', () => {
     expect(FRIEND_PACKAGES).toHaveLength(11)
     expect(FRIEND_CLIENT_PACKAGES).toHaveLength(9)
-    expect(FRIEND_CLIENT_PACKAGES).not.toContain('@wish233/dsh-friend-all')
-    expect(FRIEND_CLIENT_PACKAGES).not.toContain('@wish233/dsh-friend-perception')
+    expect(FRIEND_CLIENT_PACKAGES).not.toContain('@wishp3/dsh-friend-all')
+    expect(FRIEND_CLIENT_PACKAGES).not.toContain('@wishp3/dsh-friend-perception')
   })
 })

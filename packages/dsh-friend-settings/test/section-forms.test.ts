@@ -12,7 +12,7 @@ import {
   OPENAI_AUDIO_FORMATS,
   parseQuietHoursText,
 } from '../src/section-forms.ts'
-import { FRIEND_SETTINGS_NAMESPACES } from '@wish233/dsh-friend-shared/universal'
+import { FRIEND_SETTINGS_NAMESPACES } from '@wishp3/dsh-friend-shared/universal'
 
 describe('ten-section form descriptors', () => {
   it('renders a descriptor for every configuration-center pane', () => {

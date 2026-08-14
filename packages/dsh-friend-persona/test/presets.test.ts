@@ -4,7 +4,7 @@ import { join } from 'node:path'
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { FRIEND_PRESET_IDS } from '@wish233/dsh-friend-shared'
+import { FRIEND_PRESET_IDS } from '@wishp3/dsh-friend-shared'
 
 import {
   COMPANION_TOOL_ALLOWLIST,
@@ -103,18 +103,18 @@ describe('publishShippedPresets (Plan B)', () => {
       'utf8',
     )
 
-    expect(companionYml).toContain('name: \'@wish233/dsh-friend-persona\'')
+    expect(companionYml).toContain('name: \'@wishp3/dsh-friend-persona\'')
     expect(companionYml).toContain('role: companion-preset')
     expect(companionYml).toContain('allowlist: companion')
-    expect(companionYml).toContain('name: \'@wish233/dsh-friend-stage\'')
-    expect(companionYml).toContain('name: \'@wish233/dsh-friend-memory\'')
-    expect(companionYml).toMatch(/id: dsh-friend-memory\n  name: '@wish233\/dsh-friend-memory'\n  config:\n    role: companion-preset/)
+    expect(companionYml).toContain('name: \'@wishp3/dsh-friend-stage\'')
+    expect(companionYml).toContain('name: \'@wishp3/dsh-friend-memory\'')
+    expect(companionYml).toMatch(/id: dsh-friend-memory\n  name: '@wishp3\/dsh-friend-memory'\n  config:\n    role: companion-preset/)
     expect(companionYml).not.toContain('dsh-tool-web')
     expect(plusYml).toContain('allowlist: plus')
     expect(plusYml).toContain('name: \'@deepseek-ai/dsh-tool-web\'')
-    expect(plusYml).toContain('name: \'@wish233/dsh-friend-stage\'')
-    expect(plusYml).toContain('name: \'@wish233/dsh-friend-memory\'')
-    expect(plusYml).toMatch(/id: dsh-friend-memory\n  name: '@wish233\/dsh-friend-memory'\n  config:\n    role: companion-preset/)
+    expect(plusYml).toContain('name: \'@wishp3/dsh-friend-stage\'')
+    expect(plusYml).toContain('name: \'@wishp3/dsh-friend-memory\'')
+    expect(plusYml).toMatch(/id: dsh-friend-memory\n  name: '@wishp3\/dsh-friend-memory'\n  config:\n    role: companion-preset/)
     expect(plusYml).toContain('fetch: false')
     expect(companionMeta).toContain('name: 伴侣')
     expect(companionYml).toContain('role-split')

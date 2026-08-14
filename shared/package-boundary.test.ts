@@ -2,10 +2,10 @@
  * Repo-level package boundary: packages/<pkg>/src and packages/<pkg>/test
  * must not relative-import another packages/<pkg> tree.
  *
- * Feature client halves cannot import `@wish233/dsh-friend-shared` (host,
- * Node builtins) or `@wish233/dsh-friend-shared/client` (ModuleLoader
+ * Feature client halves cannot import `@wishp3/dsh-friend-shared` (host,
+ * Node builtins) or `@wishp3/dsh-friend-shared/client` (ModuleLoader
  * payload). Platform-neutral constants live at
- * `@wish233/dsh-friend-shared/universal`.
+ * `@wishp3/dsh-friend-shared/universal`.
  */
 import { readdir, readFile } from 'node:fs/promises'
 import { dirname, join, relative, resolve, sep } from 'node:path'
@@ -86,9 +86,9 @@ function formatViolation(item: Violation): string {
     `${item.file} imports '${item.specifier}'`,
     `  which resolves into packages/${item.targetPackage}/.`,
     `  Use a package-name subpath instead of a cross-package relative path.`,
-    `  Platform-neutral shared constants: '@wish233/dsh-friend-shared/universal'.`,
-    `  Do not import '@wish233/dsh-friend-shared' from a client half (Node builtins)`,
-    `  or '@wish233/dsh-friend-shared/client' from Node / tests (ModuleLoader payload).`,
+    `  Platform-neutral shared constants: '@wishp3/dsh-friend-shared/universal'.`,
+    `  Do not import '@wishp3/dsh-friend-shared' from a client half (Node builtins)`,
+    `  or '@wishp3/dsh-friend-shared/client' from Node / tests (ModuleLoader payload).`,
   ].join('\n')
 }
 

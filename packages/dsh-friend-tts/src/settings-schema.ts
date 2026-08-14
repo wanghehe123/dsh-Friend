@@ -2,7 +2,7 @@
  * Host-only schemastery schema for `friend-tts`.
  * Imported from `index.ts` only — never from the client half.
  */
-import { Schema, type FriendSchema } from '@wish233/dsh-friend-shared'
+import { Schema, type FriendSchema } from '@wishp3/dsh-friend-shared'
 
 import { TTS_SETTINGS_FORM_DEFAULTS } from './settings-form.ts'
 

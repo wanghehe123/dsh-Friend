@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import type { SessionEventSource } from '@wish233/dsh-friend-persona'
+import type { SessionEventSource } from '@wishp3/dsh-friend-persona'
 
-import { createFriendSettingsInstallProbe, createStrictCordisCtx, FRIEND_SETTINGS_NAMESPACES } from '@wish233/dsh-friend-shared'
+import { createFriendSettingsInstallProbe, createStrictCordisCtx, FRIEND_SETTINGS_NAMESPACES } from '@wishp3/dsh-friend-shared'
 
 import { apply, createFriendTtsHost, inject } from '../src/index.ts'
 import { FRIEND_TTS_AUDIO_PATH, FRIEND_TTS_EVENTS_PATH, FRIEND_TTS_PREVIEW_PATH } from '../src/paths.ts'

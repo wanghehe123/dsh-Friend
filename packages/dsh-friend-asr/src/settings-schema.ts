@@ -2,7 +2,7 @@
  * Host-only schemastery schema for `friend-asr`.
  * Imported from `index.ts` only — never from the client half.
  */
-import { Schema, type FriendSchema } from '@wish233/dsh-friend-shared'
+import { Schema, type FriendSchema } from '@wishp3/dsh-friend-shared'
 
 import { ASR_SETTINGS_DEFAULTS } from './settings.ts'
 

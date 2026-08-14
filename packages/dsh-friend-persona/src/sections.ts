@@ -4,7 +4,7 @@ import {
   FRIEND_SETTINGS_NAMESPACES,
   registerPromptSection,
   type FriendPromptContext,
-} from '@wish233/dsh-friend-shared'
+} from '@wishp3/dsh-friend-shared'
 
 import { DEFAULT_PERSONA, DEFAULT_PERSONA_SLUG } from './default-persona.ts'
 import { beliefsFilePath, personaFilePath } from './paths.ts'

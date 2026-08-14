@@ -30,17 +30,17 @@
       Follow the friend:persona and friend:conduct sections.
 
 - id: dsh-friend-persona
-  name: '@wish233/dsh-friend-persona'
+  name: '@wishp3/dsh-friend-persona'
   config:
     role: companion-preset
     allowlist: companion
 
 - id: dsh-friend-stage
-  name: '@wish233/dsh-friend-stage'
+  name: '@wishp3/dsh-friend-stage'
   config:
     role: companion-preset
 
 - id: dsh-friend-memory
-  name: '@wish233/dsh-friend-memory'
+  name: '@wishp3/dsh-friend-memory'
   config:
     role: companion-preset

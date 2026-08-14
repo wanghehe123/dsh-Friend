@@ -12,7 +12,7 @@ import {
   serializeConfigHash,
   type ConfigCenterSection,
 } from '../src/sections.ts'
-import { FRIEND_SETTINGS_NAMESPACES } from '@wish233/dsh-friend-shared/universal'
+import { FRIEND_SETTINGS_NAMESPACES } from '@wishp3/dsh-friend-shared/universal'
 import {
   installFakeReact,
   mount,

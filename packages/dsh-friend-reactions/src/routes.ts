@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 
 import type { WebRoute } from '@deepseek-ai/dsh-host-webserver'
-import { registerRoute, type FriendRouteContext } from '@wish233/dsh-friend-shared'
+import { registerRoute, type FriendRouteContext } from '@wishp3/dsh-friend-shared'
 
 import type { ReactEngine } from './react.ts'
 import type { ReactionLevel, ReactionSettings } from './settings.ts'

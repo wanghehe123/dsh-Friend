@@ -1,4 +1,4 @@
-import { FRIEND_SETTINGS_NAMESPACES } from '@wish233/dsh-friend-shared'
+import { FRIEND_SETTINGS_NAMESPACES } from '@wishp3/dsh-friend-shared'
 
 export const REACTIONS_SETTINGS_NAMESPACE = FRIEND_SETTINGS_NAMESPACES.reactions
 export const CORE_SETTINGS_NAMESPACE = FRIEND_SETTINGS_NAMESPACES.core

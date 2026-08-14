@@ -3,7 +3,7 @@
  * parenthetical stage directions, then split sentences so the first clause
  * can be enqueued first (lower first-sound latency).
  *
- * Protocol tags go through `@wish233/dsh-friend-stage/tags` so TTS strip
+ * Protocol tags go through `@wishp3/dsh-friend-stage/tags` so TTS strip
  * and stage `ttsText` cannot drift. Streaming replies use
  * {@link StreamingTagParser} so a tag
  * split across chunks never reaches speakable text. This file is host-only;
@@ -13,7 +13,7 @@ import {
   StreamingTagParser,
   concatTagParseDeltas,
   type StageTagEvent,
-} from '@wish233/dsh-friend-stage/tags'
+} from '@wishp3/dsh-friend-stage/tags'
 
 export { FRIEND_TTS_PREVIEW_SENTENCE } from './preview-sentence.ts'
 

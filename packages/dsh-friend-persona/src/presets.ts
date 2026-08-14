@@ -8,13 +8,13 @@ import {
   restrictTools,
   type FriendPresetContext,
   type FriendToolContext,
-} from '@wish233/dsh-friend-shared'
+} from '@wishp3/dsh-friend-shared'
 
 import { userAgentPresetsDir } from './paths.ts'
 
 /**
  * Memory tools (W-M5-3). Must stay equal to
- * `@wish233/dsh-friend-memory` `MEMORY_TOOL_NAMES` / `createMemoryTools()`.
+ * `@wishp3/dsh-friend-memory` `MEMORY_TOOL_NAMES` / `createMemoryTools()`.
  * Locked from this package's memory-tools-consistency test via memory's
  * public export (no cross-package relative import).
  */
@@ -22,7 +22,7 @@ export const MEMORY_TOOLS = ['memory_append', 'memory_search', 'memory_get'] as 
 
 /**
  * Stage performance tools (W-M4-7). Must stay equal to
- * `@wish233/dsh-friend-stage` `STAGE_TOOL_NAMES` / `createPerformanceTools()`.
+ * `@wishp3/dsh-friend-stage` `STAGE_TOOL_NAMES` / `createPerformanceTools()`.
  * Locked from stage's friend-data-root-consistency test via this package's
  * public export (no cross-package relative import).
  */

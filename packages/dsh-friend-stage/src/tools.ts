@@ -3,7 +3,7 @@ import {
   registerTool,
   type FriendToolContext,
   type ToolDefinition,
-} from '@wish233/dsh-friend-shared'
+} from '@wishp3/dsh-friend-shared'
 
 import { HIYORI_EXPRESSIONS } from './live2d/hiyori-adapter.ts'
 import type { PerformanceSnapshot, PerformanceTracker } from './performance-state.ts'

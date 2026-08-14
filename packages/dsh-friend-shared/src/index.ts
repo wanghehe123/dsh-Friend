@@ -1,7 +1,7 @@
 /**
- * Host half of `@wish233/dsh-friend-shared`.
+ * Host half of `@wishp3/dsh-friend-shared`.
  *
- * Import from `@wish233/dsh-friend-shared` (the `.` export). Node-only: the
+ * Import from `@wishp3/dsh-friend-shared` (the `.` export). Node-only: the
  * graph includes `node:os` / `node:path` / `node:http` and dsh host adapters.
  * Re-exports the platform-neutral `./universal` barrel via `dsh-compat`.
  *
@@ -23,7 +23,7 @@ export {
 
 import { logPluginMount } from './plugin-mount.ts'
 
-export const name = '@wish233/dsh-friend-shared'
+export const name = '@wishp3/dsh-friend-shared'
 
 export function apply(_ctx: unknown): void {
   // TODO: host-half implementation beyond the compat seam

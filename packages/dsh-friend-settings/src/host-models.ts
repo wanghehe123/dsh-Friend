@@ -10,7 +10,7 @@ import {
   type FriendModelPurpose,
   type FriendResolvedModel,
   type ResolveModelDeps,
-} from '@wish233/dsh-friend-shared'
+} from '@wishp3/dsh-friend-shared'
 
 import type { ModelInheritView } from './model-form.ts'
 import type { SettingsReader } from './project.ts'
@@ -101,7 +101,7 @@ export async function pingFriendModel(input: PingFriendModelInput): Promise<{ ok
 
   try {
     const text = await completeViaLlmStream(input.llm, buildFriendGenerateOptions({
-      route: requireLlmRoute(resolved, '@wish233/dsh-friend-settings'),
+      route: requireLlmRoute(resolved, '@wishp3/dsh-friend-settings'),
       system: 'Reply with the single word pong and nothing else.',
       user: 'ping',
       maxTokens: 64,

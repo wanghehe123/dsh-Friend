@@ -1,11 +1,11 @@
-import { logPluginMount } from '@wish233/dsh-friend-shared'
+import { logPluginMount } from '@wishp3/dsh-friend-shared'
 
 import {
   createFriendPerception,
   type FriendPerception,
 } from './seam.ts'
 
-export const name = '@wish233/dsh-friend-perception'
+export const name = '@wishp3/dsh-friend-perception'
 
 /**
  * This plugin does not read `ctx.<service>`. Do not add inject entries

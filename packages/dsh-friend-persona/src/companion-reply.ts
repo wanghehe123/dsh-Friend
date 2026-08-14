@@ -20,7 +20,7 @@
  * must not `import '@deepseek-ai/dsh-session'` at runtime.
  */
 
-import { FRIEND_PRESET_IDS } from '@wish233/dsh-friend-shared'
+import { FRIEND_PRESET_IDS } from '@wishp3/dsh-friend-shared'
 
 /** Official Cordis event name from `@deepseek-ai/dsh-session`. */
 export const SESSION_EVENT_NAME = 'session/event' as const

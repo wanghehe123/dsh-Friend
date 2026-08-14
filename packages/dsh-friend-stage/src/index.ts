@@ -16,7 +16,7 @@ import {
   type FriendAgentRegistry,
   type FriendRouteContext,
   type FriendToolContext,
-} from '@wish233/dsh-friend-shared'
+} from '@wishp3/dsh-friend-shared'
 
 import {
   createCompanionSessionFilter,
@@ -24,7 +24,7 @@ import {
   subscribeCompanionReplies,
   wrapContextSessionEvents,
   type SessionEventSource,
-} from '@wish233/dsh-friend-persona'
+} from '@wishp3/dsh-friend-persona'
 
 import { createChatRoutes } from './chat-routes.ts'
 import { createChatTracker, getSharedChatTracker, type ChatTracker } from './chat-state.ts'
@@ -128,7 +128,7 @@ export {
   detectDshPet,
 } from './float-stage.ts'
 
-export const name = '@wish233/dsh-friend-stage'
+export const name = '@wishp3/dsh-friend-stage'
 export const inject = [
   'webServer',
   'tools',

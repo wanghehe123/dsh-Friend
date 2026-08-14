@@ -1,7 +1,7 @@
 # Third-party notices
 
-Runtime `dependencies` of this package. Installing `@wish233/dsh-friend-tts`
-pulls them from npm. Workspace packages (`@wish233/dsh-friend-*`) are
+Runtime `dependencies` of this package. Installing `@wishp3/dsh-friend-tts`
+pulls them from npm. Workspace packages (`@wishp3/dsh-friend-*`) are
 first-party and are not listed here.
 
 ## ws 8.21.3

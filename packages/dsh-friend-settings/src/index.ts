@@ -8,7 +8,7 @@ import {
   type FriendModelCatalog,
   type FriendRouteContext,
   type ResolveFriendDataDirOptions,
-} from '@wish233/dsh-friend-shared'
+} from '@wishp3/dsh-friend-shared'
 
 import {
   createFriendCoreSettingsSchema,
@@ -21,7 +21,7 @@ import { createShellHeartbeatStore } from './shell-heartbeat.ts'
 import type { SettingsReader } from './project.ts'
 import type { SettingsSanitizeSeams } from './sanitize.ts'
 
-export const name = '@wish233/dsh-friend-settings'
+export const name = '@wishp3/dsh-friend-settings'
 
 /**
  * Cordis services this plugin reads. Accessing `ctx.webServer` / `ctx.settings`

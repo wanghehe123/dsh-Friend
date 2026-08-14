@@ -1,6 +1,6 @@
 # dsh-Friend Live2D stage
 
-`@wish233/dsh-friend-stage` provides the standalone companion viewer at
+`@wishp3/dsh-friend-stage` provides the standalone companion viewer at
 `/friend/pet`. Built-in models are **奶龙** (first-party Cubism 4.2 runtime zip
 extracted to `vendor/nailong/`) and official **Hiyori Momose - FREE** (downloaded
 after the user accepts Live2D terms). Rendering uses PixiJS and

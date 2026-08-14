@@ -2,7 +2,7 @@
  * Host-only schemastery schema for `friend-growth`.
  * Imported from `index.ts` only — never from the client half.
  */
-import { Schema, type FriendSchema } from '@wish233/dsh-friend-shared'
+import { Schema, type FriendSchema } from '@wishp3/dsh-friend-shared'
 
 import { DEFAULT_GROWTH_SETTINGS } from './settings.ts'
 

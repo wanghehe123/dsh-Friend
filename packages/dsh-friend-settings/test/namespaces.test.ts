@@ -1,4 +1,4 @@
-import { FRIEND_SETTINGS_NAMESPACES, SETTINGS_NAMESPACE_PATTERN } from '@wish233/dsh-friend-shared/universal'
+import { FRIEND_SETTINGS_NAMESPACES, SETTINGS_NAMESPACE_PATTERN } from '@wishp3/dsh-friend-shared/universal'
 import { describe, expect, it } from 'vitest'
 
 import { CORE_SETTINGS_NAMESPACE } from '../src/core-settings.ts'

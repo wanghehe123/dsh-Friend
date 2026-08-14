@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import { resolveFriendDataDir } from '@wish233/dsh-friend-shared'
-import { STAGE_TOOLS, resolveFriendDataDir as resolvePersonaFriendDataDir } from '@wish233/dsh-friend-persona'
+import { resolveFriendDataDir } from '@wishp3/dsh-friend-shared'
+import { STAGE_TOOLS, resolveFriendDataDir as resolvePersonaFriendDataDir } from '@wishp3/dsh-friend-persona'
 
 import { resolveFriendDataRoot } from '../src/live2d/asset-store.ts'
 import { STAGE_TOOL_NAMES, createPerformanceTools } from '../src/tools.ts'

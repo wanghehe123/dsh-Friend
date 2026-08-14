@@ -1,4 +1,4 @@
-# @wish233/dsh-friend-settings
+# @wishp3/dsh-friend-settings
 
 设置父卡片、配置中心小窗（十分区）与数据/关于。
 

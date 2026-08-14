@@ -44,15 +44,15 @@ export { FRIEND_PACKAGES }
 
 /** Packages that ship a `dsh.client` half. `all` and `perception` are host-only. */
 export const FRIEND_CLIENT_PACKAGES = Object.freeze([
-  '@wish233/dsh-friend-shared',
-  '@wish233/dsh-friend-persona',
-  '@wish233/dsh-friend-memory',
-  '@wish233/dsh-friend-tts',
-  '@wish233/dsh-friend-asr',
-  '@wish233/dsh-friend-stage',
-  '@wish233/dsh-friend-growth',
-  '@wish233/dsh-friend-reactions',
-  '@wish233/dsh-friend-settings',
+  '@wishp3/dsh-friend-shared',
+  '@wishp3/dsh-friend-persona',
+  '@wishp3/dsh-friend-memory',
+  '@wishp3/dsh-friend-tts',
+  '@wishp3/dsh-friend-asr',
+  '@wishp3/dsh-friend-stage',
+  '@wishp3/dsh-friend-growth',
+  '@wishp3/dsh-friend-reactions',
+  '@wishp3/dsh-friend-settings',
 ])
 
 export const FAILED_TO_LOAD_PLUGINS = 'Failed to load plugins'

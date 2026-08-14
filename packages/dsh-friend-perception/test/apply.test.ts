@@ -4,12 +4,12 @@ import { apply, applyPerception, getFriendPerception, name } from '../src/index.
 
 describe('perception host apply', () => {
   it('mounts without inject and reports unavailable', async () => {
-    expect(name).toBe('@wish233/dsh-friend-perception')
+    expect(name).toBe('@wishp3/dsh-friend-perception')
     expect(Object.hasOwn(await import('../src/index.ts'), 'inject')).toBe(false)
 
     const info = vi.spyOn(console, 'info').mockImplementation(() => {})
     const handle = applyPerception()
-    expect(info).toHaveBeenCalledWith('dsh-friend:plugin-mount @wish233/dsh-friend-perception')
+    expect(info).toHaveBeenCalledWith('dsh-friend:plugin-mount @wishp3/dsh-friend-perception')
     expect(handle.perception.capabilities().available).toBe(false)
     await expect(handle.perception.captureContext()).resolves.toMatchObject({
       contentType: 'unavailable',

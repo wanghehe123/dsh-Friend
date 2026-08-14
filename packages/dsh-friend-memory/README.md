@@ -1,4 +1,4 @@
-# @wish233/dsh-friend-memory
+# @wishp3/dsh-friend-memory
 
 Markdown 记忆存储、记忆工具、自动小结、夜间归纳。不依赖 embedding。
 

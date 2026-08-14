@@ -55,27 +55,27 @@ function fixtureFiles(options?: { includeOrphan?: boolean }) {
   const files: Record<string, string> = {
     'packages/dsh-friend-all/aggregate.yml': [
       'patchFrom:',
-      "  - '@wish233/dsh-friend-alpha'",
-      "  - '@wish233/dsh-friend-beta'",
+      "  - '@wishp3/dsh-friend-alpha'",
+      "  - '@wishp3/dsh-friend-beta'",
       'deps:',
-      "  - '@wish233/dsh-friend-beta'",
-      "  - '@wish233/dsh-friend-alpha'",
+      "  - '@wishp3/dsh-friend-beta'",
+      "  - '@wishp3/dsh-friend-alpha'",
       '',
     ].join('\n'),
     'packages/dsh-friend-all/package.json': `${JSON.stringify({
-      name: '@wish233/dsh-friend-all',
+      name: '@wishp3/dsh-friend-all',
       version: '0.1.0',
       dependencies: {
         leftover: '^1.0.0',
       },
     }, null, 2)}\n`,
     'packages/dsh-friend-all/cordis.patch.yml': '# stale\n',
-    'packages/dsh-friend-alpha/package.json': featureManifest('@wish233/dsh-friend-alpha'),
-    'packages/dsh-friend-beta/package.json': featureManifest('@wish233/dsh-friend-beta'),
+    'packages/dsh-friend-alpha/package.json': featureManifest('@wishp3/dsh-friend-alpha'),
+    'packages/dsh-friend-beta/package.json': featureManifest('@wishp3/dsh-friend-beta'),
   }
 
   if (options?.includeOrphan === true) {
-    files['packages/dsh-friend-orphan/package.json'] = featureManifest('@wish233/dsh-friend-orphan')
+    files['packages/dsh-friend-orphan/package.json'] = featureManifest('@wishp3/dsh-friend-orphan')
   }
 
   return files
@@ -125,6 +125,6 @@ describe('aggregate bundle guard', () => {
 
     expect(result.code).toBe(1)
     expect(result.stderr).toContain('unregistered feature package')
-    expect(result.stderr).toContain('@wish233/dsh-friend-orphan')
+    expect(result.stderr).toContain('@wishp3/dsh-friend-orphan')
   })
 })

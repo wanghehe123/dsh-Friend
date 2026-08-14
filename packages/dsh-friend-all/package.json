@@ -1,5 +1,5 @@
 {
-  "name": "@wish233/dsh-friend-all",
+  "name": "@wishp3/dsh-friend-all",
   "version": "0.1.0",
   "license": "MIT",
   "publishConfig": {
@@ -37,7 +37,8 @@
   ],
   "scripts": {
     "build": "tsdown --config tsdown.config.ts",
-    "typecheck": "tsc --noEmit -p tsconfig.json"
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "prepublishOnly": "pnpm run build"
   },
   "dsh": {
     "bundle": {
@@ -45,15 +46,18 @@
     }
   },
   "dependencies": {
-    "@wish233/dsh-friend-shared": "workspace:*",
-    "@wish233/dsh-friend-persona": "workspace:*",
-    "@wish233/dsh-friend-memory": "workspace:*",
-    "@wish233/dsh-friend-tts": "workspace:*",
-    "@wish233/dsh-friend-asr": "workspace:*",
-    "@wish233/dsh-friend-stage": "workspace:*",
-    "@wish233/dsh-friend-growth": "workspace:*",
-    "@wish233/dsh-friend-reactions": "workspace:*",
-    "@wish233/dsh-friend-settings": "workspace:*",
-    "@wish233/dsh-friend-perception": "workspace:*"
+    "@wishp3/dsh-friend-shared": "workspace:*",
+    "@wishp3/dsh-friend-persona": "workspace:*",
+    "@wishp3/dsh-friend-memory": "workspace:*",
+    "@wishp3/dsh-friend-tts": "workspace:*",
+    "@wishp3/dsh-friend-asr": "workspace:*",
+    "@wishp3/dsh-friend-stage": "workspace:*",
+    "@wishp3/dsh-friend-growth": "workspace:*",
+    "@wishp3/dsh-friend-reactions": "workspace:*",
+    "@wishp3/dsh-friend-settings": "workspace:*",
+    "@wishp3/dsh-friend-perception": "workspace:*"
+  },
+  "bugs": {
+    "url": "https://github.com/wanghehe123/dsh-Friend/issues"
   }
 }

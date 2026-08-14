@@ -2,7 +2,7 @@ import { access, readFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 
-import { resolveFriendDataDir } from '@wish233/dsh-friend-shared'
+import { resolveFriendDataDir } from '@wishp3/dsh-friend-shared'
 
 import {
   CUBISM_CORE_OFFICIAL_SOURCE_URL,

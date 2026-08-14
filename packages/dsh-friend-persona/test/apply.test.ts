@@ -4,7 +4,7 @@ import { join } from 'node:path'
 
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { createFriendSettingsInstallProbe, FRIEND_PRESET_IDS, FRIEND_SETTINGS_NAMESPACES } from '@wish233/dsh-friend-shared'
+import { createFriendSettingsInstallProbe, FRIEND_PRESET_IDS, FRIEND_SETTINGS_NAMESPACES } from '@wishp3/dsh-friend-shared'
 
 import {
   apply,

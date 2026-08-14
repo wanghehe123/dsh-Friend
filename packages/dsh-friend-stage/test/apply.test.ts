@@ -1,12 +1,12 @@
 import { describe, expect, it, vi } from 'vitest'
 
 import type { WebRoute } from '@deepseek-ai/dsh-host-webserver'
-import { createFriendSettingsInstallProbe, FRIEND_EVENTS_PATH, FRIEND_SETTINGS_NAMESPACES } from '@wish233/dsh-friend-shared'
+import { createFriendSettingsInstallProbe, FRIEND_EVENTS_PATH, FRIEND_SETTINGS_NAMESPACES } from '@wishp3/dsh-friend-shared'
 
 import { apply, inject, name } from '../src/index.ts'
 import { createChatTracker } from '../src/chat-state.ts'
 import { createPerformanceTracker } from '../src/performance-state.ts'
-import type { SessionEventSource } from '@wish233/dsh-friend-persona'
+import type { SessionEventSource } from '@wishp3/dsh-friend-persona'
 
 describe('stage apply()', () => {
   it('registers friend-stage on the production host path', () => {
@@ -46,7 +46,7 @@ describe('stage apply()', () => {
 
     apply(ctx)
 
-    expect(name).toBe('@wish233/dsh-friend-stage')
+    expect(name).toBe('@wishp3/dsh-friend-stage')
     expect(inject).toEqual([
       'webServer',
       'tools',

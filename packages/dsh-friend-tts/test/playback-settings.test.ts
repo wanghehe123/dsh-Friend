@@ -1,4 +1,4 @@
-import { createStrictCordisCtx } from '@wish233/dsh-friend-shared'
+import { createStrictCordisCtx } from '@wishp3/dsh-friend-shared'
 import { describe, expect, it, vi } from 'vitest'
 
 import { apply, startTtsClient, type FriendTtsClientContext } from '../src/client.ts'

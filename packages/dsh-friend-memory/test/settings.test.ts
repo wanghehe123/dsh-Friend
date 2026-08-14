@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { FRIEND_SETTINGS_NAMESPACES } from '@wish233/dsh-friend-shared'
+import { FRIEND_SETTINGS_NAMESPACES } from '@wishp3/dsh-friend-shared'
 
 import {
   DEFAULT_MEMORY_SETTINGS,

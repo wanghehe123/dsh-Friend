@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { FRIEND_SETTINGS_NAMESPACES } from '@wish233/dsh-friend-shared/universal'
+import { FRIEND_SETTINGS_NAMESPACES } from '@wishp3/dsh-friend-shared/universal'
 
 import { FRIEND_TTS_PREVIEW_SENTENCE } from '../src/preview-sentence.ts'
 import { createTtsSettingsForm } from '../src/settings-form.ts'

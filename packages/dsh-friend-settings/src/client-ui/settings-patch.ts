@@ -12,7 +12,7 @@
 import {
   FRIEND_SETTINGS_NAMESPACES,
   type FriendSettingsNamespace,
-} from '@wish233/dsh-friend-shared/universal'
+} from '@wishp3/dsh-friend-shared/universal'
 
 import {
   FRIEND_SETTINGS_PATCH_PATH,

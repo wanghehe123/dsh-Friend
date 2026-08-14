@@ -32,7 +32,8 @@
     "check:aggregate": "node scripts/aggregate.mjs --check",
     "check:pixi": "node scripts/check-pixi-live2d.mjs",
     "smoke": "node scripts/smoke.mjs",
-    "browser-smoke": "node scripts/browser-smoke.mjs"
+    "browser-smoke": "node scripts/browser-smoke.mjs",
+    "release:npm": "node scripts/publish-npm.mjs"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "4.0.1",

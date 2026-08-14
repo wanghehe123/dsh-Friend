@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { FRIEND_SETTINGS_NAMESPACES } from '@wish233/dsh-friend-shared'
+import { FRIEND_SETTINGS_NAMESPACES } from '@wishp3/dsh-friend-shared'
 
 import { LIVE2D_TARGET_FPS } from '../../src/live2d/performance.ts'
 import {

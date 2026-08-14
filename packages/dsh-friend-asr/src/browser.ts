@@ -1,10 +1,10 @@
 /**
  * Lean browser entry for the standalone pet page (no ModuleLoader, no `node:`).
  *
- * Import from `@wish233/dsh-friend-asr/browser`. Built as ordinary ESM
+ * Import from `@wishp3/dsh-friend-asr/browser`. Built as ordinary ESM
  * (`lib/browser.js`) — safe to always-bundle into `pet.iife.js`.
  *
- * Allowed shared import: `@wish233/dsh-friend-shared/universal` only.
+ * Allowed shared import: `@wishp3/dsh-friend-shared/universal` only.
  *
  * @see `./client.ts` — dsh web ModuleLoader payload (`./client`)
  * @see `./index.ts` — Node host (proxy, routes, `node:`)

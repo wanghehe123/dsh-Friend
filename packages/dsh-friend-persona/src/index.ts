@@ -9,7 +9,7 @@ import {
   type FriendPromptContext,
   type FriendToolContext,
   logPluginMount,
-} from '@wish233/dsh-friend-shared'
+} from '@wishp3/dsh-friend-shared'
 
 import {
   resolveDshHome,
@@ -44,7 +44,7 @@ import {
 } from './settings-schema.ts'
 import { createPersonaStore, type PersonaStore } from './store.ts'
 
-export const name = '@wish233/dsh-friend-persona'
+export const name = '@wishp3/dsh-friend-persona'
 
 /**
  * Cordis service names this plugin reads. Accessing `ctx.agentPresets`

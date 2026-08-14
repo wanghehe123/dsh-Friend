@@ -8,7 +8,7 @@ describe('dsh client half payload', () => {
   it('starts with the ModuleLoader factory wrapper', async () => {
     const source = await readFile(clientUrl, 'utf8')
     expect(source.startsWith('window.__ModuleLoader__.load({')).toBe(true)
-    expect(source).toContain('id: "@wish233/dsh-friend-tts"')
+    expect(source).toContain('id: "@wishp3/dsh-friend-tts"')
     expect(source).toContain('factory: (require) => {')
   })
 
@@ -17,7 +17,7 @@ describe('dsh client half payload', () => {
     const factoryStart = source.indexOf('factory: (require) => {')
     expect(factoryStart).toBeGreaterThan(-1)
     const factory = source.slice(factoryStart)
-    expect(factory).not.toMatch(/\brequire\s*\(\s*['"](?!@wish233\/dsh-friend-shared\/universal)[^'"]+['"]\s*\)/)
+    expect(factory).not.toMatch(/\brequire\s*\(\s*['"](?!@wishp3\/dsh-friend-shared\/universal)[^'"]+['"]\s*\)/)
     expect(factory).not.toMatch(/\brequire\s*\(\s*['"][^'"]+['"]\s*\)/)
   })
 })

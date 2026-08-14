@@ -8,7 +8,7 @@
   - 验收：`openspec validate --specs` 与 `openspec validate m1-m4-implementation-evidence --strict` 退出码 0
   - 回链：W-M1-3、W-M1-4、W-M2-*、W-M3-1/3/4、W-M4-2/6/7、W-M0-4/6/7
 - [x] 1.2 更新 `docs/dev-loop.md` 启动日志判据（C）
-  - 验收：文中不再把 `[@wish233/dsh-friend-shared] apply()` 当作挂载证明；写明 `dsh-friend:plugin-mount <包名>` 与 `dsh-friend:preset-ready <预设 id>`
+  - 验收：文中不再把 `[@wishp3/dsh-friend-shared] apply()` 当作挂载证明；写明 `dsh-friend:plugin-mount <包名>` 与 `dsh-friend:preset-ready <预设 id>`
   - 回链：W-M0-4、W-M0-7
 - [x] 1.3 更新 `docs/work-breakdown.md` 的 A/B/J 与 D 验收改写
   - 验收：W-M4-7 改动点不再写 zod、路径为 `src/tools.ts`；W-M4-6 路径为 `src/tag-parser.ts`；W-M4-2 验收改为按文件扫描；W-M1-3 / W-M1-4 / W-M4-7 验收改为 mock+行为+manual，并注明待官方 inspect 升级

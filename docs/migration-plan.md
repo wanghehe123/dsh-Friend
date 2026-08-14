@@ -196,7 +196,7 @@ dsh-Friend/
 | ⑪ | `dsh-friend-all` | 聚合 `cordis.patch.yml`（含 time MCP 接线）+ 依赖清单 | — |
 | ⑫ | `friend-shell` | —（Tauri app：透明置顶窗、全局快捷键、托盘、自启、加载 /friend/pet） | — |
 
-命名与发布：npm scope 用项目所有者账号（占位 `@wish233/dsh-friend-*`，发布前定稿）；GitHub 仓库 `dsh-Friend`，加 `dsh-plugin` topic；版本从 `0.1.0` 起。
+命名与发布：npm scope 用项目所有者账号（占位 `@wishp3/dsh-friend-*`，发布前定稿）；GitHub 仓库 `dsh-Friend`，加 `dsh-plugin` topic；版本从 `0.1.0` 起。
 
 ---
 

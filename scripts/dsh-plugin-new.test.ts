@@ -31,7 +31,7 @@ describe('dsh-plugin-new', () => {
 
   it('host template calls the shared mount helper', async () => {
     const source = await readFile(SCRIPT, 'utf8')
-    expect(source).toContain("import { logPluginMount } from '@wish233/dsh-friend-shared'")
+    expect(source).toContain("import { logPluginMount } from '@wishp3/dsh-friend-shared'")
     expect(source).toContain('logPluginMount(name)')
   })
 

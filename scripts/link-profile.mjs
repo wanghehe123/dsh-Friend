@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Link this repo's `@wish233/dsh-friend-*` packages into a dsh profile's
+ * Link this repo's `@wishp3/dsh-friend-*` packages into a dsh profile's
  * `node_modules` so `dsh web` loads the local `lib/` build.
  *
  *   export CI=true    # required: pnpm without a TTY aborts with
@@ -9,7 +9,7 @@
  *   node scripts/link-profile.mjs [--profile web] [--dry-run] [--unlink]
  *
  * Target:
- *   $DSH_HOME/profiles/<profile>/node_modules/@wish233/<pkg>
+ *   $DSH_HOME/profiles/<profile>/node_modules/@wishp3/<pkg>
  *     → <repo>/packages/<pkg>
  *
  * Safety: this script never `rm -rf`s anything. The only destructive call is
@@ -24,7 +24,7 @@ import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
 export const DEFAULT_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-export const SCOPE = '@wish233'
+export const SCOPE = '@wishp3'
 export const DEFAULT_PROFILE = 'web'
 export const BUILD_HINT = 'export CI=true && pnpm -r build'
 export const PROFILE_PATCH_NAME = 'cordis.patch.yml'
@@ -33,7 +33,7 @@ export const FRIEND_PATCH_MARKER = "id: dsh-friend-shared"
 export function usage() {
   return `Usage: node scripts/link-profile.mjs [--profile <name>] [--dry-run] [--unlink]
 
-Link @wish233/dsh-friend-* package directories into a dsh profile so \`dsh web\`
+Link @wishp3/dsh-friend-* package directories into a dsh profile so \`dsh web\`
 loads this checkout's lib/ builds.
 
   --profile <name>   Profile under $DSH_HOME/profiles (default: web)

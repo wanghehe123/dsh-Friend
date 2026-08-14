@@ -1,4 +1,4 @@
-import type { ToolDefinition } from '@wish233/dsh-friend-shared'
+import type { ToolDefinition } from '@wishp3/dsh-friend-shared'
 import { describe, expect, it } from 'vitest'
 
 import { apply, name } from '../src/index.ts'
@@ -105,7 +105,7 @@ describe('memory tools are companion-preset scoped', () => {
       },
       { role: 'host', dataDir, env: {}, completePrompt: async () => '[]' },
     )
-    expect(name).toBe('@wish233/dsh-friend-memory')
+    expect(name).toBe('@wishp3/dsh-friend-memory')
     expect(pipeline.visible()).toEqual([])
   })
 

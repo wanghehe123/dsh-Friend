@@ -8,7 +8,7 @@ describe('dsh client half payload', () => {
   it('starts with the ModuleLoader factory wrapper', async () => {
     const source = await readFile(clientUrl, 'utf8')
     expect(source.startsWith('window.__ModuleLoader__.load({')).toBe(true)
-    expect(source).toContain('id: "@wish233/dsh-friend-asr"')
+    expect(source).toContain('id: "@wishp3/dsh-friend-asr"')
     expect(source).toContain('factory: (require) => {')
   })
 

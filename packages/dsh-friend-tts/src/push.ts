@@ -9,7 +9,7 @@
 
 import type { IncomingMessage, ServerResponse } from 'node:http'
 
-import { registerRoute, type FriendRouteContext } from '@wish233/dsh-friend-shared'
+import { registerRoute, type FriendRouteContext } from '@wishp3/dsh-friend-shared'
 
 import { FRIEND_TTS_EVENTS_PATH } from './paths.ts'
 import type { FriendTtsReadyEvent, FriendTtsReadySink } from './playback-events.ts'

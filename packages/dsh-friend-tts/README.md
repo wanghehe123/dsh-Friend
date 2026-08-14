@@ -1,4 +1,4 @@
-# @wish233/dsh-friend-tts
+# @wishp3/dsh-friend-tts
 
 TTS provider seam、队列缓存、文本预处理、播放与口型
 

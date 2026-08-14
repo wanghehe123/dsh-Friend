@@ -6,7 +6,7 @@ import {
   subscribeCompanionReplies,
   wrapContextSessionEvents,
   type SessionEventSource,
-} from '@wish233/dsh-friend-persona'
+} from '@wishp3/dsh-friend-persona'
 import {
   bindHostSettings,
   FRIEND_SETTINGS_NAMESPACES,
@@ -15,7 +15,7 @@ import {
   registerRoute,
   resolveFriendDataDir,
   type FriendRouteContext,
-} from '@wish233/dsh-friend-shared'
+} from '@wishp3/dsh-friend-shared'
 
 import { createFriendTtsCache, type FriendTtsCache } from './cache.ts'
 import { createDashScopeTtsProvider, type DashScopeProviderOptions } from './providers/dashscope.ts'
@@ -47,7 +47,7 @@ import {
   DEFAULT_TTS_SETTINGS_ENTRY,
 } from './settings-schema.ts'
 
-export const name = '@wish233/dsh-friend-tts'
+export const name = '@wishp3/dsh-friend-tts'
 /** Cordis forbids reading `ctx.webServer` / `ctx.settings` unless this plugin injects them. */
 export const inject = ['webServer', 'settings'] as const
 

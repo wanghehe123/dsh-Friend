@@ -1,4 +1,4 @@
-# @wish233/dsh-friend-asr
+# @wishp3/dsh-friend-asr
 
 语音输入引擎、三种收音模式、转写代理
 

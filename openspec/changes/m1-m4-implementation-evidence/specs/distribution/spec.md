@@ -29,7 +29,7 @@
 - **THEN** 抛错且插件树不能完成挂载
 
 ### Requirement: shared 三出口与包边界
-`@wish233/dsh-friend-shared` SHALL 提供三个不可混用的出口：
+`@wishp3/dsh-friend-shared` SHALL 提供三个不可混用的出口：
 
 - `.`：host 半区裸 ESM，含 Node 专用代码，**禁止**进入 client 半区；
 - `./universal`：平台中立裸 ESM，只放纯常量/纯函数，**禁止** `node:` 与浏览器全局；client 构建必须将其**内联**（它不在 `shared/web-platform.ts` 平台种子表里；若被 external，运行时抛 `require missed the module table`）；
@@ -43,7 +43,7 @@
 
 #### Scenario: universal 必须被 client 内联
 - **WHEN** 构建任一功能包 client 半区
-- **THEN** `@wish233/dsh-friend-shared/universal` 被打进该包 factory，而不是 `require` 外部模块表
+- **THEN** `@wishp3/dsh-friend-shared/universal` 被打进该包 factory，而不是 `require` 外部模块表
 
 ### Requirement: 工具定义使用 ParameterSchemaSpec
 经 compat 注册的伴侣工具 SHALL 使用 rc.6 `defineTool` 的 `parameters: ParameterSchemaSpec`（隐式 object 的属性表，每项 `{ type, enum?, required?, description? }`，编译成 JSON Schema），SHALL NOT 把 zod schema 或 schemastery `Schema` 传给 `defineTool`。`output.schema` 与 `output.render` SHALL 必填。

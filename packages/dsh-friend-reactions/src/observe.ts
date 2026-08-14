@@ -1,4 +1,4 @@
-import { FRIEND_PRESET_IDS } from '@wish233/dsh-friend-shared'
+import { FRIEND_PRESET_IDS } from '@wishp3/dsh-friend-shared'
 
 /**
  * Internal work-event kinds derived from real `SessionEventMap` keys

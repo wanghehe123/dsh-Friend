@@ -70,7 +70,7 @@ export function postPetStageChat(
 /**
  * Adopt an ASR client on the standalone pet page.
  *
- * The pet IIFE cannot load `@wish233/dsh-friend-asr/client` (ModuleLoader
+ * The pet IIFE cannot load `@wishp3/dsh-friend-asr/client` (ModuleLoader
  * payload). Production `src/pet.ts` supplies `startAsrClient` via
  * `options.factory` (naked ESM, always-bundled, with a snapshot settingsScope).
  *

@@ -1,12 +1,12 @@
 /**
- * Client half. Must stay free of `node:` and `@wish233/dsh-friend-shared`
+ * Client half. Must stay free of `node:` and `@wishp3/dsh-friend-shared`
  * (host). Namespace constants come from `/universal`.
  *
  * React is a dsh web platform seed (`shared/web-platform.ts`). Do not
  * statically import it here — the factory must materialize without
  * touching the loader table. Slot render callbacks call `friendReact()`.
  */
-import { FRIEND_SETTINGS_NAMESPACES } from '@wish233/dsh-friend-shared/universal'
+import { FRIEND_SETTINGS_NAMESPACES } from '@wishp3/dsh-friend-shared/universal'
 
 import {
   startSettingsClient,

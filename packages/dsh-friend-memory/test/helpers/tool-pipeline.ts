@@ -1,4 +1,4 @@
-import type { ToolDefinition, ToolRestriction } from '@wish233/dsh-friend-shared'
+import type { ToolDefinition, ToolRestriction } from '@wishp3/dsh-friend-shared'
 
 export class MockToolPipeline {
   readonly global: ToolDefinition[] = []

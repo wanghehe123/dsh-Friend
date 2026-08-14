@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { FRIEND_SETTINGS_NAMESPACES } from '@wish233/dsh-friend-shared/universal'
+import { FRIEND_SETTINGS_NAMESPACES } from '@wishp3/dsh-friend-shared/universal'
 
 import { startSettingsClient } from '../src/client-register.ts'
 import { inject, name } from '../src/client-meta.ts'
@@ -54,7 +54,7 @@ function fakeDocument(view: EventTarget) {
 
 describe('settings client apply', () => {
   it('declares slots and settingsScope inject', () => {
-    expect(name).toBe('@wish233/dsh-friend-settings/client')
+    expect(name).toBe('@wishp3/dsh-friend-settings/client')
     expect(inject).toEqual(['slots', 'settingsScope'])
   })
 

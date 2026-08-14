@@ -9,10 +9,10 @@ import { dshClientBuild, hostBuild, universalBuild } from '../../shared/tsdown.c
  * - `./client` / dshClientBuild → ModuleLoader payload (`lib/client.js`)
  */
 export default defineConfig([
-  hostBuild({ name: '@wish233/dsh-friend-asr' }),
+  hostBuild({ name: '@wishp3/dsh-friend-asr' }),
   universalBuild({
     name: 'browser',
     entry: { browser: 'src/browser.ts' },
   }),
-  dshClientBuild({ packageName: '@wish233/dsh-friend-asr' }),
+  dshClientBuild({ packageName: '@wishp3/dsh-friend-asr' }),
 ])

@@ -13,7 +13,7 @@ import {
   type FriendRouteContext,
   type ResolveFriendDataDirOptions,
   type ResolveModelDeps,
-} from '@wish233/dsh-friend-shared'
+} from '@wishp3/dsh-friend-shared'
 
 import { commitGrowthDraft } from './commit.ts'
 import { createGrowthLlm, type CompleteGrowthPrompt, type GrowthLlm } from './llm.ts'
@@ -32,7 +32,7 @@ import {
 } from './settings-schema.ts'
 import { GrowthStore } from './store.ts'
 
-export const name = '@wish233/dsh-friend-growth'
+export const name = '@wishp3/dsh-friend-growth'
 
 /**
  * Cordis services this plugin may read. Accessing `ctx.webServer` /

@@ -27,6 +27,6 @@ describe('aggregate bundle contract', () => {
 
     expect(bundle, 'aggregate bundle files must exist').toBeDefined()
     expect(bundle?.manifest.dsh?.bundle?.patch).toBe('./cordis.patch.yml')
-    expect(bundle?.patch).toContain('@wish233/dsh-friend-stage')
+    expect(bundle?.patch).toContain('@wishp3/dsh-friend-stage')
   })
 })

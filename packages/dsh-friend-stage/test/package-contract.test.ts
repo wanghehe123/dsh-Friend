@@ -54,13 +54,13 @@ describe('stage package contract', () => {
     expect(manifest?.dependencies).not.toHaveProperty('pixi-live2d-display')
     expect(manifest?.devDependencies?.['pixi.js']).toBe('6.5.10')
     expect(manifest?.devDependencies?.['pixi-live2d-display']).toBe('0.4.0')
-    expect(manifest?.dependencies?.['@wish233/dsh-friend-asr']).toBe('workspace:*')
+    expect(manifest?.dependencies?.['@wishp3/dsh-friend-asr']).toBe('workspace:*')
     expect(manifest?.dependencies?.fflate).toBe('0.8.3')
     expect(manifest?.files).toContain('vendor-integrity.json')
   })
 
   it('exports a scoped plugin id matching the npm package name', async () => {
     const stage = await import('../src/index.ts')
-    expect(stage.name).toBe('@wish233/dsh-friend-stage')
+    expect(stage.name).toBe('@wishp3/dsh-friend-stage')
   })
 })

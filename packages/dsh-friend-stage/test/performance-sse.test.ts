@@ -4,7 +4,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 import { describe, expect, it } from 'vitest'
 
 import type { WebRoute } from '@deepseek-ai/dsh-host-webserver'
-import type { FriendPushEvent, ToolDefinition } from '@wish233/dsh-friend-shared'
+import type { FriendPushEvent, ToolDefinition } from '@wishp3/dsh-friend-shared'
 
 import { apply, createStageRoutes } from '../src/index.ts'
 import {

@@ -4,7 +4,7 @@ import {
   createFriendSettingsInstallProbe,
   createStrictCordisCtx,
   FRIEND_SETTINGS_NAMESPACES,
-} from '@wish233/dsh-friend-shared'
+} from '@wishp3/dsh-friend-shared'
 
 import { apply, inject, name } from '../src/index.ts'
 import {

@@ -8,7 +8,7 @@ import {
   type FriendAgentHandle,
   type FriendAgentRegistry,
   type FriendCreateAgentOptions,
-} from '@wish233/dsh-friend-shared'
+} from '@wishp3/dsh-friend-shared'
 
 /** Settings field in `friend-core` that stores the standing companion session id. */
 export const COMPANION_SESSION_ID_FIELD = 'companionSessionId' as const
@@ -313,4 +313,4 @@ function cause(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
 }
 
-export type { FriendAgentHandle, FriendUserMessage } from '@wish233/dsh-friend-shared'
+export type { FriendAgentHandle, FriendUserMessage } from '@wishp3/dsh-friend-shared'

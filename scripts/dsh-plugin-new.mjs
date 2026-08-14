@@ -14,7 +14,7 @@ import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..')
-const SCOPE = '@wish233'
+const SCOPE = '@wishp3'
 const VERSION = '0.1.0'
 
 /** One-line README / package description for the known M0 package set. */
@@ -127,7 +127,7 @@ function renderPackageJson(shortName, noClient) {
 
   if (shortName !== 'shared' && shortName !== 'all') {
     manifest.dependencies = {
-      '@wish233/dsh-friend-shared': 'workspace:*',
+      '@wishp3/dsh-friend-shared': 'workspace:*',
     }
   }
 
@@ -163,7 +163,7 @@ export default friendPluginConfig({
 
 function renderIndex(shortName) {
   const name = packageName(shortName)
-  return `import { logPluginMount } from '@wish233/dsh-friend-shared'
+  return `import { logPluginMount } from '@wishp3/dsh-friend-shared'
 
 export const name = '${name}'
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { MEMORY_TOOL_NAMES, createMemoryTools } from '@wish233/dsh-friend-memory'
+import { MEMORY_TOOL_NAMES, createMemoryTools } from '@wishp3/dsh-friend-memory'
 
 import { MEMORY_TOOLS } from '../src/presets.ts'
 

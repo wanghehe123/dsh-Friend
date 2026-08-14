@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { createStrictCordisCtx } from '@wish233/dsh-friend-shared'
-import type { FriendAgentHandle, FriendCreateAgentOptions } from '@wish233/dsh-friend-shared'
+import { createStrictCordisCtx } from '@wishp3/dsh-friend-shared'
+import type { FriendAgentHandle, FriendCreateAgentOptions } from '@wishp3/dsh-friend-shared'
 
 import { bindPersonaSend, bindPersonaWatch, type CompanionSendContext } from '../src/companion-send.ts'
 

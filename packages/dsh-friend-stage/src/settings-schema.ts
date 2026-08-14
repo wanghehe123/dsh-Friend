@@ -2,7 +2,7 @@
  * Host-only schemastery schema for `friend-stage`.
  * Imported from `index.ts` only — never from the client half.
  */
-import { Schema, type FriendSchema } from '@wish233/dsh-friend-shared'
+import { Schema, type FriendSchema } from '@wishp3/dsh-friend-shared'
 
 import { LIVE2D_TARGET_FPS } from './live2d/performance.ts'
 import {

@@ -1,4 +1,4 @@
-# @wish233/dsh-friend-reactions
+# @wishp3/dsh-friend-reactions
 
 工作陪伴：订阅非伴侣会话的 `session/event` 元数据，节流后映射为舞台指令。三档台词（仅动作 / 气泡 / 语音）。
 

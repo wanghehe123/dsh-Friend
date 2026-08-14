@@ -4,7 +4,7 @@ import {
   registerFriendSettings,
   registerRoute,
   type FriendRouteContext,
-} from '@wish233/dsh-friend-shared'
+} from '@wishp3/dsh-friend-shared'
 
 import { createAsrTranscribeProxy } from './proxy.ts'
 import { createAsrTranscribeRoute } from './routes.ts'
@@ -14,7 +14,7 @@ import {
   DEFAULT_ASR_SETTINGS_ENTRY,
 } from './settings-schema.ts'
 
-export const name = '@wish233/dsh-friend-asr'
+export const name = '@wishp3/dsh-friend-asr'
 /** Cordis forbids reading `ctx.webServer` / `ctx.settings` unless this plugin injects them. */
 export const inject = ['webServer', 'settings'] as const
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { FRIEND_SETTINGS_NAMESPACES } from '@wish233/dsh-friend-shared/universal'
+import { FRIEND_SETTINGS_NAMESPACES } from '@wishp3/dsh-friend-shared/universal'
 
 import { resolveAsrEngine } from '../src/engine.ts'
 import { inspectEndpointCapabilities } from '../src/engines/endpoint.ts'

@@ -20,7 +20,7 @@ describe('dsh client half payload', () => {
   it('starts with the ModuleLoader factory wrapper', async () => {
     const source = await readFile(clientUrl, 'utf8')
     expect(source.startsWith('window.__ModuleLoader__.load({')).toBe(true)
-    expect(source).toContain('id: "@wish233/dsh-friend-settings"')
+    expect(source).toContain('id: "@wishp3/dsh-friend-settings"')
     expect(source).toContain('factory: (require) => {')
   })
 
@@ -54,7 +54,7 @@ describe('dsh client half payload', () => {
         (globalThis as { window: typeof previous }).window = previous
       }
     }
-    const factory = factories.get('@wish233/dsh-friend-settings')
+    const factory = factories.get('@wishp3/dsh-friend-settings')
     expect(factory).toBeTypeOf('function')
     const exported = factory?.((spec) => {
       throw new Error(`factory evaluation must not require("${spec}")`)

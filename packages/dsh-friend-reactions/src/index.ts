@@ -5,7 +5,7 @@ import {
   registerFriendSettings,
   type FriendPushEvent,
   type FriendRouteContext,
-} from '@wish233/dsh-friend-shared'
+} from '@wishp3/dsh-friend-shared'
 
 import { observeRawEvent, type SessionEventSource } from './observe.ts'
 import { createReactEngine, type EnqueueTts, type ReactionSnapshot, type ReactEngine } from './react.ts'
@@ -21,7 +21,7 @@ import {
   DEFAULT_REACTIONS_SETTINGS_ENTRY,
 } from './settings-schema.ts'
 
-export const name = '@wish233/dsh-friend-reactions'
+export const name = '@wishp3/dsh-friend-reactions'
 
 /**
  * Cordis services this plugin may read. Accessing `ctx.webServer` /

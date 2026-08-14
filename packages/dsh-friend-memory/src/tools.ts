@@ -3,13 +3,13 @@ import {
   registerTool,
   type FriendToolContext,
   type ToolDefinition,
-} from '@wish233/dsh-friend-shared'
+} from '@wishp3/dsh-friend-shared'
 
 import type { MemoryRetriever } from './retriever.ts'
 import type { MemoryStore } from './store.ts'
 import { MemoryPathError } from './whitelist.ts'
 
-/** Must stay equal to `@wish233/dsh-friend-persona` `MEMORY_TOOLS`. */
+/** Must stay equal to `@wishp3/dsh-friend-persona` `MEMORY_TOOLS`. */
 export const MEMORY_TOOL_NAMES = ['memory_append', 'memory_search', 'memory_get'] as const
 export type MemoryToolName = (typeof MEMORY_TOOL_NAMES)[number]
 

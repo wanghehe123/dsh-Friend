@@ -3,7 +3,7 @@ import { join } from 'node:path'
 export {
   resolveFriendDataDir,
   type ResolveFriendDataDirOptions,
-} from '@wish233/dsh-friend-shared'
+} from '@wishp3/dsh-friend-shared'
 
 /** Must stay equal to persona `currentSlug` / memory `DEFAULT_CHARACTER_SLUG`. */
 export const PERSONA_CURRENT_SLUG_FIELD = 'currentSlug' as const

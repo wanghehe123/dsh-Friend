@@ -1,4 +1,4 @@
-import { registerPromptSection, type FriendPromptContext } from '@wish233/dsh-friend-shared'
+import { registerPromptSection, type FriendPromptContext } from '@wishp3/dsh-friend-shared'
 
 import type { BootstrapBundle } from './retriever.ts'
 

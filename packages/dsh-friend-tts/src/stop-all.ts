@@ -5,7 +5,7 @@
  * player (W-M2-7). ASR (W-M3-4) MUST call this facade, not either path alone.
  *
  * The well-known global lets the ASR client half invoke us without
- * `require('@wish233/dsh-friend-tts/client')` (that payload is a
+ * `require('@wishp3/dsh-friend-tts/client')` (that payload is a
  * ModuleLoader factory, not an importable ESM module).
  */
 

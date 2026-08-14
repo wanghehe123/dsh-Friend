@@ -2,7 +2,7 @@
  * Client-readable aggregation must never carry host secrets.
  * A unique canary is planted in every host document we accept.
  */
-import { FRIEND_SETTINGS_NAMESPACES } from '@wish233/dsh-friend-shared/universal'
+import { FRIEND_SETTINGS_NAMESPACES } from '@wishp3/dsh-friend-shared/universal'
 import { describe, expect, it } from 'vitest'
 
 import { createOfficialSanitizeSeams } from '../src/host-seams.ts'

@@ -38,8 +38,8 @@ async function writePackage(repoRoot: string, dirName: string, name: string, wit
 async function makeWorkspace() {
   const repoRoot = await makeTemp('dsh-friend-link-repo-')
   const profileRoot = await makeTemp('dsh-friend-link-profile-')
-  const shared = await writePackage(repoRoot, 'dsh-friend-shared', '@wish233/dsh-friend-shared', true)
-  const persona = await writePackage(repoRoot, 'dsh-friend-persona', '@wish233/dsh-friend-persona', true)
+  const shared = await writePackage(repoRoot, 'dsh-friend-shared', '@wishp3/dsh-friend-shared', true)
+  const persona = await writePackage(repoRoot, 'dsh-friend-persona', '@wishp3/dsh-friend-persona', true)
   return { repoRoot, profileRoot, shared, persona }
 }
 
@@ -73,8 +73,8 @@ describe('runLinkProfile', () => {
     const result = await runLinkProfile({ repoRoot, profileRoot, dryRun: true })
 
     expect(result.ok).toBe(true)
-    expect(result.lines.some((line) => line.startsWith('would link') && line.includes('@wish233/dsh-friend-shared'))).toBe(true)
-    expect(result.lines.some((line) => line.startsWith('would link') && line.includes('@wish233/dsh-friend-persona'))).toBe(true)
+    expect(result.lines.some((line) => line.startsWith('would link') && line.includes('@wishp3/dsh-friend-shared'))).toBe(true)
+    expect(result.lines.some((line) => line.startsWith('would link') && line.includes('@wishp3/dsh-friend-persona'))).toBe(true)
     await expect(lstat(join(profileRoot, 'node_modules'))).rejects.toMatchObject({ code: 'ENOENT' })
     await expect(lstat(shared)).resolves.toMatchObject({ isDirectory: expect.any(Function) })
   })
@@ -86,8 +86,8 @@ describe('runLinkProfile', () => {
     expect(result.ok).toBe(true)
     expect(result.lines.every((line) => line.startsWith('linked'))).toBe(true)
 
-    const sharedLink = join(profileRoot, 'node_modules/@wish233/dsh-friend-shared')
-    const personaLink = join(profileRoot, 'node_modules/@wish233/dsh-friend-persona')
+    const sharedLink = join(profileRoot, 'node_modules/@wishp3/dsh-friend-shared')
+    const personaLink = join(profileRoot, 'node_modules/@wishp3/dsh-friend-persona')
     await expect(lstat(sharedLink)).resolves.toMatchObject({ isSymbolicLink: expect.any(Function) })
     expect((await lstat(sharedLink)).isSymbolicLink()).toBe(true)
     expect((await lstat(personaLink)).isSymbolicLink()).toBe(true)
@@ -101,14 +101,14 @@ describe('runLinkProfile', () => {
 
     const second = await runLinkProfile({ repoRoot, profileRoot })
     expect(second.ok).toBe(true)
-    expect(second.lines.filter((line) => line.includes('@wish233/')).every((line) => line.startsWith('skipped') && line.includes('already linked'))).toBe(true)
+    expect(second.lines.filter((line) => line.includes('@wishp3/')).every((line) => line.startsWith('skipped') && line.includes('already linked'))).toBe(true)
     expect(second.lines.some((line) => line.includes('cordis.patch.yml') && line.includes('already installed'))).toBe(true)
 
     const unlinked = await runLinkProfile({ repoRoot, profileRoot, unlink: true })
     expect(unlinked.ok).toBe(true)
     expect(unlinked.lines.every((line) => line.startsWith('unlinked'))).toBe(true)
 
-    const sharedLink = join(profileRoot, 'node_modules/@wish233/dsh-friend-shared')
+    const sharedLink = join(profileRoot, 'node_modules/@wishp3/dsh-friend-shared')
     await expect(lstat(sharedLink)).rejects.toMatchObject({ code: 'ENOENT' })
     await expect(lstat(shared)).resolves.toMatchObject({ isDirectory: expect.any(Function) })
     await expect(lstat(join(shared, 'lib/index.js'))).resolves.toBeTruthy()
@@ -116,7 +116,7 @@ describe('runLinkProfile', () => {
 
   it('refuses a real directory, does not delete it, and writes no other links', async () => {
     const { repoRoot, profileRoot } = await makeWorkspace()
-    const realDir = join(profileRoot, 'node_modules/@wish233/dsh-friend-shared')
+    const realDir = join(profileRoot, 'node_modules/@wishp3/dsh-friend-shared')
     await mkdir(realDir, { recursive: true })
     const sentinel = join(realDir, 'keep-me.txt')
     await writeFile(sentinel, 'user data\n')
@@ -128,14 +128,14 @@ describe('runLinkProfile', () => {
     expect((await lstat(sentinel)).isSymbolicLink()).toBe(false)
     expect((await lstat(realDir)).isDirectory()).toBe(true)
     expect((await lstat(sentinel)).isFile()).toBe(true)
-    await expect(lstat(join(profileRoot, 'node_modules/@wish233/dsh-friend-persona'))).rejects.toMatchObject({
+    await expect(lstat(join(profileRoot, 'node_modules/@wishp3/dsh-friend-persona'))).rejects.toMatchObject({
       code: 'ENOENT',
     })
   })
 
   it('refuses to --unlink a real directory', async () => {
     const { repoRoot, profileRoot } = await makeWorkspace()
-    const realDir = join(profileRoot, 'node_modules/@wish233/dsh-friend-shared')
+    const realDir = join(profileRoot, 'node_modules/@wishp3/dsh-friend-shared')
     await mkdir(realDir, { recursive: true })
     const sentinel = join(realDir, 'keep-me.txt')
     await writeFile(sentinel, 'user data\n')
@@ -151,7 +151,7 @@ describe('runLinkProfile', () => {
     const { repoRoot, profileRoot } = await makeWorkspace()
     const foreign = await makeTemp('dsh-friend-foreign-pkg-')
     await writeFile(join(foreign, 'index.js'), 'export const foreign = true\n')
-    const target = join(profileRoot, 'node_modules/@wish233/dsh-friend-shared')
+    const target = join(profileRoot, 'node_modules/@wishp3/dsh-friend-shared')
     await mkdir(dirname(target), { recursive: true })
     await symlink(foreign, target)
 
@@ -165,14 +165,14 @@ describe('runLinkProfile', () => {
   it('hints at pnpm -r build when lib/ is missing and does not link', async () => {
     const repoRoot = await makeTemp('dsh-friend-link-nolib-repo-')
     const profileRoot = await makeTemp('dsh-friend-link-nolib-profile-')
-    await writePackage(repoRoot, 'dsh-friend-shared', '@wish233/dsh-friend-shared', false)
+    await writePackage(repoRoot, 'dsh-friend-shared', '@wishp3/dsh-friend-shared', false)
 
     const result = await runLinkProfile({ repoRoot, profileRoot })
 
     expect(result.ok).toBe(false)
     expect(result.lines.some((line) => line.startsWith('skipped') && line.includes('missing lib/'))).toBe(true)
     expect(result.errors.some((line) => line.includes(BUILD_HINT))).toBe(true)
-    await expect(lstat(join(profileRoot, 'node_modules/@wish233/dsh-friend-shared'))).rejects.toMatchObject({
+    await expect(lstat(join(profileRoot, 'node_modules/@wishp3/dsh-friend-shared'))).rejects.toMatchObject({
       code: 'ENOENT',
     })
   })
@@ -190,7 +190,7 @@ describe('runLinkProfile', () => {
   it('dry-run --unlink does not remove an existing managed symlink', async () => {
     const { repoRoot, profileRoot } = await makeWorkspace()
     await runLinkProfile({ repoRoot, profileRoot })
-    const target = join(profileRoot, 'node_modules/@wish233/dsh-friend-shared')
+    const target = join(profileRoot, 'node_modules/@wishp3/dsh-friend-shared')
     expect((await lstat(target)).isSymbolicLink()).toBe(true)
 
     const result = await runLinkProfile({ repoRoot, profileRoot, dryRun: true, unlink: true })
@@ -208,7 +208,7 @@ describe('runLinkProfile', () => {
     expect(result.ok).toBe(true)
     const written = await readFile(patchPath, 'utf8')
     expect(written).toContain("id: dsh-friend-shared")
-    expect(written).toContain("name: '@wish233/dsh-friend-persona'")
+    expect(written).toContain("name: '@wishp3/dsh-friend-persona'")
     expect(written).not.toMatch(/^\[\]$/m)
   })
 })
@@ -227,7 +227,7 @@ describe('unlinkIfSymlink', () => {
 describe('isManagedSymlink', () => {
   it('recognizes a link into this repo packages/ tree', async () => {
     const { repoRoot, profileRoot, shared } = await makeWorkspace()
-    const target = join(profileRoot, 'node_modules/@wish233/dsh-friend-shared')
+    const target = join(profileRoot, 'node_modules/@wishp3/dsh-friend-shared')
     await mkdir(dirname(target), { recursive: true })
     await symlink(shared, target)
 

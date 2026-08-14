@@ -8,11 +8,11 @@
 import {
   readFriendAsrSettings,
   sanitizeAsrSettingsForClient,
-} from '@wish233/dsh-friend-asr'
+} from '@wishp3/dsh-friend-asr'
 import {
   sanitizeTtsSettingsForClient,
   toClientTtsSnapshot,
-} from '@wish233/dsh-friend-tts'
+} from '@wishp3/dsh-friend-tts'
 
 import { isRecord, type JsonRecord, type SettingsSanitizeSeams } from './sanitize.ts'
 

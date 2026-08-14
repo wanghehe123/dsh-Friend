@@ -3,7 +3,7 @@ import { readdir, readFile, stat } from 'node:fs/promises'
 import { join } from 'node:path'
 
 import type { WebRoute } from '@deepseek-ai/dsh-host-webserver'
-import { registerRoute, type FriendRouteContext } from '@wish233/dsh-friend-shared'
+import { registerRoute, type FriendRouteContext } from '@wishp3/dsh-friend-shared'
 
 import { renderMemoryBrowserPage, renderSearchHits } from './browser-page.ts'
 import type { DistillResult } from './distill.ts'

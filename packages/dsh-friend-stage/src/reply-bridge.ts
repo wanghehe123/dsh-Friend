@@ -5,7 +5,7 @@
  * tracker. Raw protocol tags never enter {@link ChatTracker}.
  */
 
-import type { CompanionReplyDelta } from '@wish233/dsh-friend-persona'
+import type { CompanionReplyDelta } from '@wishp3/dsh-friend-persona'
 
 import type { ChatTracker } from './chat-state.ts'
 import { applyStageTagEvents, type PerformanceTracker } from './performance-state.ts'

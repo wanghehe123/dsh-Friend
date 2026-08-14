@@ -1,10 +1,10 @@
 /**
- * Client half. Must stay free of `node:` and `@wish233/dsh-friend-shared`
+ * Client half. Must stay free of `node:` and `@wishp3/dsh-friend-shared`
  * (host). Namespace constants come from `/universal`.
  */
-import { FRIEND_SETTINGS_NAMESPACES } from '@wish233/dsh-friend-shared/universal'
+import { FRIEND_SETTINGS_NAMESPACES } from '@wishp3/dsh-friend-shared/universal'
 
-export const name = '@wish233/dsh-friend-growth/client'
+export const name = '@wishp3/dsh-friend-growth/client'
 export const inject: string[] = []
 
 export const GROWTH_SETTINGS_NAMESPACE = FRIEND_SETTINGS_NAMESPACES.growth

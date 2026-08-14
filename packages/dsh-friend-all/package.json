@@ -1,0 +1,48 @@
+{
+  "name": "@wish233/dsh-friend-all",
+  "version": "0.1.0",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "description": "聚合 bundle（cordis.patch.yml + 依赖清单）",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "cordis.patch.yml",
+    "aggregate.yml",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsdown --config tsdown.config.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "dependencies": {
+    "@wish233/dsh-friend-shared": "workspace:*",
+    "@wish233/dsh-friend-persona": "workspace:*",
+    "@wish233/dsh-friend-memory": "workspace:*",
+    "@wish233/dsh-friend-tts": "workspace:*",
+    "@wish233/dsh-friend-asr": "workspace:*",
+    "@wish233/dsh-friend-stage": "workspace:*",
+    "@wish233/dsh-friend-growth": "workspace:*",
+    "@wish233/dsh-friend-reactions": "workspace:*",
+    "@wish233/dsh-friend-settings": "workspace:*",
+    "@wish233/dsh-friend-perception": "workspace:*"
+  }
+}

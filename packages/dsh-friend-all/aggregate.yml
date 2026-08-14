@@ -1,0 +1,25 @@
+# Single source of truth for the dsh-friend-all distribution unit.
+# patchFrom: feature packages mounted into the bundle, in install order.
+# deps: workspace packages written into this package's dependencies as workspace:*.
+patchFrom:
+  - '@wish233/dsh-friend-shared'
+  - '@wish233/dsh-friend-persona'
+  - '@wish233/dsh-friend-memory'
+  - '@wish233/dsh-friend-tts'
+  - '@wish233/dsh-friend-asr'
+  - '@wish233/dsh-friend-stage'
+  - '@wish233/dsh-friend-growth'
+  - '@wish233/dsh-friend-reactions'
+  - '@wish233/dsh-friend-settings'
+  - '@wish233/dsh-friend-perception'
+deps:
+  - '@wish233/dsh-friend-shared'
+  - '@wish233/dsh-friend-persona'
+  - '@wish233/dsh-friend-memory'
+  - '@wish233/dsh-friend-tts'
+  - '@wish233/dsh-friend-asr'
+  - '@wish233/dsh-friend-stage'
+  - '@wish233/dsh-friend-growth'
+  - '@wish233/dsh-friend-reactions'
+  - '@wish233/dsh-friend-settings'
+  - '@wish233/dsh-friend-perception'

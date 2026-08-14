@@ -8,6 +8,7 @@ import { describe, expect, it } from 'vitest'
 import {
   FRIEND_SETTINGS_ABOUT_PATH,
   FRIEND_SETTINGS_CHARACTERS_PATH,
+  FRIEND_SETTINGS_PERSONA_PATH,
   FRIEND_SETTINGS_EXPORT_PATH,
   FRIEND_SETTINGS_MODELS_TEST_PATH,
   FRIEND_SETTINGS_OPEN_DATA_DIR_PATH,
@@ -114,6 +115,57 @@ describe('settings host routes', () => {
     expect(exported.headers['content-type']).toBe('application/zip')
     const names = zipEntryNames(new Uint8Array(exported.body as Buffer))
     expect(names.some((name) => name.endsWith('MEMORY.md'))).toBe(true)
+
+    const persona = createResponse()
+    await route(FRIEND_SETTINGS_PERSONA_PATH, deps).handler(
+      { method: 'GET', url: `${FRIEND_SETTINGS_PERSONA_PATH}?slug=default` } as never,
+      persona as never,
+    )
+    expect(persona.statusCode).toBe(200)
+    expect(JSON.parse(String(persona.body))).toMatchObject({
+      ok: true,
+      persona: { slug: 'default', name: '小友' },
+    })
+
+    const missing = createResponse()
+    await route(FRIEND_SETTINGS_PERSONA_PATH, deps).handler(
+      { method: 'GET', url: `${FRIEND_SETTINGS_PERSONA_PATH}?slug=alt` } as never,
+      missing as never,
+    )
+    expect(missing.statusCode).toBe(200)
+    expect(JSON.parse(String(missing.body))).toMatchObject({
+      ok: true,
+      persona: { slug: 'alt', name: 'alt' },
+    })
+
+    const written = createResponse()
+    await route(FRIEND_SETTINGS_PERSONA_PATH, deps).handler(
+      {
+        method: 'POST',
+        url: FRIEND_SETTINGS_PERSONA_PATH,
+        async *[Symbol.asyncIterator]() {
+          yield Buffer.from(JSON.stringify({
+            slug: 'alt',
+            name: '阿特',
+            personality: '干脆',
+            greetings: ['嗨'],
+          }))
+        },
+      } as never,
+      written as never,
+    )
+    expect(written.statusCode).toBe(200)
+    expect(JSON.parse(String(written.body))).toMatchObject({
+      ok: true,
+      persona: { slug: 'alt', name: '阿特', personality: '干脆', greetings: ['嗨'] },
+    })
+
+    const illegal = createResponse()
+    await route(FRIEND_SETTINGS_PERSONA_PATH, deps).handler(
+      { method: 'GET', url: `${FRIEND_SETTINGS_PERSONA_PATH}?slug=../etc` } as never,
+      illegal as never,
+    )
+    expect(illegal.statusCode).toBe(400)
   })
 
   it('opens the data directory through an injected spawn and tests a model override', async () => {

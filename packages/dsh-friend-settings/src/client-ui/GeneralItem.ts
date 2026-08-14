@@ -16,6 +16,10 @@ export function GeneralItem(props: {
       className: 'dsh-friend-general-item',
       onClick: () => props.onOpenCenter?.(),
     },
-    t('general.openFriend', lang),
+    createElement('span', { className: 'dsh-friend-row-text' },
+      createElement('span', { className: 'dsh-friend-row-title' }, t('general.openFriend', lang)),
+      createElement('span', { className: 'dsh-friend-row-desc' }, t('general.openFriendHint', lang)),
+    ),
+    createElement('span', { className: 'dsh-friend-pill' }, t('general.open', lang)),
   )
 }

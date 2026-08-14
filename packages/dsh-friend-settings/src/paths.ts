@@ -2,6 +2,11 @@
 export const FRIEND_SETTINGS_SNAPSHOT_PATH = '/friend/settings/snapshot' as const
 export const FRIEND_SETTINGS_PATCH_PATH = '/friend/settings/patch' as const
 export const FRIEND_SETTINGS_CHARACTERS_PATH = '/friend/settings/characters' as const
+export const FRIEND_SETTINGS_PERSONA_PATH = '/friend/settings/persona' as const
+export const FRIEND_STAGE_MODELS_PATH = '/friend/models' as const
+export const FRIEND_STAGE_MODELS_UPLOAD_PATH = '/friend/models/upload' as const
+export const FRIEND_STAGE_MODELS_SELECT_PATH = '/friend/models/select' as const
+export const FRIEND_STAGE_MODELS_DELETE_PATH = '/friend/models/delete' as const
 export const FRIEND_SETTINGS_MODELS_PATH = '/friend/settings/models' as const
 export const FRIEND_SETTINGS_MODELS_TEST_PATH = '/friend/settings/models/test' as const
 export const FRIEND_SETTINGS_EXPORT_PATH = '/friend/settings/export' as const
@@ -21,6 +26,13 @@ export const DEFAULT_LEGACY_IMPORT_FROM = '~/Library/Application Support/com.chy
 
 export const FRIEND_SETTINGS_SECTION_SLOT = 'settings.section' as const
 export const FRIEND_SETTINGS_GENERAL_ITEM_SLOT = 'settings.general.item' as const
+export const FRIEND_SETTINGS_PLUGIN_ITEM_SLOT = 'settings.plugin.item' as const
 export const FRIEND_SETTINGS_SECTION_ID = 'dsh-friend' as const
 export const FRIEND_SETTINGS_GENERAL_ITEM_ID = 'dsh-friend-open' as const
+export const FRIEND_SETTINGS_PLUGIN_ITEM_ID = 'dsh-friend' as const
 export const FRIEND_SETTINGS_SECTION_ORDER = 100
+/**
+ * Official configurable cards: bash 0, agent-loop 10, web-search 20.
+ * Friend must sort after every built-in card.
+ */
+export const FRIEND_SETTINGS_PLUGIN_ITEM_ORDER = 1000

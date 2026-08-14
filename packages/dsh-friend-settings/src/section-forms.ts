@@ -25,6 +25,8 @@ export type SectionField = {
   max?: number
   step?: number
   placeholder?: string
+  labelKey?: string
+  hintKey?: string
 }
 
 export type SectionFormDescriptor = {
@@ -115,7 +117,15 @@ export type FloatSectionDraft = {
   floatHeight: number
 }
 
-export const TTS_PROVIDERS = ['edge', 'openai-compat', 'browser'] as const
+export const TTS_PROVIDERS = ['edge', 'dashscope', 'minimax', 'openai-compat', 'browser'] as const
+export const HTTP_TTS_PROVIDERS = ['dashscope', 'minimax', 'openai-compat'] as const
+
+export const DASHSCOPE_DEFAULT_BASE_URL = 'https://dashscope.aliyuncs.com/api/v1'
+export const DASHSCOPE_DEFAULT_MODEL = 'qwen3-tts-flash'
+export const DASHSCOPE_DEFAULT_VOICE = 'Cherry'
+export const MINIMAX_DEFAULT_BASE_URL = 'https://api.minimaxi.com/v1'
+export const MINIMAX_DEFAULT_MODEL = 'speech-2.8-hd'
+export const MINIMAX_DEFAULT_VOICE = 'male-qn-qingse'
 export const ASR_ENGINES = ['auto', 'webspeech', 'endpoint'] as const
 export const ASR_MODES = ['hold', 'toggle', 'auto'] as const
 export const REACTION_LEVELS = ['action', 'bubble', 'voice'] as const
@@ -136,6 +146,9 @@ export const OPENAI_VOICE_IDS = [
   'nova',
   'shimmer',
 ] as const
+
+/** OpenAI `/audio/speech` `response_format` values (and CosyVoice-compatible aliases). */
+export const OPENAI_AUDIO_FORMATS = ['mp3', 'opus', 'aac', 'flac', 'wav', 'pcm'] as const
 
 const DEFAULT_FLOAT_WIDTH = 280
 const DEFAULT_FLOAT_HEIGHT = 360
@@ -215,6 +228,229 @@ export function voicesForProvider(provider: string, current: string): readonly s
   return [...catalog]
 }
 
+export function formatsForOpenAi(current: string): readonly string[] {
+  const catalog: readonly string[] = [...OPENAI_AUDIO_FORMATS]
+  if (current.length > 0 && !catalog.includes(current)) {
+    return [current, ...catalog]
+  }
+  return catalog
+}
+
+function isHttpTtsProvider(provider: string): boolean {
+  return (HTTP_TTS_PROVIDERS as readonly string[]).includes(provider)
+}
+
+function ttsVoiceHintKey(provider: string): string {
+  if (provider === 'dashscope') {
+    return 'tts.voiceHintDashscope'
+  }
+  if (provider === 'minimax') {
+    return 'tts.voiceHintMinimax'
+  }
+  return 'tts.voiceHint'
+}
+
+function ttsVoiceField(draft: TtsSectionDraft): SectionField {
+  if (isHttpTtsProvider(draft.provider)) {
+    return {
+      key: 'voice',
+      value: draft.voice,
+      kind: 'text',
+      placeholder: ttsVoiceHintKey(draft.provider),
+    }
+  }
+  return {
+    key: 'voice',
+    value: draft.voice,
+    kind: 'select',
+    options: voicesForProvider(draft.provider, draft.voice),
+  }
+}
+
+function ttsEndpointFields(draft: TtsSectionDraft): readonly SectionField[] {
+  const labels = ttsEndpointLabelKeys(draft.provider)
+  return [
+    {
+      key: 'openaiApiKey',
+      value: draft.openaiApiKey,
+      kind: 'secret',
+      labelKey: labels.apiKey,
+      hintKey: labels.hint,
+    },
+    {
+      key: 'openaiBaseURL',
+      value: draft.openaiBaseURL,
+      kind: 'text',
+      labelKey: labels.baseURL,
+      placeholder: labels.urlPlaceholder,
+    },
+    {
+      key: 'openaiModel',
+      value: draft.openaiModel,
+      kind: 'text',
+      labelKey: labels.model,
+    },
+    {
+      key: 'openaiFormat',
+      value: draft.openaiFormat,
+      kind: 'select',
+      labelKey: 'tts.audioFormat',
+      options: formatsForOpenAi(draft.openaiFormat),
+    },
+  ]
+}
+
+function ttsEndpointLabelKeys(provider: string): {
+  apiKey: string
+  hint: string
+  baseURL: string
+  model: string
+  urlPlaceholder: string
+} {
+  if (provider === 'dashscope') {
+    return {
+      apiKey: 'tts.dashscopeApiKey',
+      hint: 'tts.dashscopeApiKeyHint',
+      baseURL: 'tts.dashscopeBaseURL',
+      model: 'tts.dashscopeModel',
+      urlPlaceholder: DASHSCOPE_DEFAULT_BASE_URL,
+    }
+  }
+  if (provider === 'minimax') {
+    return {
+      apiKey: 'tts.minimaxApiKey',
+      hint: 'tts.minimaxApiKeyHint',
+      baseURL: 'tts.minimaxBaseURL',
+      model: 'tts.minimaxModel',
+      urlPlaceholder: MINIMAX_DEFAULT_BASE_URL,
+    }
+  }
+  return {
+    apiKey: 'tts.openaiApiKey',
+    hint: 'tts.openaiApiKeyHint',
+    baseURL: 'tts.openaiBaseURL',
+    model: 'tts.openaiModel',
+    urlPlaceholder: 'https://api.siliconflow.cn/v1',
+  }
+}
+
+function defaultTtsVoice(provider: string): string {
+  if (provider === 'dashscope') {
+    return DASHSCOPE_DEFAULT_VOICE
+  }
+  if (provider === 'minimax') {
+    return MINIMAX_DEFAULT_VOICE
+  }
+  if (provider === 'openai-compat') {
+    return 'alloy'
+  }
+  return 'zh-CN-XiaoxiaoNeural'
+}
+
+function defaultTtsBaseURL(provider: string): string {
+  if (provider === 'dashscope') {
+    return DASHSCOPE_DEFAULT_BASE_URL
+  }
+  if (provider === 'minimax') {
+    return MINIMAX_DEFAULT_BASE_URL
+  }
+  return ''
+}
+
+function defaultTtsModel(provider: string): string {
+  if (provider === 'dashscope') {
+    return DASHSCOPE_DEFAULT_MODEL
+  }
+  if (provider === 'minimax') {
+    return MINIMAX_DEFAULT_MODEL
+  }
+  return ''
+}
+
+export function applyTtsProviderDefaults(draft: TtsSectionDraft, provider: string): TtsSectionDraft {
+  const next = { ...draft, provider }
+  if (provider === 'dashscope') {
+    if (isForeignTtsUrl(next.openaiBaseURL, 'dashscope')) {
+      next.openaiBaseURL = DASHSCOPE_DEFAULT_BASE_URL
+    }
+    if (isForeignTtsModel(next.openaiModel, 'dashscope')) {
+      next.openaiModel = DASHSCOPE_DEFAULT_MODEL
+    }
+    if (isForeignTtsVoice(next.voice, 'dashscope')) {
+      next.voice = DASHSCOPE_DEFAULT_VOICE
+    }
+    return next
+  }
+  if (provider === 'minimax') {
+    if (isForeignTtsUrl(next.openaiBaseURL, 'minimax')) {
+      next.openaiBaseURL = MINIMAX_DEFAULT_BASE_URL
+    }
+    if (isForeignTtsModel(next.openaiModel, 'minimax')) {
+      next.openaiModel = MINIMAX_DEFAULT_MODEL
+    }
+    if (isForeignTtsVoice(next.voice, 'minimax')) {
+      next.voice = MINIMAX_DEFAULT_VOICE
+    }
+    return next
+  }
+  if (provider === 'openai-compat') {
+    if (isForeignTtsUrl(next.openaiBaseURL, 'openai')) {
+      next.openaiBaseURL = ''
+    }
+    if (isForeignTtsVoice(next.voice, 'openai')) {
+      next.voice = 'alloy'
+    }
+    return next
+  }
+  if (provider === 'edge' && isForeignTtsVoice(next.voice, 'edge')) {
+    next.voice = 'zh-CN-XiaoxiaoNeural'
+  }
+  return next
+}
+
+function isForeignTtsUrl(url: string, target: 'dashscope' | 'minimax' | 'openai'): boolean {
+  if (url.length === 0) {
+    return target !== 'openai'
+  }
+  if (target === 'dashscope') {
+    return !url.includes('dashscope')
+  }
+  if (target === 'minimax') {
+    return !url.includes('minimax')
+  }
+  return url.includes('dashscope') || url.includes('minimax')
+}
+
+function isForeignTtsModel(model: string, target: 'dashscope' | 'minimax'): boolean {
+  if (model.length === 0) {
+    return true
+  }
+  if (target === 'dashscope') {
+    return /^(tts-1|speech-|gpt-4o)/u.test(model)
+  }
+  return /^(qwen|cosyvoice|tts-1|gpt-4o)/u.test(model)
+}
+
+function isForeignTtsVoice(voice: string, target: 'dashscope' | 'minimax' | 'openai' | 'edge'): boolean {
+  if (voice.length === 0) {
+    return true
+  }
+  const edge = (EDGE_VOICE_IDS as readonly string[]).includes(voice)
+  const openai = (OPENAI_VOICE_IDS as readonly string[]).includes(voice)
+  const dashscope = voice === 'Cherry' || voice === 'Serena' || voice === 'Ethan' || voice === 'Chelsie'
+  const minimax = voice === MINIMAX_DEFAULT_VOICE || voice === 'female-shaonv' || voice.includes('Mandarin')
+  if (target === 'dashscope') {
+    return edge || openai || minimax
+  }
+  if (target === 'minimax') {
+    return edge || openai || dashscope
+  }
+  if (target === 'openai') {
+    return edge || dashscope || minimax
+  }
+  return openai || dashscope || minimax
+}
+
 export function formatQuietHoursText(value: unknown): string {
   if (!Array.isArray(value)) {
     return ''
@@ -247,15 +483,43 @@ export function parseQuietHoursText(text: string): ReadonlyArray<{ start: string
   return windows
 }
 
+function physicalKeyFromEvent(event: { key: string; code?: string }): string {
+  const code = event.code
+  if (typeof code === 'string') {
+    if (/^Key[A-Z]$/u.test(code)) {
+      return code.slice(3).toLowerCase()
+    }
+    if (/^Digit[0-9]$/u.test(code)) {
+      return code.slice(5)
+    }
+  }
+  const key = event.key
+  if (key.length === 1) {
+    return key.toLowerCase()
+  }
+  return key
+}
+
 export function formatHotkeyFromEvent(event: {
   key: string
+  code?: string
   altKey?: boolean
   ctrlKey?: boolean
   metaKey?: boolean
   shiftKey?: boolean
 }): string | undefined {
   const key = event.key
-  if (key === 'Control' || key === 'Alt' || key === 'Shift' || key === 'Meta' || key === 'Escape') {
+  if (
+    key === 'Control'
+    || key === 'Alt'
+    || key === 'Shift'
+    || key === 'Meta'
+    || key === 'Escape'
+    || key === 'Tab'
+  ) {
+    return undefined
+  }
+  if (event.ctrlKey !== true && event.altKey !== true && event.metaKey !== true) {
     return undefined
   }
   const parts: string[] = []
@@ -271,10 +535,8 @@ export function formatHotkeyFromEvent(event: {
   if (event.metaKey === true) {
     parts.push('Meta')
   }
-  if (parts.length === 0) {
-    return undefined
-  }
-  parts.push(key.length === 1 ? key.toUpperCase() : key)
+  const token = physicalKeyFromEvent(event)
+  parts.push(token.length === 1 ? token.toUpperCase() : token)
   return parts.join('+')
 }
 
@@ -332,9 +594,10 @@ export function createTtsSectionForm(
   snapshot: FriendClientSettingsSnapshot['tts'],
   writer?: SettingsFieldWriter,
 ): StagedSectionForm<TtsSectionDraft> {
+  const provider = asString(snapshot.provider, 'edge')
   const initial: TtsSectionDraft = {
-    provider: asString(snapshot.provider, 'edge'),
-    voice: asString(snapshot.voice, 'zh-CN-XiaoxiaoNeural'),
+    provider,
+    voice: asString(snapshot.voice, defaultTtsVoice(provider)),
     rate: asNumber(snapshot.rate, 1),
     pitch: asNumber(snapshot.pitch, 1),
     autoSpeak: asBoolean(snapshot.autoSpeak, true),
@@ -342,11 +605,11 @@ export function createTtsSectionForm(
     volume: asNumber(snapshot.volume, 1),
     muted: asBoolean(snapshot.muted, false),
     openaiApiKey: '',
-    openaiBaseURL: asString(snapshot.openaiBaseURL, ''),
-    openaiModel: asString(snapshot.openaiModel, ''),
-    openaiFormat: asString(snapshot.openaiFormat, ''),
+    openaiBaseURL: asString(snapshot.openaiBaseURL, defaultTtsBaseURL(provider)),
+    openaiModel: asString(snapshot.openaiModel, defaultTtsModel(provider)),
+    openaiFormat: asString(snapshot.openaiFormat, 'mp3'),
   }
-  return createStaged('tts', initial, {
+  const form = createStaged('tts', initial, {
     ...(writer !== undefined ? { writer } : {}),
     writes(draft) {
       return ttsWrites(draft)
@@ -354,20 +617,32 @@ export function createTtsSectionForm(
     describe(draft) {
       return [
         { key: 'provider', value: draft.provider, kind: 'select', options: TTS_PROVIDERS },
-        { key: 'voice', value: draft.voice, kind: 'select', options: voicesForProvider(draft.provider, draft.voice) },
+        ttsVoiceField(draft),
         { key: 'rate', value: draft.rate, kind: 'range', min: 0.5, max: 2, step: 0.05 },
         { key: 'pitch', value: draft.pitch, kind: 'range', min: 0.5, max: 2, step: 0.05 },
         { key: 'autoSpeak', value: draft.autoSpeak, kind: 'toggle' },
         { key: 'stripStageDirections', value: draft.stripStageDirections, kind: 'toggle' },
         { key: 'volume', value: draft.volume, kind: 'range', min: 0, max: 1, step: 0.05 },
         { key: 'muted', value: draft.muted, kind: 'toggle' },
-        { key: 'openaiApiKey', value: draft.openaiApiKey, kind: 'secret' },
-        { key: 'openaiBaseURL', value: draft.openaiBaseURL, kind: 'text' },
-        { key: 'openaiModel', value: draft.openaiModel, kind: 'text' },
-        { key: 'openaiFormat', value: draft.openaiFormat, kind: 'text' },
+        ...ttsEndpointFields(draft),
       ]
     },
   })
+  const setField = form.set.bind(form)
+  return {
+    ...form,
+    set(field, value) {
+      if (field === 'provider' && typeof value === 'string') {
+        const next = applyTtsProviderDefaults(form.getDraft(), value)
+        setField('provider', next.provider)
+        setField('voice', next.voice)
+        setField('openaiBaseURL', next.openaiBaseURL)
+        setField('openaiModel', next.openaiModel)
+        return
+      }
+      setField(field, value)
+    },
+  }
 }
 
 export function createAsrSectionForm(

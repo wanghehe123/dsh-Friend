@@ -4,6 +4,7 @@ import {
   registerFriendSettings,
   resolveFriendDataDir,
   type FriendDefaultModelContext,
+  type FriendLlmRuntime,
   type FriendModelCatalog,
   type FriendRouteContext,
   type ResolveFriendDataDirOptions,
@@ -13,7 +14,7 @@ import {
   createFriendCoreSettingsSchema,
   DEFAULT_CORE_SETTINGS_ENTRY,
 } from './settings-schema.ts'
-import type { HostModelViewsDeps } from './host-models.ts'
+import { pingFriendModel, type HostModelViewsDeps } from './host-models.ts'
 import { createOfficialSanitizeSeams } from './host-seams.ts'
 import { registerSettingsRoutes, type SettingsRouteDeps } from './routes.ts'
 import { createShellHeartbeatStore } from './shell-heartbeat.ts'
@@ -39,7 +40,7 @@ export type FriendSettingsContext = {
     update?(namespace: string, patch: Record<string, unknown>): Promise<void>
   }
   agentDefaultModel?: FriendDefaultModelContext['agentDefaultModel']
-  llm?: FriendModelCatalog
+  llm?: FriendModelCatalog | FriendLlmRuntime
 }
 
 export type FriendSettingsApplyOptions = ResolveFriendDataDirOptions & {
@@ -102,6 +103,7 @@ export function applySettings(
     ...createOfficialSanitizeSeams(),
     ...config.seams,
   }
+  const runtime = asLlmRuntime(llm)
 
   const routeDeps: SettingsRouteDeps = {
     dataDir,
@@ -110,6 +112,16 @@ export function applySettings(
     ...(settings !== undefined ? { settings } : {}),
     ...(models !== undefined ? { models } : {}),
     ...(config.shellConnected !== undefined ? { shellConnected: config.shellConnected } : {}),
+    ...(models !== undefined
+      ? {
+          testModel: (purpose, override) => pingFriendModel({
+            purpose,
+            override,
+            models,
+            ...(runtime !== undefined ? { llm: runtime } : {}),
+          }),
+        }
+      : {}),
   }
 
   const routeCtx = asRouteContext(ctx)
@@ -123,6 +135,13 @@ export function applySettings(
     dataDir,
     dispose() {},
   }
+}
+
+function asLlmRuntime(llm: FriendModelCatalog | FriendLlmRuntime | undefined): FriendLlmRuntime | undefined {
+  if (llm === undefined || typeof (llm as FriendLlmRuntime).stream !== 'function') {
+    return undefined
+  }
+  return llm as FriendLlmRuntime
 }
 
 function asRouteContext(ctx: FriendSettingsContext): FriendRouteContext | undefined {
@@ -148,16 +167,21 @@ export {
   readCurrentSlug,
   resolveUiLanguage,
 } from './core-settings.ts'
-export { listCharacters } from './characters.ts'
+export { defaultPersonaCard, listCharacters, readPersonaCard, writePersonaCard } from './characters.ts'
 export { buildZipStore, isExcludedExportPath, listExportEntries, zipEntryNames } from './export-zip.ts'
-export { buildModelInheritViews } from './host-models.ts'
+export { buildModelInheritViews, pingFriendModel } from './host-models.ts'
 export { EN, I18N_KEYS, ZH, missingI18nKeys, t } from './i18n.ts'
 export { createModelSectionForm, overrideToInput } from './model-form.ts'
 export { openCommand, openDataDirectory } from './open-data-dir.ts'
 export {
   FRIEND_SETTINGS_ABOUT_PATH,
   FRIEND_SETTINGS_CHARACTERS_PATH,
+  FRIEND_SETTINGS_PERSONA_PATH,
   FRIEND_SETTINGS_EXPORT_PATH,
+  FRIEND_STAGE_MODELS_DELETE_PATH,
+  FRIEND_STAGE_MODELS_PATH,
+  FRIEND_STAGE_MODELS_SELECT_PATH,
+  FRIEND_STAGE_MODELS_UPLOAD_PATH,
   FRIEND_SETTINGS_GENERAL_ITEM_ID,
   FRIEND_SETTINGS_GENERAL_ITEM_SLOT,
   FRIEND_SETTINGS_MODELS_PATH,

@@ -8,11 +8,18 @@ import { readCoreSettings } from './core-settings.ts'
 import {
   FRIEND_SETTINGS_GENERAL_ITEM_ID,
   FRIEND_SETTINGS_GENERAL_ITEM_SLOT,
+  FRIEND_SETTINGS_PLUGIN_ITEM_ID,
+  FRIEND_SETTINGS_PLUGIN_ITEM_ORDER,
+  FRIEND_SETTINGS_PLUGIN_ITEM_SLOT,
   FRIEND_SETTINGS_SECTION_ID,
   FRIEND_SETTINGS_SECTION_ORDER,
   FRIEND_SETTINGS_SECTION_SLOT,
 } from './paths.ts'
 import type { OverlayWriters } from './client-ui/ConfigOverlay.ts'
+import {
+  createFriendSettingsPatchWriters,
+  loadFriendSettingsSnapshot,
+} from './client-ui/settings-patch.ts'
 import { projectDocuments, type FriendClientSettingsSnapshot } from './project.ts'
 import { defaultProjectAsr, defaultProjectTts } from './sanitize.ts'
 import { installMuteBridge, resolvePlaybackKnobs } from './mute-bridge.ts'
@@ -80,6 +87,7 @@ export type SettingsClientRenderers = {
     ttsScope?: FriendSettingsScope<unknown>
     writers?: OverlayWriters
     onOpenCenter: () => void
+    surface?: 'section' | 'plugin'
   }) => unknown
   renderGeneralItem: (input: {
     snapshot: FriendClientSettingsSnapshot
@@ -158,46 +166,49 @@ export function startSettingsClient(
     [FRIEND_SETTINGS_NAMESPACES.reactions]: reactionsScope?.getSnapshot().value,
   })
 
-  const writers: OverlayWriters = {
-    ...(coreScope !== undefined ? { core: coreScope } : {}),
-    ...(personaScope !== undefined ? { persona: personaScope } : {}),
-    ...(ttsScope !== undefined ? { tts: ttsScope } : {}),
-    ...(asrScope !== undefined ? { asr: asrScope } : {}),
-    ...(memoryScope !== undefined ? { memory: memoryScope } : {}),
-    ...(growthScope !== undefined ? { growth: growthScope } : {}),
-    ...(stageScope !== undefined ? { stage: stageScope } : {}),
-    ...(reactionsScope !== undefined ? { reactions: reactionsScope } : {}),
-    ...(personaScope !== undefined || memoryScope !== undefined || growthScope !== undefined
-      ? {
-          model: {
-            setChat: (value) => personaScope?.set('chatModel', value) ?? Promise.resolve(),
-            setSummarize: (value) => memoryScope?.set('summarizeModel', value) ?? Promise.resolve(),
-            setGrowth: (value) => growthScope?.set('model', value) ?? Promise.resolve(),
-          },
-        }
-      : {}),
-  }
+  const writers = createFriendSettingsPatchWriters()
+  const coreBound = bindPatchScope(coreScope, writers.core)
+  const personaBound = bindPatchScope(personaScope, writers.persona)
+  const ttsBound = bindPatchScope(ttsScope, writers.tts)
 
   let unmountOverlay: (() => void) | undefined
+  const closeOverlayHost = (): void => {
+    overlay.close()
+    refreshOverlayHost()
+  }
+  const mountOverlayWith = (snapshot: FriendClientSettingsSnapshot): void => {
+    unmountOverlay = renderers.mountOverlay?.({
+      overlay,
+      snapshot,
+      writers,
+      onClose: closeOverlayHost,
+    })
+  }
   const refreshOverlayHost = (): void => {
     const open = overlay.getState().open
-    if (open) {
-      if (unmountOverlay !== undefined) {
-        return
-      }
-      unmountOverlay = renderers.mountOverlay?.({
-        overlay,
-        snapshot: readSnapshot(),
-        writers,
-        onClose: () => {
-          overlay.close()
-          refreshOverlayHost()
-        },
-      })
+    if (!open) {
+      unmountOverlay?.()
+      unmountOverlay = undefined
       return
     }
-    unmountOverlay?.()
-    unmountOverlay = undefined
+    if (unmountOverlay !== undefined) {
+      return
+    }
+    const fetchImpl = (globalThis as { fetch?: typeof fetch }).fetch
+    if (fetchImpl === undefined) {
+      mountOverlayWith(readSnapshot())
+      return
+    }
+    let cancelled = false
+    unmountOverlay = () => {
+      cancelled = true
+    }
+    void loadFriendSettingsSnapshot().then((loaded) => {
+      if (cancelled || !overlay.getState().open) {
+        return
+      }
+      mountOverlayWith(loaded ?? readSnapshot())
+    })
   }
 
   const openCenter = (): void => {
@@ -208,9 +219,9 @@ export function startSettingsClient(
   const disposers: Array<() => void> = []
   disposers.push(installMuteBridge({
     writers: {
-      ...(ttsScope !== undefined ? { tts: ttsScope } : {}),
-      ...(coreScope !== undefined ? { core: coreScope } : {}),
-      ...(stageScope !== undefined ? { stage: stageScope } : {}),
+      ...(writers.tts !== undefined ? { tts: writers.tts } : {}),
+      ...(writers.core !== undefined ? { core: writers.core } : {}),
+      ...(writers.stage !== undefined ? { stage: writers.stage } : {}),
     },
     readMuted: () => resolvePlaybackKnobs({
       tts: ttsScope?.getSnapshot().value,
@@ -235,11 +246,12 @@ export function startSettingsClient(
       ...(props.close !== undefined ? { close: props.close } : {}),
       overlay,
       snapshot: readSnapshot(),
-      ...(coreScope !== undefined ? { coreScope } : {}),
-      ...(personaScope !== undefined ? { personaScope } : {}),
-      ...(ttsScope !== undefined ? { ttsScope } : {}),
+      ...(coreBound !== undefined ? { coreScope: coreBound } : {}),
+      ...(personaBound !== undefined ? { personaScope: personaBound } : {}),
+      ...(ttsBound !== undefined ? { ttsScope: ttsBound } : {}),
       writers,
       onOpenCenter: openCenter,
+      surface: 'section',
     })))
     disposers.push(slots.register({
       name: FRIEND_SETTINGS_GENERAL_ITEM_SLOT,
@@ -248,6 +260,22 @@ export function startSettingsClient(
     }, () => renderers.renderGeneralItem({
       snapshot: readSnapshot(),
       onOpenCenter: openCenter,
+    })))
+    disposers.push(slots.register({
+      name: FRIEND_SETTINGS_PLUGIN_ITEM_SLOT,
+      id: FRIEND_SETTINGS_PLUGIN_ITEM_ID,
+      order: FRIEND_SETTINGS_PLUGIN_ITEM_ORDER,
+      label: 'dsh-Friend',
+    }, (props) => renderers.renderSection({
+      ...(props.close !== undefined ? { close: props.close } : {}),
+      overlay,
+      snapshot: readSnapshot(),
+      ...(coreBound !== undefined ? { coreScope: coreBound } : {}),
+      ...(personaBound !== undefined ? { personaScope: personaBound } : {}),
+      ...(ttsBound !== undefined ? { ttsScope: ttsBound } : {}),
+      writers,
+      onOpenCenter: openCenter,
+      surface: 'plugin',
     })))
   }
 
@@ -318,4 +346,25 @@ function createLocation(
 
 function defaultDocument(): FriendSettingsDocumentLike | undefined {
   return (globalThis as { document?: FriendSettingsDocumentLike }).document
+}
+
+function bindPatchScope<T>(
+  scope: FriendSettingsScope<T> | undefined,
+  writer: { set(field: string, value: unknown): Promise<void> } | undefined,
+): FriendSettingsScope<T> | undefined {
+  if (writer === undefined) {
+    return scope
+  }
+  if (scope === undefined) {
+    return {
+      getSnapshot: () => ({ value: undefined }),
+      subscribe: () => () => {},
+      set: (field, value) => writer.set(field, value),
+    }
+  }
+  return {
+    getSnapshot: () => scope.getSnapshot(),
+    subscribe: (listener) => scope.subscribe(listener),
+    set: (field, value) => writer.set(field, value),
+  }
 }

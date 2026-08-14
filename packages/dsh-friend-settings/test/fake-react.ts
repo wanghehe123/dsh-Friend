@@ -11,7 +11,10 @@ export type VNode = {
   children: unknown[]
 }
 
-type HookState = { kind: 'state'; value: unknown } | { kind: 'memo'; deps: readonly unknown[]; value: unknown }
+type HookState =
+  | { kind: 'state'; value: unknown }
+  | { kind: 'memo'; deps: readonly unknown[]; value: unknown }
+  | { kind: 'effect'; deps: readonly unknown[]; cleanup?: () => void }
 
 let hooks: HookState[] = []
 let hookIndex = 0
@@ -54,12 +57,36 @@ export const fakeReact = {
     hooks[index] = { kind: 'memo', deps, value }
     return value
   },
-  useEffect(effect: () => void | (() => void)): void {
-    effect()
+  useEffect(effect: () => void | (() => void), deps?: readonly unknown[]): void {
+    const index = hookIndex
+    hookIndex += 1
+    const existing = hooks[index]
+    if (
+      deps !== undefined
+      && existing !== undefined
+      && existing.kind === 'effect'
+      && sameDeps(existing.deps, deps)
+    ) {
+      return
+    }
+    if (existing !== undefined && existing.kind === 'effect') {
+      existing.cleanup?.()
+    }
+    const cleanup = effect()
+    hooks[index] = {
+      kind: 'effect',
+      deps: deps ?? [Number.NaN],
+      ...(typeof cleanup === 'function' ? { cleanup } : {}),
+    }
   },
 }
 
 export function resetFakeReact(): void {
+  for (const hook of hooks) {
+    if (hook.kind === 'effect') {
+      hook.cleanup?.()
+    }
+  }
   hooks = []
   hookIndex = 0
   renderRoot = undefined

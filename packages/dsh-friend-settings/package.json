@@ -6,7 +6,7 @@
     "access": "public"
   },
   "type": "module",
-  "description": "设置父卡片、配置中心整页壳与路由",
+  "description": "设置父卡片、配置中心小窗与路由",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "exports": {

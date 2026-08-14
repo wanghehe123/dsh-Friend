@@ -1,6 +1,6 @@
 import { resolveUiLanguage, type FriendUiLanguage } from '../core-settings.ts'
 import { t } from '../i18n.ts'
-import { FRIEND_SETTINGS_CHARACTERS_PATH } from '../paths.ts'
+import { FRIEND_SETTINGS_CHARACTERS_PATH, FRIEND_SETTINGS_SNAPSHOT_PATH } from '../paths.ts'
 import {
   createPluginCardForm,
   type PluginCardCharacter,
@@ -9,6 +9,7 @@ import {
 } from '../plugin-card.ts'
 import { friendReact } from './friend-react.ts'
 import { getJson, isRecord } from './http.ts'
+import { readFriendSettingsSnapshot } from './settings-patch.ts'
 
 export type PluginCardProps = {
   close?: () => void
@@ -21,11 +22,14 @@ export type PluginCardProps = {
   ttsScope?: SettingsFieldWriter
   onOpenCenter?: () => void
   systemLanguage?: string
+  /** Plugin-tab cards start collapsed; the dedicated section page stays open. */
+  collapsible?: boolean
 }
 
 export function PluginCard(props: PluginCardProps): unknown {
   const { useMemo, useState, useEffect, createElement } = friendReact()
   const [characters, setCharacters] = useState<readonly PluginCardCharacter[] | undefined>(props.characters)
+  const [live, setLive] = useState<{ core?: unknown; persona?: unknown; tts?: unknown } | undefined>(undefined)
   useEffect?.(() => {
     void getJson(FRIEND_SETTINGS_CHARACTERS_PATH).then((body) => {
       const next = readPluginCharacters(body)
@@ -33,23 +37,35 @@ export function PluginCard(props: PluginCardProps): unknown {
         setCharacters(next)
       }
     })
+    void getJson(FRIEND_SETTINGS_SNAPSHOT_PATH).then((body) => {
+      const snapshot = readFriendSettingsSnapshot(body)
+      if (snapshot === undefined) {
+        return
+      }
+      setLive({
+        core: snapshot.core,
+        persona: snapshot.persona,
+        tts: snapshot.tts,
+      })
+    })
   }, [])
   const form = useMemo(
     () => createPluginCardForm({
-      core: props.core,
-      persona: props.persona,
-      ...(props.tts !== undefined ? { tts: props.tts } : {}),
+      core: live?.core ?? props.core,
+      persona: live?.persona ?? props.persona,
+      ...(live?.tts !== undefined || props.tts !== undefined ? { tts: live?.tts ?? props.tts } : {}),
       ...(characters !== undefined ? { characters } : {}),
       ...(props.coreScope !== undefined ? { coreScope: props.coreScope } : {}),
       ...(props.personaScope !== undefined ? { personaScope: props.personaScope } : {}),
       ...(props.ttsScope !== undefined ? { ttsScope: props.ttsScope } : {}),
     }),
-    [props.core, props.persona, props.tts, characters, props.coreScope, props.personaScope, props.ttsScope],
+    [props.core, props.persona, props.tts, live, characters, props.coreScope, props.personaScope, props.ttsScope],
   )
   return createElement(PluginCardView, {
     form,
     ...(props.onOpenCenter !== undefined ? { onOpenCenter: props.onOpenCenter } : {}),
     ...(props.systemLanguage !== undefined ? { systemLanguage: props.systemLanguage } : {}),
+    collapsible: props.collapsible === true,
   })
 }
 
@@ -57,23 +73,60 @@ export function PluginCardView(props: {
   form: PluginCardForm
   onOpenCenter?: () => void
   systemLanguage?: string
+  collapsible?: boolean
 }): unknown {
   const { useState, createElement: h } = friendReact()
   const [, bump] = useState(0)
+  const collapsible = props.collapsible === true
+  const [open, setOpen] = useState(!collapsible)
   const draft = props.form.getDraft()
   const lang = resolveUiLanguage(draft.language, props.systemLanguage)
   const childrenOn = props.form.childControlsEnabled()
+  const dirty = props.form.isDirty()
   const redraw = (): void => bump((value) => value + 1)
+  const title = t('card.title', lang)
+  const subtitle = t('card.subtitle', lang)
+  const showBody = !collapsible || open
 
   return h(
     'section',
-    { className: 'dsh-friend-card', 'data-testid': 'dsh-friend-plugin-card' },
-    h('div', null,
-      h('h2', null, t('card.title', lang)),
-      h('p', { className: 'dsh-friend-muted' }, t('card.subtitle', lang)),
-    ),
+    {
+      className: 'dsh-friend-card',
+      'data-testid': 'dsh-friend-plugin-card',
+      'data-collapsible': collapsible ? 'true' : 'false',
+      'data-open': showBody ? 'true' : 'false',
+    },
+    collapsible
+      ? h('button', {
+        type: 'button',
+        className: 'dsh-friend-card-header',
+        'data-action': 'toggle-card',
+        'aria-expanded': open ? 'true' : 'false',
+        'aria-label': `${t(open ? 'card.collapse' : 'card.expand', lang)}: ${title}`,
+        onClick: () => setOpen(!open),
+      },
+        h('span', { className: 'dsh-friend-card-head-text' },
+          h('span', { className: 'dsh-friend-card-name' }, title),
+          h('span', { className: 'dsh-friend-card-desc' }, subtitle),
+        ),
+        dirty
+          ? h('span', { className: 'dsh-friend-card-pending' }, t('card.unsaved', lang))
+          : null,
+        h('span', {
+          className: open ? 'dsh-friend-card-chevron dsh-friend-card-chevron-open' : 'dsh-friend-card-chevron',
+          'aria-hidden': 'true',
+        }),
+      )
+      : h('div', { className: 'dsh-friend-card-head' },
+        h('h2', null, title),
+        h('p', { className: 'dsh-friend-muted' }, subtitle),
+      ),
+    showBody ? h('div', { className: 'dsh-friend-card-body' },
     h('label', { className: 'dsh-friend-row' },
-      h('span', null, t('card.enabled', lang)),
+      h('span', { className: 'dsh-friend-row-text' },
+        h('span', { className: 'dsh-friend-row-title' }, t('card.enabled', lang)),
+        draft.enabled ? null : h('span', { className: 'dsh-friend-row-desc' }, t('card.disabledHint', lang)),
+      ),
       h('input', {
         type: 'checkbox',
         checked: draft.enabled,
@@ -83,9 +136,10 @@ export function PluginCardView(props: {
         },
       }),
     ),
-    draft.enabled ? null : h('p', { className: 'dsh-friend-muted' }, t('card.disabledHint', lang)),
     h('label', { className: 'dsh-friend-row' },
-      h('span', null, t('card.floatEnabled', lang)),
+      h('span', { className: 'dsh-friend-row-text' },
+        h('span', { className: 'dsh-friend-row-title' }, t('card.floatEnabled', lang)),
+      ),
       h('input', {
         type: 'checkbox',
         disabled: !childrenOn,
@@ -96,8 +150,10 @@ export function PluginCardView(props: {
         },
       }),
     ),
-    h('label', { className: 'dsh-friend-field' },
-      h('span', null, t('card.volume', lang)),
+    h('label', { className: 'dsh-friend-row' },
+      h('span', { className: 'dsh-friend-row-text' },
+        h('span', { className: 'dsh-friend-row-title' }, t('card.volume', lang)),
+      ),
       h('input', {
         type: 'range',
         min: 0,
@@ -112,7 +168,9 @@ export function PluginCardView(props: {
       }),
     ),
     h('label', { className: 'dsh-friend-row' },
-      h('span', null, t('card.muted', lang)),
+      h('span', { className: 'dsh-friend-row-text' },
+        h('span', { className: 'dsh-friend-row-title' }, t('card.muted', lang)),
+      ),
       h('input', {
         type: 'checkbox',
         disabled: !childrenOn,
@@ -123,11 +181,14 @@ export function PluginCardView(props: {
         },
       }),
     ),
-    h('label', { className: 'dsh-friend-field' },
-      h('span', null, t('card.character', lang)),
+    h('label', { className: 'dsh-friend-row' },
+      h('span', { className: 'dsh-friend-row-text' },
+        h('span', { className: 'dsh-friend-row-title' }, t('card.character', lang)),
+      ),
       h(
         'select',
         {
+          className: 'dsh-friend-control',
           disabled: !childrenOn,
           value: draft.currentSlug,
           onChange: (event: { target: { value: string } }) => {
@@ -141,11 +202,14 @@ export function PluginCardView(props: {
         }, character.name)),
       ),
     ),
-    h('label', { className: 'dsh-friend-field' },
-      h('span', null, t('about.language', lang)),
+    h('label', { className: 'dsh-friend-row' },
+      h('span', { className: 'dsh-friend-row-text' },
+        h('span', { className: 'dsh-friend-row-title' }, t('about.language', lang)),
+      ),
       h(
         'select',
         {
+          className: 'dsh-friend-control',
           value: draft.language,
           onChange: (event: { target: { value: string } }) => {
             props.form.set('language', event.target.value as FriendUiLanguage)
@@ -158,14 +222,6 @@ export function PluginCardView(props: {
       ),
     ),
     h('div', { className: 'dsh-friend-actions' },
-      h('button', { type: 'button', onClick: () => props.onOpenCenter?.() }, t('card.openCenter', lang)),
-      h('button', {
-        type: 'button',
-        disabled: !props.form.isDirty(),
-        onClick: () => {
-          void props.form.commit().then(redraw)
-        },
-      }, t('card.save', lang)),
       h('button', {
         type: 'button',
         disabled: !props.form.isDirty(),
@@ -173,8 +229,21 @@ export function PluginCardView(props: {
           props.form.discard()
           redraw()
         },
-      },       t('card.discard', lang)),
+      }, t('card.discard', lang)),
+      h('button', {
+        type: 'button',
+        disabled: !props.form.isDirty(),
+        onClick: () => {
+          void props.form.commit().then(redraw, redraw)
+        },
+      }, t('card.save', lang)),
+      h('button', {
+        type: 'button',
+        className: 'dsh-friend-btn-primary',
+        onClick: () => props.onOpenCenter?.(),
+      }, t('card.openCenter', lang)),
     ),
+    ) : null,
   )
 }
 

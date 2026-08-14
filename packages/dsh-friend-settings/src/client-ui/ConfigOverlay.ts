@@ -5,7 +5,6 @@ import { SECTION_FIELD_LABELS, SECTION_TITLE_KEYS, t } from '../i18n.ts'
 import { createModelSectionForm, type ModelFieldWriter, type ModelInheritView } from '../model-form.ts'
 import {
   DEFAULT_LEGACY_IMPORT_FROM,
-  FRIEND_GROWTH_PAGE_PATH,
   FRIEND_MEMORY_IMPORT_PATH,
   FRIEND_MEMORY_PAGE_PATH,
   FRIEND_REACTIONS_PAGE_PATH,
@@ -38,9 +37,12 @@ import {
   type SettingsFieldWriter,
   type StagedSectionForm,
 } from '../section-forms.ts'
-import { FormActions, SectionFormView } from './fields.ts'
+import { FormActions, SectionFormView, type ExtraFormActions } from './fields.ts'
 import { friendReact } from './friend-react.ts'
+import { GrowthWizard } from './GrowthWizard.ts'
 import { getJson, isRecord, postJson } from './http.ts'
+import { PersonaCardEditor, type PersonaCardHandle } from './PersonaCardEditor.ts'
+import { StageModelPanel } from './StageModelPanel.ts'
 
 export type OverlayWriters = {
   persona?: SettingsFieldWriter
@@ -122,59 +124,95 @@ function ConfigOverlayOpen(props: ConfigOverlayProps & { section: ConfigCenterSe
     [],
   )
   const snapshotKey = JSON.stringify(props.snapshot)
-  const forms = useMemo(
-    () => createOverlayForms(props.snapshot, props.writers, characters),
+  const baseForms = useMemo(
+    () => createOverlayForms(props.snapshot, props.writers),
+    [snapshotKey, props.writers],
+  )
+  const personaForm = useMemo(
+    () => createOverlayForms(props.snapshot, props.writers, characters).persona,
     [snapshotKey, props.writers, characters],
   )
+  const forms = { ...baseForms, persona: personaForm }
   const active = loader.load(section)
+  const close = (): void => {
+    props.overlay.close()
+    props.onClose?.()
+    bump((value) => value + 1)
+  }
+  useEffect?.(() => {
+    const onKey = (event: { key?: string }): void => {
+      if (event.key === 'Escape') {
+        close()
+      }
+    }
+    const target = globalThis as { addEventListener?: (type: string, listener: (event: { key?: string }) => void) => void; removeEventListener?: (type: string, listener: (event: { key?: string }) => void) => void }
+    target.addEventListener?.('keydown', onKey)
+    return () => target.removeEventListener?.('keydown', onKey)
+  }, [])
 
   return h(
     'div',
     {
       className: 'dsh-friend-overlay',
       'data-testid': 'dsh-friend-config-overlay',
-      role: 'dialog',
-      'aria-modal': 'true',
+      'data-chrome': 'modal',
+      role: 'presentation',
     },
+    h('div', {
+      className: 'dsh-friend-mask',
+      'data-action': 'overlay-mask',
+      'aria-hidden': 'true',
+      onClick: close,
+    }),
     h(
-      'nav',
-      { className: 'dsh-friend-nav', 'aria-label': t('overlay.title', lang) },
-      ...CONFIG_CENTER_SECTIONS.map((section) => h('button', {
-        key: section,
-        type: 'button',
-        'data-active': section === props.overlay.getState().section ? 'true' : 'false',
-        onClick: () => {
-          props.overlay.setSection(section)
-          bump((value) => value + 1)
-        },
-      }, t(SECTION_TITLE_KEYS[section], lang))),
-    ),
-    h('div', { className: 'dsh-friend-main' },
-      h('header', null,
-        h('h1', null, t('overlay.title', lang)),
-        h('button', {
-          type: 'button',
-          onClick: () => {
-            props.overlay.close()
-            props.onClose?.()
-            bump((value) => value + 1)
-          },
-        }, t('overlay.close', lang)),
+      'div',
+      {
+        className: 'dsh-friend-panel',
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': t('overlay.title', lang),
+      },
+      h(
+        'nav',
+        { className: 'dsh-friend-nav', 'aria-label': t('overlay.title', lang) },
+        h('div', { className: 'dsh-friend-nav-title' }, t('overlay.title', lang)),
+        h('div', { className: 'dsh-friend-nav-list' },
+          ...CONFIG_CENTER_SECTIONS.map((section) => h('button', {
+            key: section,
+            type: 'button',
+            'data-active': section === props.overlay.getState().section ? 'true' : 'false',
+            onClick: () => {
+              props.overlay.setSection(section)
+              bump((value) => value + 1)
+            },
+          }, t(SECTION_TITLE_KEYS[section], lang))),
+        ),
       ),
-      h('div', { className: 'dsh-friend-pane', 'data-section': active },
-        h(SectionBody, {
-          section,
-          snapshot: props.snapshot,
-          forms,
-          ...(modelViews.length > 0 ? { modelViews } : props.modelViews !== undefined ? { modelViews: props.modelViews } : {}),
-          ...(props.writers?.model !== undefined ? { modelWriter: props.writers.model } : {}),
-          shell: {
-            online: props.shellConnected === true || shell.online,
-            connected: props.shellConnected === true || shell.online,
-            downloadUrl: shell.downloadUrl,
-          },
-          language: lang,
-        }),
+      h('div', { className: 'dsh-friend-main' },
+        h('header', null,
+          h('button', {
+            type: 'button',
+            className: 'dsh-friend-close',
+            'data-action': 'overlay-close',
+            'aria-label': t('overlay.close', lang),
+            onClick: close,
+          }, '×'),
+        ),
+        h('div', { className: 'dsh-friend-pane', 'data-section': active },
+          h(SectionBody, {
+            section,
+            snapshot: props.snapshot,
+            forms,
+            ...(modelViews.length > 0 ? { modelViews } : props.modelViews !== undefined ? { modelViews: props.modelViews } : {}),
+            ...(props.writers?.model !== undefined ? { modelWriter: props.writers.model } : {}),
+            shell: {
+              online: props.shellConnected === true || shell.online,
+              connected: props.shellConnected === true || shell.online,
+              downloadUrl: shell.downloadUrl,
+            },
+            language: lang,
+          }),
+        ),
       ),
     ),
   )
@@ -249,13 +287,7 @@ function SectionBody(props: {
     })
   }
   if (section === 'persona') {
-    return h(SectionFormView, {
-      title: t('section.persona', language),
-      section: 'persona',
-      form: forms.persona,
-      labels: SECTION_FIELD_LABELS,
-      language,
-    })
+    return h(PersonaPane, { form: forms.persona, language })
   }
   if (section === 'tts') {
     return h(SectionFormView, {
@@ -291,6 +323,9 @@ function SectionBody(props: {
       form: forms.asr,
       labels: SECTION_FIELD_LABELS,
       language,
+      extra: String(forms.asr.getDraft().mode) === 'auto'
+        ? h('p', { className: 'dsh-friend-muted', 'data-field': 'asrAutoHint' }, t('asr.autoHint', language))
+        : null,
     })
   }
   if (section === 'stage') {
@@ -300,12 +335,15 @@ function SectionBody(props: {
       form: forms.stage,
       labels: SECTION_FIELD_LABELS,
       language,
-      extra: h('p', {
-        className: 'dsh-friend-muted',
-        'data-field': 'perception',
-        'data-control': 'status',
-        'data-available': 'false',
-      }, `${t('stage.perception', language)}: ${t('stage.perceptionHint', language)}`),
+      extra: h('div', null,
+        h(StageModelPanel, { language }),
+        h('p', {
+          className: 'dsh-friend-muted',
+          'data-field': 'perception',
+          'data-control': 'status',
+          'data-available': 'false',
+        }, `${t('stage.perception', language)}: ${t('stage.perceptionHint', language)}`),
+      ),
     })
   }
   if (section === 'memory') {
@@ -330,12 +368,7 @@ function SectionBody(props: {
       form: forms.growth,
       labels: SECTION_FIELD_LABELS,
       language,
-      extra: h('a', {
-        href: FRIEND_GROWTH_PAGE_PATH,
-        'data-field': 'growthPage',
-        target: '_blank',
-        rel: 'noreferrer',
-      }, t('growth.openPage', language)),
+      extra: h(GrowthWizard, { language }),
     })
   }
   if (section === 'reactions') {
@@ -362,6 +395,23 @@ function SectionBody(props: {
       language,
       extra: h('div', { 'data-field': 'shellPanel' },
         h('p', {
+          className: 'dsh-friend-muted',
+          'data-field': 'floatPopoutHint',
+        }, t('float.popoutHint', language)),
+        h('div', { className: 'dsh-friend-actions' },
+          h('button', {
+            type: 'button',
+            'data-action': 'desktop-popout',
+            onClick: () => {
+              const target = globalThis as { dispatchEvent?: (event: Event) => boolean }
+              const ctor = (globalThis as { CustomEvent?: new (name: string) => Event }).CustomEvent
+              if (typeof ctor === 'function' && typeof target.dispatchEvent === 'function') {
+                target.dispatchEvent(new ctor('dsh-friend:desktop-popout'))
+              }
+            },
+          }, t('float.popout', language)),
+        ),
+        h('p', {
           'data-field': 'shellStatus',
         }, `${t('float.shellStatus', language)}: ${props.shell.online ? t('float.shellOnline', language) : t('float.shellOffline', language)}`),
         h('a', {
@@ -377,6 +427,29 @@ function SectionBody(props: {
   return h(AboutPane, { about, language })
 }
 
+function PersonaPane(props: {
+  form: StagedSectionForm<Record<string, unknown>>
+  language: 'zh' | 'en'
+}): unknown {
+  const { useState, createElement: h } = friendReact()
+  const [card, setCard] = useState<PersonaCardHandle | undefined>(undefined)
+  const slug = String(props.form.getDraft().currentSlug ?? 'default')
+  const extraCommit: ExtraFormActions | undefined = card
+  return h(SectionFormView, {
+    title: t('section.persona', props.language),
+    section: 'persona',
+    form: props.form,
+    labels: SECTION_FIELD_LABELS,
+    language: props.language,
+    extra: h(PersonaCardEditor, {
+      language: props.language,
+      slug,
+      onBind: setCard,
+    }),
+    ...(extraCommit === undefined ? {} : { extraCommit }),
+  })
+}
+
 function ModelPane(props: {
   snapshot: FriendClientSettingsSnapshot
   modelViews?: readonly ModelInheritView[]
@@ -385,12 +458,26 @@ function ModelPane(props: {
 }): unknown {
   const { useMemo, useState, createElement: h } = friendReact()
   const [, bump] = useState(0)
+  const [testStatus, setTestStatus] = useState<'idle' | 'testing' | 'ok' | 'fail'>('idle')
+  const [testDetail, setTestDetail] = useState('')
   const form = useMemo(() => createModelSectionForm({
     chat: props.snapshot.persona.chatModel,
     summarize: props.snapshot.memory.summarizeModel,
     growth: props.snapshot.growth.model,
     ...(props.modelViews !== undefined ? { inheritViews: props.modelViews } : {}),
     ...(props.writer !== undefined ? { writer: props.writer } : {}),
+    testConnection: async (purpose, override) => {
+      const body = await postJson(FRIEND_SETTINGS_MODELS_TEST_PATH, { purpose, override })
+      if (!isRecord(body)) {
+        return { purpose, ok: false, detail: 'no response' }
+      }
+      const detail = typeof body.detail === 'string'
+        ? body.detail
+        : typeof body.error === 'string'
+          ? body.error
+          : ''
+      return { purpose, ok: body.ok === true, detail }
+    },
   }), [
     JSON.stringify(props.snapshot.persona.chatModel),
     JSON.stringify(props.snapshot.memory.summarizeModel),
@@ -401,8 +488,20 @@ function ModelPane(props: {
   const views = form.inheritViews()
   const draft = form.getDraft()
   const redraw = (): void => bump((value) => value + 1)
+  const testing = testStatus === 'testing'
+  const statusLabel = testStatus === 'testing'
+    ? t('model.testing', props.language)
+    : testStatus === 'ok'
+      ? testDetail.length > 0
+        ? `${t('model.testOk', props.language)} · ${testDetail}`
+        : t('model.testOk', props.language)
+      : testStatus === 'fail'
+        ? testDetail.length > 0
+          ? `${t('model.testFail', props.language)} · ${testDetail}`
+          : t('model.testFail', props.language)
+        : ''
   return h('div', { 'data-section-form': 'model' },
-    h('h2', null, t('section.model', props.language)),
+    h('h2', { className: 'dsh-friend-pane-title' }, t('section.model', props.language)),
     h('p', { className: 'dsh-friend-muted' }, t('model.overrideHint', props.language)),
     views.length === 0
       ? h('p', null, t('model.inherit', props.language))
@@ -441,14 +540,25 @@ function ModelPane(props: {
     h('div', { className: 'dsh-friend-actions' },
       h('button', {
         type: 'button',
+        'data-action': 'model-test',
+        disabled: testing,
         onClick: () => {
-          void postJson(FRIEND_SETTINGS_MODELS_TEST_PATH, {
-            purpose: 'chat',
-            override: form.getDraft().chat,
+          setTestStatus('testing')
+          setTestDetail('')
+          void form.test('chat').then((result) => {
+            setTestStatus(result.ok ? 'ok' : 'fail')
+            setTestDetail(result.detail)
           })
         },
-      }, t('model.test', props.language)),
+      }, testing ? t('model.testing', props.language) : t('model.test', props.language)),
     ),
+    testStatus === 'idle'
+      ? null
+      : h('p', {
+        className: 'dsh-friend-test-status',
+        'data-field': 'modelTestStatus',
+        'data-ok': testStatus === 'ok' ? 'true' : testStatus === 'fail' ? 'false' : 'pending',
+      }, statusLabel),
     h(FormActions, { form, language: props.language, onDone: redraw }),
   )
 }

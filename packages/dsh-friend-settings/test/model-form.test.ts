@@ -47,4 +47,18 @@ describe('model section form', () => {
     await form.commit()
     expect(writes).toEqual(['chat:deepseek-reasoner', 'summarize:deepseek-chat', 'growth:'])
   })
+
+  it('forwards a connection test to the injected host probe', async () => {
+    const seen: Array<{ purpose: string; override: string }> = []
+    const form = createModelSectionForm({
+      chat: 'deepseek-reasoner',
+      testConnection: async (purpose, override) => {
+        seen.push({ purpose, override })
+        return { purpose, ok: true, detail: 'pong' }
+      },
+    })
+    const result = await form.test('chat')
+    expect(seen).toEqual([{ purpose: 'chat', override: 'deepseek-reasoner' }])
+    expect(result).toEqual({ purpose: 'chat', ok: true, detail: 'pong' })
+  })
 })

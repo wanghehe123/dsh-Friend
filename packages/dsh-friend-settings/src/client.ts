@@ -41,6 +41,7 @@ export function apply(ctx: FriendSettingsClientContext = {}): FriendSettingsClie
           ...(input.personaScope !== undefined ? { personaScope: input.personaScope } : {}),
           ...(input.ttsScope !== undefined ? { ttsScope: input.ttsScope } : {}),
           onOpenCenter: input.onOpenCenter,
+          collapsible: input.surface === 'plugin',
         }),
       )
     },

@@ -1,11 +1,12 @@
 # @wish233/dsh-friend-settings
 
-设置父卡片、配置中心覆盖层（十分区）与数据/关于。
+设置父卡片、配置中心小窗（十分区）与数据/关于。
 
 rc.6 没有整页/路由级 client 槽位。本包：
 
 - 在官方 `settings.section` 注册 dsh-Friend 父卡片（可选再挂 `settings.general.item`）
-- 用自建全屏覆盖层做配置中心，hash 为 `#/friend/config/<section>`
+- 用自建居中小窗做配置中心（对齐官方 Settings：遮罩 + 800×800 圆角面板），hash 为 `#/friend/config/<section>`
+- 成长分区是 Kokoro 同款三步向导，嵌在小窗里
 - 聚合各功能包设置；密文只留在 host，client 投影只有 `hasApiKey`
 
 ## 验证

@@ -4,13 +4,14 @@ import type { WebRoute } from '@deepseek-ai/dsh-host-webserver'
 import { bindHostSettings, registerRoute, type FriendRouteContext } from '@wish233/dsh-friend-shared'
 
 import { createAboutPayload, FRIEND_PACKAGE_VERSION } from './about.ts'
-import { listCharacters } from './characters.ts'
+import { defaultPersonaCard, listCharacters, readPersonaCard, writePersonaCard } from './characters.ts'
 import { buildZipStore, listExportEntries } from './export-zip.ts'
 import { buildModelInheritViews, type HostModelViewsDeps } from './host-models.ts'
 import { openDataDirectory, type SpawnLike } from './open-data-dir.ts'
 import {
   FRIEND_SETTINGS_ABOUT_PATH,
   FRIEND_SETTINGS_CHARACTERS_PATH,
+  FRIEND_SETTINGS_PERSONA_PATH,
   FRIEND_SETTINGS_EXPORT_PATH,
   FRIEND_SETTINGS_MODELS_PATH,
   FRIEND_SETTINGS_MODELS_TEST_PATH,
@@ -113,6 +114,47 @@ export function createSettingsRoutes(deps: SettingsRouteDeps): readonly WebRoute
           return writeText(response, 'Method Not Allowed', 405)
         }
         writeJson(response, { characters: await listCharacters(deps.dataDir) })
+      },
+    },
+    {
+      kind: 'exact',
+      path: FRIEND_SETTINGS_PERSONA_PATH,
+      async handler(request, response) {
+        if (isGet(request)) {
+          try {
+            const slug = queryValue(request, 'slug') ?? 'default'
+            const card = await readPersonaCard(deps.dataDir, slug) ?? defaultPersonaCard(slug)
+            return writeJson(response, { ok: true, persona: card })
+          } catch (error) {
+            return writeJson(response, {
+              ok: false,
+              error: error instanceof Error ? error.message : String(error),
+            }, 400)
+          }
+        }
+        if (request.method !== 'POST') {
+          return writeText(response, 'Method Not Allowed', 405)
+        }
+        let body: unknown
+        try {
+          body = await readJson(request)
+        } catch {
+          return writeJson(response, { ok: false, error: 'invalid json' }, 400)
+        }
+        if (body === null || typeof body !== 'object' || Array.isArray(body)) {
+          return writeJson(response, { ok: false, error: 'persona is required' }, 400)
+        }
+        const record = body as Record<string, unknown>
+        const slug = typeof record.slug === 'string' ? record.slug : queryValue(request, 'slug') ?? 'default'
+        try {
+          const persona = await writePersonaCard(deps.dataDir, slug, record)
+          writeJson(response, { ok: true, persona })
+        } catch (error) {
+          writeJson(response, {
+            ok: false,
+            error: error instanceof Error ? error.message : String(error),
+          }, 400)
+        }
       },
     },
     {
@@ -280,4 +322,15 @@ function writeText(response: ServerResponse, body: string, statusCode: number): 
   response.statusCode = statusCode
   response.setHeader('content-type', 'text/plain; charset=utf-8')
   response.end(body)
+}
+
+function queryValue(request: IncomingMessage, key: string): string | undefined {
+  const url = request.url
+  if (typeof url !== 'string' || !url.includes('?')) {
+    return undefined
+  }
+  const query = url.slice(url.indexOf('?') + 1)
+  const params = new URLSearchParams(query)
+  const value = params.get(key)
+  return value === null || value.trim().length === 0 ? undefined : value.trim()
 }

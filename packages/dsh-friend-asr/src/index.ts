@@ -36,9 +36,11 @@ export {
   WEBSPEECH_DEFAULT_LANG,
   WEBSPEECH_ENGINE_ID,
   createWebSpeechEngine,
+  emitFromResultEvent,
   inspectWebSpeechCapabilities,
   isDesktopShellUserAgent,
   isNonChromiumSafari,
+  type SeenSpeechResult,
   type SpeechRecognitionConstructor,
   type SpeechRecognitionLike,
   type WebSpeechEngineOptions,
@@ -86,6 +88,7 @@ export {
   matchAsrHotkey,
   normalizeAsrKey,
   parseAsrHotkey,
+  physicalKeyFromEvent,
   type AsrHotkeyAccepted,
   type AsrHotkeyCategory,
   type AsrHotkeyController,
@@ -123,7 +126,12 @@ export {
 } from './settings.ts'
 
 export { FRIEND_ASR_TRANSCRIBE_PATH } from './paths.ts'
-export { FRIEND_STAGE_CHAT_PATH, postFriendStageChat } from './send.ts'
+export {
+  FRIEND_STAGE_CHAT_DEDUPE_MS,
+  FRIEND_STAGE_CHAT_PATH,
+  postFriendStageChat,
+  resetFriendStageChatDedupe,
+} from './send.ts'
 export {
   createSnapshotAsrSettingsBinder,
   FRIEND_ASR_SETTINGS_NAMESPACE,

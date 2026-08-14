@@ -25,6 +25,7 @@ export type AsrModeEvent =
   | { type: 'set-barge-in'; enabled: boolean }
   | { type: 'set-silence-ms'; ms: number }
   | { type: 'partial'; text: string }
+  | { type: 'partial-reset' }
   | { type: 'final'; text: string }
   | { type: 'engine-error'; reason: string }
   | { type: 'silence-timeout' }
@@ -112,9 +113,13 @@ function leaveListening(
 }
 
 function onSpeech(state: AsrModeState, silenceMs: number, effects: AsrModeEffect[]): void {
-  if (state.phase === 'listening' && state.mode === 'auto') {
-    effects.push({ type: 'arm-silence', ms: silenceMs })
+  if (state.phase !== 'listening' || state.mode !== 'auto') {
+    return
   }
+  if (state.bargeIn) {
+    effects.push({ type: 'barge-in' })
+  }
+  effects.push({ type: 'arm-silence', ms: silenceMs })
 }
 
 /**
@@ -134,6 +139,9 @@ export function reduceAsrMode(
       return { state: { ...state, bargeIn: event.enabled }, effects }
 
     case 'set-silence-ms':
+      if (state.phase === 'listening' && state.mode === 'auto') {
+        effects.push({ type: 'arm-silence', ms: silenceMs })
+      }
       return { state, effects }
 
     case 'reset':
@@ -151,6 +159,13 @@ export function reduceAsrMode(
       }
       const held = { ...state, held: true }
       if (held.mode === 'auto') {
+        if (held.phase === 'idle') {
+          return { state: enterListening(held, silenceMs, effects), effects }
+        }
+        if (held.bargeIn) {
+          effects.push({ type: 'barge-in' })
+        }
+        effects.push({ type: 'engine-start', mode: 'auto' })
         return { state: held, effects }
       }
       if (held.mode === 'hold') {
@@ -215,6 +230,13 @@ export function reduceAsrMode(
       return { state: next, effects }
     }
 
+    case 'partial-reset': {
+      if (state.phase !== 'listening') {
+        return { state, effects }
+      }
+      return { state: { ...state, draft: state.committed }, effects }
+    }
+
     case 'final': {
       if (state.phase !== 'listening') {
         return { state, effects }
@@ -259,6 +281,9 @@ export function createAsrModeMachine(config: AsrModeConfig = {}): AsrModeMachine
     },
     dispatch(event) {
       if (event.type === 'set-silence-ms') {
+        if (event.ms === silenceMs) {
+          return []
+        }
         silenceMs = event.ms
         live = { ...live, silenceMs }
       }

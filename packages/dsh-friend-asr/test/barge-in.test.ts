@@ -34,6 +34,28 @@ describe('ASR barge-in → TTS facade (W-M3-4)', () => {
     }
   })
 
+  it('auto-listen calls the TTS stopAll facade when a partial arrives', () => {
+    const stop = vi.fn()
+    const target = globalThis as unknown as Record<string, unknown>
+    const previous = target[FRIEND_TTS_STOP_ALL_GLOBAL]
+    target[FRIEND_TTS_STOP_ALL_GLOBAL] = stop
+    try {
+      const fake = createFakeEngine()
+      const handle = startAsrClient({ engine: fake.engine })
+      handle.session.setMode('auto')
+      stop.mockClear()
+      fake.emitPartial('打断朗读')
+      expect(stop).toHaveBeenCalledOnce()
+      handle.dispose()
+    } finally {
+      if (previous === undefined) {
+        delete target[FRIEND_TTS_STOP_ALL_GLOBAL]
+      } else {
+        target[FRIEND_TTS_STOP_ALL_GLOBAL] = previous
+      }
+    }
+  })
+
   it('does not call the facade when onBargeIn is provided as a no-op and bargeIn is off', () => {
     const stop = vi.fn()
     invokeFriendTtsStopAll({ [FRIEND_TTS_STOP_ALL_GLOBAL]: stop })

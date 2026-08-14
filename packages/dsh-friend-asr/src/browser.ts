@@ -123,6 +123,12 @@ export function startAsrClient(options: FriendAsrClientOptions = {}): AsrClientH
     ...(endpointGlobals !== undefined ? { globals: endpointGlobals } : {}),
     ...(options.fetch !== undefined ? { fetch: options.fetch } : {}),
     getLang: liveLanguage,
+    getSilenceMs: () => {
+      if (scope !== undefined) {
+        return readFriendAsrSettings(scope.getSnapshot().value).silenceMs
+      }
+      return settings.silenceMs
+    },
   })
   const catalog = options.engines ?? [webspeech, endpoint]
   const pickEngine = (preference: typeof settings.engine): AsrEngine => {
@@ -132,6 +138,7 @@ export function startAsrClient(options: FriendAsrClientOptions = {}): AsrClientH
     return resolveAsrEngine(preference, catalog).engine ?? catalog[0] ?? webspeech
   }
   let currentEngine = pickEngine(settings.engine)
+  let appliedSilenceMs = settings.silenceMs
 
   const session = createAsrSession({
     engine: currentEngine,
@@ -163,7 +170,10 @@ export function startAsrClient(options: FriendAsrClientOptions = {}): AsrClientH
       session.setMode(live.mode)
     }
     session.setBargeIn(live.bargeIn)
-    session.setSilenceMs(live.silenceMs)
+    if (live.silenceMs !== appliedSilenceMs) {
+      appliedSilenceMs = live.silenceMs
+      session.setSilenceMs(live.silenceMs)
+    }
     session.setAutoSend(live.autoSend)
     if (hotkey.getSpec() !== live.hotkey) {
       hotkey.setHotkey(live.hotkey)
@@ -199,7 +209,12 @@ export function startAsrClient(options: FriendAsrClientOptions = {}): AsrClientH
 }
 
 export { invokeFriendTtsStopAll, FRIEND_TTS_STOP_ALL_GLOBAL } from './barge-in.ts'
-export { FRIEND_STAGE_CHAT_PATH, postFriendStageChat } from './send.ts'
+export {
+  FRIEND_STAGE_CHAT_DEDUPE_MS,
+  FRIEND_STAGE_CHAT_PATH,
+  postFriendStageChat,
+  resetFriendStageChatDedupe,
+} from './send.ts'
 export {
   createSnapshotAsrSettingsBinder,
   FRIEND_ASR_SETTINGS_NAMESPACE,
@@ -219,6 +234,7 @@ export { createEndpointEngine, inspectEndpointCapabilities, ENDPOINT_ENGINE_ID }
 export type { EndpointGlobals } from './engines/endpoint.ts'
 export {
   createWebSpeechEngine,
+  emitFromResultEvent,
   inspectWebSpeechCapabilities,
   WEBSPEECH_ENGINE_ID,
 } from './engines/webspeech.ts'

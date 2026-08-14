@@ -5,9 +5,12 @@ import {
   type FriendAsrClientContext,
 } from './browser.ts'
 import { postFriendStageChat } from './send.ts'
+import type { AsrSettingsBinder, AsrSettingsScope } from './settings.ts'
+import { createSnapshotAsrSettingsBinder } from './settings-snapshot.ts'
 
 export const name = '@wish233/dsh-friend-asr/client'
 export const inject = ['settingsScope'] as const
+export const ASR_CLIENT_SETTINGS_POLL_MS = 1_000
 
 export type {
   AsrClientHandle,
@@ -39,6 +42,81 @@ function installAsrClientGlobal(handle: AsrClientHandle): () => void {
   }
 }
 
+function withSnapshotFallback(
+  primary: AsrSettingsBinder,
+  fallback: AsrSettingsBinder,
+): AsrSettingsBinder {
+  return {
+    bind(spec) {
+      const primaryScope = primary.bind(spec)
+      let fallbackScope: AsrSettingsScope | undefined
+      let unsubscribePrimary: (() => void) | undefined
+      let unsubscribeFallback: (() => void) | undefined
+      const listeners = new Set<() => void>()
+
+      const notify = (): void => {
+        for (const listener of listeners) listener()
+      }
+      const releaseFallback = (): void => {
+        unsubscribeFallback?.()
+        unsubscribeFallback = undefined
+        // Snapshot scopes close when their last subscriber leaves. Discard the
+        // closed instance so a later primary outage gets a fresh GET + poller.
+        fallbackScope = undefined
+      }
+      const ensureFallback = (): AsrSettingsScope => {
+        fallbackScope ??= fallback.bind(spec)
+        if (listeners.size > 0 && unsubscribeFallback === undefined) {
+          unsubscribeFallback = fallbackScope.subscribe(notify)
+        }
+        return fallbackScope
+      }
+      const primaryReady = (): boolean => primaryScope.getSnapshot().status === 'ready'
+      const active = (): AsrSettingsScope => {
+        if (primaryReady()) {
+          releaseFallback()
+          return primaryScope
+        }
+        return ensureFallback()
+      }
+      const onPrimaryChange = (): void => {
+        if (primaryReady()) {
+          releaseFallback()
+          notify()
+          return
+        }
+        // Keep consumers on their last applied values until the new snapshot
+        // scope completes its first GET. Its notification then hydrates them.
+        ensureFallback()
+      }
+
+      return {
+        getSnapshot: () => active().getSnapshot(),
+        subscribe(listener) {
+          listeners.add(listener)
+          unsubscribePrimary ??= primaryScope.subscribe(onPrimaryChange)
+          if (!primaryReady()) {
+            ensureFallback()
+          }
+          return () => {
+            listeners.delete(listener)
+            if (listeners.size !== 0) return
+            unsubscribePrimary?.()
+            unsubscribePrimary = undefined
+            releaseFallback()
+          }
+        },
+        set(field, value) {
+          return active().set(field, value)
+        },
+        unset(field) {
+          return active().unset(field)
+        },
+      }
+    },
+  }
+}
+
 export function apply(
   ctx: FriendAsrClientContext = {},
   options: FriendAsrClientApplyOptions = {},
@@ -53,13 +131,53 @@ export function apply(
     }
     postFriendStageChat(text, fetchImpl)
   })
+  const snapshotSettings = createSnapshotAsrSettingsBinder({
+    ...(fetchImpl !== undefined ? { fetch: fetchImpl } : {}),
+    pollMs: ASR_CLIENT_SETTINGS_POLL_MS,
+  })
+  // Keep the official dsh scope when it is ready. In rc.6 custom namespaces
+  // can instead resolve to `unavailable`; fall back to the same sanitized host
+  // snapshot used by the pet iframe so a saved Alt+X does not stay Alt+S here.
+  const injectedSettings = ctx.settingsScope
+  const settingsScope = injectedSettings === undefined
+    ? snapshotSettings
+    : withSnapshotFallback(injectedSettings, snapshotSettings)
   const handle = startAsrClient({
-    ...(ctx.settingsScope !== undefined ? { settingsScope: ctx.settingsScope } : {}),
+    settingsScope,
     onSend,
   })
+  const onToggleListen = (): void => {
+    const state = handle.session.getState()
+    if (state.mode === 'auto') {
+      if (state.phase === 'idle') {
+        handle.session.dispatch({ type: 'boot' })
+      }
+      handle.engine.start('auto')
+      return
+    }
+    handle.session.dispatch({ type: 'hotkey-down' })
+  }
+  const onYield = (): void => {
+    handle.session.dispatch({ type: 'reset' })
+  }
+  const onResume = (): void => {
+    if (handle.session.getState().mode === 'auto') {
+      handle.session.dispatch({ type: 'boot' })
+    }
+  }
+  const host = globalThis as {
+    addEventListener?: (type: string, listener: () => void) => void
+    removeEventListener?: (type: string, listener: () => void) => void
+  }
+  host.addEventListener?.('dsh-friend:toggle-listen', onToggleListen)
+  host.addEventListener?.('dsh-friend:asr-yield', onYield)
+  host.addEventListener?.('dsh-friend:asr-resume', onResume)
   const uninstall = installAsrClientGlobal(handle)
   const originalDispose = handle.dispose
   handle.dispose = () => {
+    host.removeEventListener?.('dsh-friend:toggle-listen', onToggleListen)
+    host.removeEventListener?.('dsh-friend:asr-yield', onYield)
+    host.removeEventListener?.('dsh-friend:asr-resume', onResume)
     uninstall()
     originalDispose()
   }
@@ -75,7 +193,12 @@ export { startAsrClient, FRIEND_ASR_CLIENT_GLOBAL } from './browser.ts'
 export { invokeFriendTtsStopAll, FRIEND_TTS_STOP_ALL_GLOBAL } from './barge-in.ts'
 export { resolveAsrEngine, selectAsrEngine } from './engine.ts'
 export { createEndpointEngine, inspectEndpointCapabilities, ENDPOINT_ENGINE_ID } from './engines/endpoint.ts'
-export { FRIEND_STAGE_CHAT_PATH, postFriendStageChat } from './send.ts'
+export {
+  FRIEND_STAGE_CHAT_DEDUPE_MS,
+  FRIEND_STAGE_CHAT_PATH,
+  postFriendStageChat,
+  resetFriendStageChatDedupe,
+} from './send.ts'
 export {
   createAsrSettingsForm,
   renderAsrCapabilityCards,

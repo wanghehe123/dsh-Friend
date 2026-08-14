@@ -5,6 +5,8 @@
 export const ASR_TRANSCRIBE_TIMEOUT_MS = 60_000
 export const ASR_TRANSCRIBE_MAX_BYTES = 25 * 1024 * 1024
 export const OPENAI_TRANSCRIPTIONS_PATH = '/audio/transcriptions'
+export const DASHSCOPE_MULTIMODAL_GENERATION_PATH = '/services/aigc/multimodal-generation/generation'
+export const DASHSCOPE_QWEN_ASR_MAX_DATA_URL_BYTES = 10 * 1024 * 1024
 
 export type AsrProxyCredentials = {
   apiKey?: string
@@ -57,13 +59,27 @@ export function createAsrTranscribeProxy(options: CreateAsrTranscribeProxyOption
       }
 
       const mime = request.mime?.trim() || 'audio/webm'
-      const filename = request.filename?.trim() || 'audio.webm'
-      const form = new FormData()
-      form.append('file', new Blob([copyBuffer(request.audio)], { type: mime }), filename)
-      form.append('model', model)
-      if (request.language !== undefined && request.language.trim().length > 0) {
-        form.append('language', request.language.trim())
+      const dashScopeQwen = isDashScopeQwen3Asr(baseURL, model)
+      if (
+        dashScopeQwen
+        && dashScopeDataUrlByteLength(request.audio.byteLength, mime) > DASHSCOPE_QWEN_ASR_MAX_DATA_URL_BYTES
+      ) {
+        throw new Error('asr-endpoint: DashScope audio too large after Base64 encoding')
       }
+      const target = dashScopeQwen
+        ? `${baseURL}${DASHSCOPE_MULTIMODAL_GENERATION_PATH}`
+        : `${baseURL}${OPENAI_TRANSCRIPTIONS_PATH}`
+      const body = dashScopeQwen
+        ? dashScopeQwenBody(request.audio, mime, model, request.language)
+        : openAiTranscriptionBody(request, mime, model)
+      const headers = dashScopeQwen
+        ? {
+            Authorization: `Bearer ${apiKey}`,
+            'content-type': 'application/json',
+          }
+        : {
+            Authorization: `Bearer ${apiKey}`,
+          }
 
       const controller = new AbortController()
       const timer = setTimeout(() => {
@@ -73,12 +89,10 @@ export function createAsrTranscribeProxy(options: CreateAsrTranscribeProxyOption
 
       let response: Response
       try {
-        response = await fetchFn(`${baseURL}${OPENAI_TRANSCRIPTIONS_PATH}`, {
+        response = await fetchFn(target, {
           method: 'POST',
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-          },
-          body: form,
+          headers,
+          body,
           signal: controller.signal,
         })
       } catch (error) {
@@ -92,10 +106,77 @@ export function createAsrTranscribeProxy(options: CreateAsrTranscribeProxyOption
         throw new Error(redact(`asr-endpoint: HTTP ${String(response.status)} ${detail}`.trim(), apiKey))
       }
 
-      const text = await readTranscript(response)
+      const text = dashScopeQwen
+        ? await readDashScopeTranscript(response)
+        : await readTranscript(response)
       return { text }
     },
   }
+}
+
+function openAiTranscriptionBody(
+  request: AsrProxyRequest,
+  mime: string,
+  model: string,
+): FormData {
+  const filename = request.filename?.trim() || 'audio.webm'
+  const form = new FormData()
+  form.append('file', new Blob([copyBuffer(request.audio)], { type: mime }), filename)
+  form.append('model', model)
+  if (request.language !== undefined && request.language.trim().length > 0) {
+    form.append('language', request.language.trim())
+  }
+  return form
+}
+
+function isDashScopeQwen3Asr(baseURL: string, model: string): boolean {
+  if (!/\/api\/v1$/iu.test(baseURL)) {
+    return false
+  }
+  const normalized = model.toLowerCase()
+  if (normalized === 'qwen3-asr-flash' || normalized === 'qwen3-asr-flash-us') {
+    return true
+  }
+  return /^qwen3-asr-flash-\d{4}-\d{2}-\d{2}(?:-us)?$/u.test(normalized)
+}
+
+function dashScopeDataUrlByteLength(audioBytes: number, mime: string): number {
+  const prefixBytes = Buffer.byteLength(`data:${mime};base64,`)
+  return prefixBytes + (4 * Math.ceil(audioBytes / 3))
+}
+
+function dashScopeQwenBody(
+  audio: Uint8Array,
+  mime: string,
+  model: string,
+  language: string | undefined,
+): string {
+  const normalizedLanguage = normalizeQwenLanguage(language)
+  return JSON.stringify({
+    model,
+    input: {
+      messages: [{
+        role: 'user',
+        content: [{
+          audio: `data:${mime};base64,${Buffer.from(audio).toString('base64')}`,
+        }],
+      }],
+    },
+    parameters: {
+      asr_options: {
+        ...(normalizedLanguage === undefined ? {} : { language: normalizedLanguage }),
+        enable_itn: false,
+      },
+    },
+  })
+}
+
+function normalizeQwenLanguage(language: string | undefined): string | undefined {
+  const normalized = language?.trim().toLowerCase()
+  if (normalized === undefined || normalized.length === 0) {
+    return undefined
+  }
+  return normalized.split('-')[0]
 }
 
 function copyBuffer(bytes: Uint8Array): ArrayBuffer {
@@ -129,6 +210,28 @@ async function readTranscript(response: Response): Promise<string> {
     // plain text body
   }
   return raw.trim()
+}
+
+async function readDashScopeTranscript(response: Response): Promise<string> {
+  const payload: unknown = await response.json()
+  if (!isRecord(payload)) {
+    throw new Error('asr-endpoint: invalid DashScope response')
+  }
+  const output = isRecord(payload.output) ? payload.output : undefined
+  const choices = Array.isArray(output?.choices) ? output.choices : []
+  const choice = choices.find(isRecord)
+  const message = choice !== undefined && isRecord(choice.message) ? choice.message : undefined
+  const content = Array.isArray(message?.content) ? message.content : []
+  for (const item of content) {
+    if (!isRecord(item)) {
+      continue
+    }
+    const text = asNonEmptyString(item.text)
+    if (text !== undefined) {
+      return text
+    }
+  }
+  throw new Error('asr-endpoint: missing transcript in DashScope response')
 }
 
 async function readErrorDetail(response: Response): Promise<string> {

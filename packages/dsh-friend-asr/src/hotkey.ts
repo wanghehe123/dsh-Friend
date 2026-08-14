@@ -39,6 +39,8 @@ export type AsrHotkeyDecision = AsrHotkeyAccepted | AsrHotkeyRejected
 export type AsrKeyEventLike = {
   type?: string
   key: string
+  /** Physical key (`KeyS`, `Digit1`). Preferred over `key` on macOS Option. */
+  code?: string
   altKey?: boolean
   ctrlKey?: boolean
   metaKey?: boolean
@@ -101,6 +103,23 @@ export function normalizeAsrKey(key: string): string {
   return key
 }
 
+/**
+ * Prefer `KeyboardEvent.code` so Option+S (`key: "ß"`, `code: "KeyS"`)
+ * still matches a stored `Alt+S` chord.
+ */
+export function physicalKeyFromEvent(event: { key: string; code?: string }): string {
+  const code = event.code
+  if (typeof code === 'string') {
+    if (/^Key[A-Z]$/u.test(code)) {
+      return code.slice(3).toLowerCase()
+    }
+    if (/^Digit[0-9]$/u.test(code)) {
+      return code.slice(5)
+    }
+  }
+  return normalizeAsrKey(event.key)
+}
+
 export function parseAsrHotkey(spec: string): AsrKeyChord | undefined {
   const parts = spec.split('+').map((part) => part.trim()).filter((part) => part.length > 0)
   if (parts.length === 0) {
@@ -161,7 +180,7 @@ export function chordFromKeyEvent(event: AsrKeyEventLike): AsrKeyChord {
     ctrl: event.ctrlKey === true,
     meta: event.metaKey === true,
     shift: event.shiftKey === true,
-    key: normalizeAsrKey(event.key),
+    key: physicalKeyFromEvent(event),
   }
 }
 

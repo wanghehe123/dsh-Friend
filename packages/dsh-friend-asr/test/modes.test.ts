@@ -129,12 +129,55 @@ describe('auto-listen mode', () => {
     expect(effects.some((effect) => effect.type === 'send')).toBe(false)
   })
 
+  it('re-arms the silence timer when the threshold changes mid-listen', () => {
+    const machine = createAsrModeMachine({ mode: 'hold', silenceMs: 1200 })
+    machine.dispatch({ type: 'set-mode', mode: 'auto' })
+    const effects = machine.dispatch({ type: 'set-silence-ms', ms: 800 })
+    expect(effects).toContainEqual({ type: 'arm-silence', ms: 800 })
+  })
+
+  it('does not re-arm silence when the threshold is set to the same value', () => {
+    const machine = createAsrModeMachine({ mode: 'auto', silenceMs: 800 })
+    machine.dispatch({ type: 'boot' })
+    expect(machine.dispatch({ type: 'set-silence-ms', ms: 800 })).toEqual([])
+  })
+
+  it('recovers from idle on hotkey-down so a gesture can open the mic', () => {
+    const { state, effects } = effectsOf([
+      { type: 'set-mode', mode: 'auto' },
+      { type: 'engine-error', reason: 'not-allowed' },
+      { type: 'hotkey-down' },
+    ])
+    expect(state.phase).toBe('listening')
+    expect(effects).toContainEqual({ type: 'engine-start', mode: 'auto' })
+  })
+
+  it('restarts the engine on hotkey-down while already listening', () => {
+    const machine = createAsrModeMachine({ mode: 'auto' })
+    machine.dispatch({ type: 'boot' })
+    const effects = machine.dispatch({ type: 'hotkey-down' })
+    expect(effects).toContainEqual({ type: 'engine-start', mode: 'auto' })
+  })
+
   it('does not send an empty silence timeout', () => {
     const { effects } = effectsOf([
       { type: 'set-mode', mode: 'auto' },
       { type: 'silence-timeout' },
     ])
     expect(effects.some((effect) => effect.type === 'send')).toBe(false)
+  })
+
+  it('clears a replayed interim without barge-in or silence-timer effects', () => {
+    const machine = createAsrModeMachine({ mode: 'auto' })
+    machine.dispatch({ type: 'boot' })
+    machine.dispatch({ type: 'final', text: '已确认' })
+    machine.dispatch({ type: 'partial', text: '残句' })
+
+    const effects = machine.dispatch({ type: 'partial-reset' })
+
+    expect(effects).toEqual([])
+    expect(machine.getState().committed).toBe('已确认')
+    expect(machine.getState().draft).toBe('已确认')
   })
 })
 
@@ -218,6 +261,20 @@ describe('barge-in', () => {
 
     const disabled = effectsOf([{ type: 'hotkey-down' }], { bargeIn: false })
     expect(disabled.effects.some((effect) => effect.type === 'barge-in')).toBe(false)
+  })
+
+  it('auto-listen barges in when speech arrives, not only when listening starts', () => {
+    const machine = createAsrModeMachine({ mode: 'auto' })
+    const boot = machine.dispatch({ type: 'boot' })
+    expect(boot).toContainEqual({ type: 'barge-in' })
+
+    const speech = machine.dispatch({ type: 'partial', text: '为什么哈啰' })
+    expect(speech).toContainEqual({ type: 'barge-in' })
+    expect(speech).toContainEqual({ type: 'arm-silence', ms: 1200 })
+
+    machine.dispatch({ type: 'set-barge-in', enabled: false })
+    const quiet = machine.dispatch({ type: 'final', text: '为什么哈啰' })
+    expect(quiet.some((effect) => effect.type === 'barge-in')).toBe(false)
   })
 })
 

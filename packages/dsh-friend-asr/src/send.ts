@@ -7,14 +7,31 @@
  */
 export const FRIEND_STAGE_CHAT_PATH = '/friend/stage/chat' as const
 
+/** Drop a second POST of the same transcript (two ASR clients, or a late echo). */
+export const FRIEND_STAGE_CHAT_DEDUPE_MS = 2_500
+
+let lastPostedText = ''
+let lastPostedAt = 0
+
+export function resetFriendStageChatDedupe(): void {
+  lastPostedText = ''
+  lastPostedAt = 0
+}
+
 export function postFriendStageChat(
   text: string,
   fetchImpl: typeof fetch = fetch,
+  now: number = Date.now(),
 ): void {
   const trimmed = text.trim()
   if (trimmed.length === 0) {
     return
   }
+  if (trimmed === lastPostedText && now - lastPostedAt < FRIEND_STAGE_CHAT_DEDUPE_MS) {
+    return
+  }
+  lastPostedText = trimmed
+  lastPostedAt = now
   void fetchImpl(FRIEND_STAGE_CHAT_PATH, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },

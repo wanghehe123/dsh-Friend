@@ -6,6 +6,7 @@ import type {
   AsrTranscriptHandler,
   AsrUnavailableCode,
 } from '../engine.ts'
+import { stripReplayPrefix } from '../replay-prefix.ts'
 
 /** Minimal SpeechRecognition surface. Injected in tests; browser global in prod. */
 export interface SpeechRecognitionLike {
@@ -124,15 +125,31 @@ function transcriptOf(result: SpeechRecognitionResultLike): string {
   return first?.transcript ?? ''
 }
 
-function emitFromResultEvent(
+export type SeenSpeechResult = {
+  isFinal: boolean
+  text: string
+}
+
+/**
+ * Walk a SpeechRecognition `onresult` payload.
+ *
+ * Chrome keeps a cumulative `results` list and sometimes reports
+ * `resultIndex = 0` (or omits it) on later events. Each new final is
+ * emitted on its own so a replayed segment is not glued onto the next.
+ * `seen` skips an index that already dispatched that same final. The
+ * same index may still move interim → final.
+ */
+export function emitFromResultEvent(
   event: SpeechRecognitionResultEventLike,
   onPartial: AsrTranscriptHandler | undefined,
   onFinal: AsrTranscriptHandler | undefined,
+  seen?: Map<number, SeenSpeechResult>,
 ): void {
   const results = event.results
   const start = event.resultIndex ?? 0
   let interim = ''
-  let finals = ''
+  let replayedFinal = false
+  let emittedFinal = false
   for (let index = start; index < results.length; index += 1) {
     const result = results[index]
     if (result === undefined) {
@@ -143,17 +160,49 @@ function emitFromResultEvent(
       continue
     }
     if (result.isFinal) {
-      finals += text
+      const previous = seen?.get(index)
+      if (previous?.isFinal === true && previous.text === text) {
+        replayedFinal = true
+        continue
+      }
+      seen?.set(index, { isFinal: true, text })
+      const finalText = previous?.isFinal === true
+        ? stripReplayPrefix(text, previous.text)
+        : text
+      if (finalText.length > 0) {
+        emittedFinal = true
+        onFinal?.(finalText)
+      } else if (previous?.isFinal === true) {
+        // Whitespace-only changes are still a replay after normalization.
+        replayedFinal = true
+      }
     } else {
+      // A finalized index cannot become interim again within one recognition
+      // session. Ignore that browser replay and clear any stale draft below.
+      if (seen?.get(index)?.isFinal === true) {
+        replayedFinal = true
+        continue
+      }
       interim += text
     }
   }
-  if (finals.length > 0) {
-    onFinal?.(finals)
-  }
   if (interim.length > 0) {
     onPartial?.(interim)
+  } else if (replayedFinal && !emittedFinal) {
+    // A browser replay can arrive after a fresh interim. Clear that interim so
+    // auto mode cannot send it later as a standalone fragment.
+    onPartial?.('')
   }
+}
+
+const RETRYABLE_SPEECH_ERRORS = new Set(['not-allowed', 'audio-capture', 'network'])
+
+function isContinuousMode(mode: AsrListenMode): boolean {
+  return mode === 'auto' || mode === 'toggle'
+}
+
+function isRetryableSpeechError(reason: string): boolean {
+  return RETRYABLE_SPEECH_ERRORS.has(reason)
 }
 
 export function inspectWebSpeechCapabilities(globals?: WebSpeechGlobals): AsrEngineCapabilities {
@@ -200,6 +249,7 @@ export function createWebSpeechEngine(options: WebSpeechEngineOptions = {}): Asr
   let recognition: SpeechRecognitionLike | undefined
   let wanted = false
   let activeMode: AsrListenMode = 'hold'
+  let gestureUnbind: (() => void) | undefined
 
   const capabilities = (): AsrEngineCapabilities => inspectWebSpeechCapabilities(globals)
 
@@ -227,12 +277,22 @@ export function createWebSpeechEngine(options: WebSpeechEngineOptions = {}): Asr
     instance.interimResults = true
     instance.continuous = mode === 'auto' || mode === 'toggle'
     instance.lang = getLang()
+    const seen = new Map<number, SeenSpeechResult>()
     instance.onresult = (event) => {
-      emitFromResultEvent(event, onPartial, onFinal)
+      emitFromResultEvent(
+        event,
+        onPartial,
+        onFinal,
+        seen,
+      )
     }
     instance.onerror = (event) => {
       const reason = event.error ?? event.message ?? 'speech-recognition-error'
       if (reason === 'no-speech' || reason === 'aborted') {
+        return
+      }
+      if (wanted && isContinuousMode(activeMode) && isRetryableSpeechError(reason)) {
+        armGestureRestart()
         return
       }
       onError?.(reason)
@@ -244,10 +304,13 @@ export function createWebSpeechEngine(options: WebSpeechEngineOptions = {}): Asr
       if (activeMode !== 'auto' && activeMode !== 'toggle') {
         return
       }
+      // SpeechRecognition result indexes are scoped to one recognition
+      // session. A restarted session may legitimately reuse index 0 and text.
+      seen.clear()
       try {
         instance.start()
       } catch {
-        onError?.('speech-recognition-restart-failed')
+        armGestureRestart()
       }
     }
   }
@@ -268,10 +331,41 @@ export function createWebSpeechEngine(options: WebSpeechEngineOptions = {}): Asr
     try {
       instance.start()
     } catch (error) {
-      wanted = false
       recognition = undefined
+      if (wanted && isContinuousMode(mode)) {
+        armGestureRestart()
+        return
+      }
+      wanted = false
       const message = error instanceof Error ? error.message : 'speech-recognition-start-failed'
       onError?.(message)
+    }
+  }
+
+  const clearGestureRestart = (): void => {
+    gestureUnbind?.()
+    gestureUnbind = undefined
+  }
+
+  const armGestureRestart = (): void => {
+    if (gestureUnbind !== undefined) {
+      return
+    }
+    const target = globalThis as {
+      addEventListener?: (type: string, listener: () => void, options?: boolean) => void
+      removeEventListener?: (type: string, listener: () => void, options?: boolean) => void
+    }
+    const onGesture = (): void => {
+      clearGestureRestart()
+      if (wanted) {
+        startInstance(activeMode)
+      }
+    }
+    target.addEventListener?.('pointerdown', onGesture, true)
+    target.addEventListener?.('keydown', onGesture, true)
+    gestureUnbind = () => {
+      target.removeEventListener?.('pointerdown', onGesture, true)
+      target.removeEventListener?.('keydown', onGesture, true)
     }
   }
 
@@ -299,6 +393,7 @@ export function createWebSpeechEngine(options: WebSpeechEngineOptions = {}): Asr
     },
     stop() {
       wanted = false
+      clearGestureRestart()
       disposeRecognition(false)
     },
     capabilities,

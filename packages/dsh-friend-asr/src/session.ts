@@ -93,7 +93,11 @@ export function createAsrSession(options: AsrSessionOptions): AsrSession {
 
   const bindEngineHandlers = (target: AsrEngine): void => {
     target.onPartial = (text) => {
-      dispatch({ type: 'partial', text })
+      if (text.length === 0) {
+        dispatch({ type: 'partial-reset' })
+      } else {
+        dispatch({ type: 'partial', text })
+      }
     }
     target.onFinal = (text) => {
       if (machine.getState().phase === 'listening') {

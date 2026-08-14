@@ -5,6 +5,7 @@ import {
   evaluateAsrHotkey,
   formatAsrHotkey,
   isTextEntryTarget,
+  matchAsrHotkey,
   parseAsrHotkey,
   type AsrHotkeyRejected,
   type AsrHotkeyStore,
@@ -84,6 +85,16 @@ describe('hotkey parse / evaluate', () => {
     }
     expect(decision.spec).toBe('Alt+Q')
   })
+
+  it('matches macOS Option+S (key ß, code KeyS) to Alt+S', () => {
+    const chord = parseAsrHotkey('Alt+S')
+    expect(chord).toBeDefined()
+    if (chord === undefined) {
+      return
+    }
+    const event = keyEvent({ key: 'ß', code: 'KeyS', altKey: true })
+    expect(matchAsrHotkey(event, chord)).toBe(true)
+  })
 })
 
 describe('hotkey controller', () => {
@@ -114,6 +125,18 @@ describe('hotkey controller', () => {
     expect(up.defaultPrevented).toBe(true)
     expect(ups).toHaveLength(1)
 
+    controller.dispose()
+  })
+
+  it('fires hold-to-talk when macOS Option+S reports key ß', () => {
+    const downs: number[] = []
+    const controller = createAsrHotkeyController({
+      onDown: () => {
+        downs.push(1)
+      },
+    })
+    controller.handleEvent(keyEvent({ type: 'keydown', key: 'ß', code: 'KeyS', altKey: true }))
+    expect(downs).toHaveLength(1)
     controller.dispose()
   })
 

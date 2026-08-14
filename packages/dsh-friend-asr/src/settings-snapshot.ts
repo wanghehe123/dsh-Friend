@@ -40,6 +40,9 @@ export function createSnapshotAsrSettingsBinder(
         ?? readFriendAsrSettings(options.initial)
       let revision = 0
       let writeGeneration = 0
+      let readGeneration = 0
+      let appliedReadGeneration = 0
+      let pendingWrites = 0
       const listeners = new Set<() => void>()
       let pollTimer: ReturnType<typeof setInterval> | undefined
       let closed = false
@@ -62,19 +65,26 @@ export function createSnapshotAsrSettingsBinder(
 
       const refresh = async (): Promise<void> => {
         const impl = resolveFetch()
-        if (impl === undefined) {
+        if (impl === undefined || pendingWrites > 0) {
           return
         }
-        const generation = writeGeneration
+        const writeAtStart = writeGeneration
+        const readAtStart = ++readGeneration
         try {
           const response = await impl(snapshotPath, { method: 'GET' })
           if (!response.ok) {
             return
           }
           const payload: unknown = await response.json()
-          if (closed || generation !== writeGeneration) {
+          if (
+            closed
+            || pendingWrites > 0
+            || writeAtStart !== writeGeneration
+            || readAtStart < appliedReadGeneration
+          ) {
             return
           }
+          appliedReadGeneration = readAtStart
           applySection(asrSectionFromSnapshot(payload))
         } catch {
           // keep the last known value
@@ -142,8 +152,13 @@ export function createSnapshotAsrSettingsBinder(
         },
         async set(field, fieldValue) {
           writeGeneration += 1
-          applySection({ ...value, [field]: fieldValue })
-          await persistPatch({ [field]: fieldValue })
+          pendingWrites += 1
+          try {
+            applySection({ ...value, [field]: fieldValue })
+            await persistPatch({ [field]: fieldValue })
+          } finally {
+            pendingWrites -= 1
+          }
         },
         async unset(field) {
           writeGeneration += 1

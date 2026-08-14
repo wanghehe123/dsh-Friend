@@ -3,6 +3,7 @@ import type { AsrHotkeyTarget, AsrKeyEventLike } from '../../src/hotkey.ts'
 export type TestKeyInit = {
   type?: 'keydown' | 'keyup'
   key: string
+  code?: string
   altKey?: boolean
   ctrlKey?: boolean
   metaKey?: boolean
@@ -23,6 +24,7 @@ export function keyEvent(init: TestKeyInit): TestKeyEvent {
   const event: TestKeyEvent = {
     type: init.type ?? 'keydown',
     key: init.key,
+    ...(init.code !== undefined ? { code: init.code } : {}),
     altKey: init.altKey === true,
     ctrlKey: init.ctrlKey === true,
     metaKey: init.metaKey === true,

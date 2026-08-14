@@ -1,0 +1,46 @@
+# friend-companion — companion agent plane.
+#
+# Mounted ONCE under a standing scope. Rows here must be things the companion
+# session should see (prompt sections, restrict, later memory/stage tools).
+# Do NOT put host-plane rows here (HTTP routes, settings).
+#
+# dsh-friend-stage.apply() is role-split: host (default, aggregate patch)
+# mounts HTTP + SSE and does not register tools; companion-preset (this
+# file) only registerTool's set_expression / play_motion / play_cue.
+# Listing stage here therefore cannot collide with the host /friend/pet route.
+#
+# dsh-friend-memory.apply() is the same split: host mounts HTTP routes and
+# does not register tools; companion-preset only registerTool's
+# memory_append / memory_search / memory_get and the friend:memory section.
+#
+# Bare package names resolve from the harness, not from this directory
+# (official agent-presets mount records the host baseUrl). Relative paths
+# would resolve here; we do not use any.
+#
+# `@deepseek-ai/dsh-persona` occupies the reserved `deployment:persona`
+# slot (order 0) so the coding-agent identity does not leak into companion
+# sessions. Character-card details live in `friend:persona` (order 10) via
+# this package's companion-preset apply — we do not steal that reserved name.
+
+- id: persona
+  name: '@deepseek-ai/dsh-persona'
+  config:
+    text: >-
+      You are a personal companion, not a coding agent. Stay in character.
+      Follow the friend:persona and friend:conduct sections.
+
+- id: dsh-friend-persona
+  name: '@wish233/dsh-friend-persona'
+  config:
+    role: companion-preset
+    allowlist: companion
+
+- id: dsh-friend-stage
+  name: '@wish233/dsh-friend-stage'
+  config:
+    role: companion-preset
+
+- id: dsh-friend-memory
+  name: '@wish233/dsh-friend-memory'
+  config:
+    role: companion-preset

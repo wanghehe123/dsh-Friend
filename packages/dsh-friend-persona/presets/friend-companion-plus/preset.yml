@@ -1,0 +1,3 @@
+name: 伴侣 Plus
+description: 伴侣超集：在 friend-companion 白名单上追加 dsh 网页搜索（web_search）与文件只读（read）。仍不含 bash / 文件写入。
+order: 11

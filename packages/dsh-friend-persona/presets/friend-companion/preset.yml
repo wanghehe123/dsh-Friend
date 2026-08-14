@@ -1,0 +1,3 @@
+name: 伴侣
+description: dsh-Friend 默认伴侣：人格与守则分区，工具白名单为记忆三件、表演三件、notify 与时间。不含 bash / 文件写入 / 网页。
+order: 10

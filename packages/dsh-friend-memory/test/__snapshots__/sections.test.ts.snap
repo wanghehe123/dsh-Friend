@@ -1,0 +1,33 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`memory bootstrap section > renders MEMORY.md + USER.md + today/yesterday notes 1`] = `
+"# 记忆
+
+## MEMORY.md
+
+## 关于用户
+
+## 重要事实
+
+- 不吃香菜
+
+## 近期主题
+
+## 待办与约定
+
+## USER.md
+
+# 用户
+
+- 名字：小陈
+
+## 今日笔记
+
+- 12:00 [note] 今天买了茶
+
+## 昨日笔记
+
+- 12:00 [chat] 昨天约了周日
+
+"
+`;

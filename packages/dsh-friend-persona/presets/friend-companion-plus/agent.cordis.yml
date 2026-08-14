@@ -1,0 +1,39 @@
+# friend-companion-plus — companion agent plane + web search.
+#
+# Same standing-mount rules as friend-companion, including stage and
+# memory at role: companion-preset (tools only; host keeps /friend/pet
+# and memory HTTP). Plus adds the official web-search tool (fetch stays
+# off). File-read (`read`) is named on the restrict allowlist;
+# `@deepseek-ai/dsh-tool-fs` is NOT listed because that package also
+# registers `write` / `edit`, and same-scope registrations survive
+# `tools.restrict`.
+
+- id: persona
+  name: '@deepseek-ai/dsh-persona'
+  config:
+    text: >-
+      You are a personal companion, not a coding agent. Stay in character.
+      Follow the friend:persona and friend:conduct sections.
+      You may use web_search and read when the user asks.
+
+- id: dsh-friend-persona
+  name: '@wish233/dsh-friend-persona'
+  config:
+    role: companion-preset
+    allowlist: plus
+
+- id: dsh-friend-stage
+  name: '@wish233/dsh-friend-stage'
+  config:
+    role: companion-preset
+
+- id: dsh-friend-memory
+  name: '@wish233/dsh-friend-memory'
+  config:
+    role: companion-preset
+
+- id: tool-web
+  name: '@deepseek-ai/dsh-tool-web'
+  config:
+    fetch: false
+    searchTimeoutMs: 60000

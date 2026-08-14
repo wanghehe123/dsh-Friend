@@ -1,6 +1,6 @@
-# Naiwa Live2D 模型素材包
+# 奶龙 Live2D 模型素材包
 
-这是基于 `Diyeego/naiwa-pet` 仓库中的奶蛙素材整理的 Live2D 编辑源文件目录。主角色采用上游的 `naiwa/naiwa2.png`：它是仓库中尺寸最大、包含完整正面姿态的奶蛙图。
+产品名 **奶龙**。这是基于 `Diyeego/naiwa-pet` 仓库中的奶蛙素材整理的 Live2D 目录。运行时 zip `naiwa-live2d-v3-sdk4.2-runtime.zip`（Cubism SDK 4.2 / moc v4）是 dsh-Friend 的内置模型之一；编辑源文件不进 git。主角色采用上游的 `naiwa/naiwa2.png`：它是仓库中尺寸最大、包含完整正面姿态的奶蛙图。
 
 ## 目录
 

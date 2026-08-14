@@ -65,6 +65,27 @@ describe('companion chat route', () => {
     expect(chat.snapshot()).toMatchObject({ userText: '你好', sent: true, seq: 2 })
   })
 
+  it('POST surfaces the send-seam error on 502', async () => {
+    const chat = createChatTracker()
+    const send = vi.fn(async () => ({
+      sessionId: '',
+      sent: false,
+      error: 'preset "friend-companion": 1 row(s) did not activate',
+    }))
+    const route = createChatRoutes({ chat, send })[0]
+    const res = response()
+    await route?.handler(
+      new BodyRequest('POST', JSON.stringify({ text: '你好' })) as unknown as IncomingMessage,
+      res as unknown as ServerResponse,
+    )
+    expect(res.statusCode).toBe(502)
+    expect(JSON.parse(res.body)).toMatchObject({
+      ok: false,
+      sent: false,
+      error: 'preset "friend-companion": 1 row(s) did not activate',
+    })
+  })
+
   it('returns 503 when persona send is not wired', async () => {
     const route = createChatRoutes({ chat: createChatTracker() })[0]
     const res = response()

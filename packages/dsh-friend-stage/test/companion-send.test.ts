@@ -26,7 +26,7 @@ describe('persona send seam', () => {
   it('binds sendToCompanion when ctx.agents is resolved (Cordis get trap, not an own property)', async () => {
     const { followup, agents } = fakeAgents()
     const ctx = createStrictCordisCtx({
-      inject: ['agents', 'settings'],
+      inject: ['agents', 'settings', 'agentDefaultModel', 'agentPresets'],
       values: { agents },
     })
     const send = bindPersonaSend(ctx as CompanionSendContext)
@@ -96,7 +96,7 @@ describe('persona send seam', () => {
     const { followup, agents } = fakeAgents()
     const settings = new FakeSettings()
     const ctx = createStrictCordisCtx({
-      inject: ['agents', 'settings'],
+      inject: ['agents', 'settings', 'agentDefaultModel', 'agentPresets'],
       values: { agents, settings },
     })
     const send = bindPersonaSend(ctx as CompanionSendContext)
@@ -106,9 +106,57 @@ describe('persona send seam', () => {
     expect(settings.get('friend-core')).toMatchObject({ companionSessionId: result?.sessionId })
   })
 
+  it('stamps the default model and mounts friend-companion on the standing session', async () => {
+    const created: FriendCreateAgentOptions[] = []
+    const mounted: Array<[unknown, string]> = []
+    const live = new Map<string, FriendAgentHandle>()
+    const followup = vi.fn()
+    const ctx = createStrictCordisCtx({
+      inject: ['agents', 'settings', 'agentDefaultModel', 'agentPresets'],
+      values: {
+        agents: {
+          get(id: string) {
+            return live.get(id)
+          },
+          async create(options: FriendCreateAgentOptions) {
+            created.push(options)
+            const agent = { id: options.sessionId, followup }
+            live.set(agent.id, agent)
+            return { agent, dispose: async () => undefined }
+          },
+        },
+        agentDefaultModel: {
+          currentSelection: () => ({
+            provider: 'opencode-go',
+            model: 'deepseek-v4-pro',
+            reasoningEffort: 'max',
+          }),
+        },
+        agentPresets: {
+          mount: async (agentCtx: unknown, id?: string) => {
+            mounted.push([agentCtx, id ?? ''])
+          },
+        },
+      },
+    })
+
+    const send = bindPersonaSend(ctx as CompanionSendContext)
+    const result = await send?.('你好吗')
+    expect(result?.sent).toBe(true)
+    expect(created[0]?.agentOptions).toEqual({
+      provider: 'opencode-go',
+      model: 'deepseek-v4-pro',
+      reasoningEffort: 'max',
+    })
+    expect(created[0]?.setup).toBeTypeOf('function')
+    const agentCtx = { id: 'scoped-agent' }
+    await created[0]?.setup?.(agentCtx)
+    expect(mounted).toEqual([[agentCtx, 'friend-companion']])
+  })
+
   it('returns undefined when ctx.agents is missing', () => {
     const ctx = createStrictCordisCtx({
-      inject: ['agents', 'settings'],
+      inject: ['agents', 'settings', 'agentDefaultModel', 'agentPresets'],
     })
     expect(bindPersonaSend(ctx as CompanionSendContext)).toBeUndefined()
   })

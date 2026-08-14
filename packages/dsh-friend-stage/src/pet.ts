@@ -9,12 +9,34 @@ import {
 } from '@wish233/dsh-friend-asr/browser'
 
 import { canvasPointFromClient } from './hit-test.ts'
+import {
+  aliasCubism4FrameworkModel,
+  installCubism5DrawableRenderOrderCompat,
+} from './live2d/core5-compat.ts'
 import { requireCubismCore } from './live2d/cubism-core-loader.ts'
-import { applyHiyoriFrame } from './live2d/hiyori-frame.ts'
+import {
+  CORE_MAX_MOC_VERSION,
+  formatMocVersionError,
+  moc3ExceedsRuntime,
+  readCoreLatestMocVersion,
+  readMoc3Version,
+  RUNTIME_MAX_MOC_VERSION,
+} from './live2d/moc3-version.ts'
+import { applyHiyoriFrame, applyLipSyncFrame } from './live2d/hiyori-frame.ts'
 import { isHiyoriExpression, resolveHiyoriMotion, type HiyoriExpression } from './live2d/hiyori-adapter.ts'
+import {
+  expressionNameFromMapFile,
+  mappedExpressionFile,
+  resolveMappedMotion,
+  shouldApplyHiyoriPresets,
+} from './live2d/model-adapter.ts'
+import { computePetLayout } from './live2d/pet-layout.ts'
 import { applyTickerMaxFps, bindVisibilityPause } from './live2d/performance.ts'
 import { cueForExpression, readPetPageConfig, type PetPageConfig } from './live2d/pet-config.ts'
 import { mountPetAsrClient, postPetStageChat } from './pet-asr.ts'
+
+/** Pet iframe cannot share the overlay `settingsScope`; poll host snapshot after Save. */
+export const PET_ASR_SETTINGS_POLL_MS = 1_000
 import { isStageMotionGroup, type StageMotionGroup } from './work-cue.ts'
 
 declare global {
@@ -40,7 +62,11 @@ export type MountedLive2DPet = Readonly<{
  * script must already have loaded before this bundle is evaluated.
  */
 export async function mountLive2DPet(config: PetPageConfig): Promise<MountedLive2DPet> {
-  requireCubismCore(window)
+  const core = requireCubismCore(window)
+  installCubism5DrawableRenderOrderCompat(core)
+  const coreMax = readCoreLatestMocVersion(core) ?? CORE_MAX_MOC_VERSION
+  const runtimeMax = Math.min(coreMax, RUNTIME_MAX_MOC_VERSION)
+  await assertRemoteMocSupported(config.modelUrl, runtimeMax)
   const canvas = document.getElementById(config.canvasId)
   const status = document.getElementById(config.statusId)
   if (!(canvas instanceof HTMLCanvasElement)) {
@@ -65,43 +91,63 @@ export async function mountLive2DPet(config: PetPageConfig): Promise<MountedLive
       autoInteract: false,
       autoUpdate: false,
     }) as Live2DModel<Cubism4InternalModel>
+    aliasCubism4FrameworkModel(model.internalModel.coreModel)
     app.stage.addChild(model)
     model.anchor.set(0.5, 1)
 
     let expression = config.initialExpression
     let lipSyncMouthOpen = 0
+    const map = config.map
     model.internalModel.on('beforeModelUpdate', () => {
-      applyHiyoriFrame(model.internalModel.coreModel, expression, lipSyncMouthOpen)
+      if (map === undefined || shouldApplyHiyoriPresets(map)) {
+        applyHiyoriFrame(model.internalModel.coreModel, expression, lipSyncMouthOpen, map?.mouthOpenParam)
+        return
+      }
+      applyLipSyncFrame(model.internalModel.coreModel, lipSyncMouthOpen, map.mouthOpenParam)
     })
-    app.ticker.add(() => {
-      model.update(app.ticker.deltaMS)
-      lipSyncMouthOpen *= 0.78
-    })
-
-    const resize = (): void => {
+    const resize = (): boolean => {
       const bounds = canvas.getBoundingClientRect()
       const width = Math.max(1, Math.floor(bounds.width || canvas.width))
       const height = Math.max(1, Math.floor(bounds.height || canvas.height))
       app.renderer.resize(width, height)
-
-      const localBounds = model.getLocalBounds()
-      const modelWidth = Math.max(1, localBounds.width)
-      const modelHeight = Math.max(1, localBounds.height)
-      const scale = Math.min((width * 0.88) / modelWidth, (height * 0.95) / modelHeight)
-      model.scale.set(scale)
-      model.x = width / 2
-      model.y = height * 0.985
+      const layout = computePetLayout(model.getLocalBounds(), { width, height })
+      if (layout === undefined) {
+        return false
+      }
+      model.scale.set(layout.scale)
+      model.x = layout.x
+      model.y = layout.y
+      return true
     }
-    resize()
-    const resizeObserver = new ResizeObserver(resize)
+    model.update(0)
+    let laidOut = resize()
+    app.ticker.add(() => {
+      model.update(app.ticker.deltaMS)
+      if (!laidOut) {
+        laidOut = resize()
+      }
+      lipSyncMouthOpen *= 0.78
+    })
+    const resizeObserver = new ResizeObserver(() => {
+      laidOut = resize()
+    })
     resizeObserver.observe(canvas)
 
     const playMotion = async (motionGroup: StageMotionGroup): Promise<void> => {
-      const motion = resolveHiyoriMotion(motionGroup)
+      const motion = map === undefined
+        ? resolveHiyoriMotion(motionGroup)
+        : resolveMappedMotion(map, motionGroup)
       await model.motion(motion.group, motion.index)
+    }
+    const applyMappedExpression = async (next: HiyoriExpression): Promise<void> => {
+      const file = map === undefined ? undefined : mappedExpressionFile(map, next)
+      if (file !== undefined && typeof model.expression === 'function') {
+        await model.expression(expressionNameFromMapFile(file))
+      }
     }
     const setExpression = async (next: HiyoriExpression): Promise<void> => {
       expression = next
+      await applyMappedExpression(next)
       const cue = cueForExpression(next)
       await playMotion(cue.motionGroup)
       setStatus(status, expressionLabel(next))
@@ -113,6 +159,7 @@ export async function mountLive2DPet(config: PetPageConfig): Promise<MountedLive
       if (!isHiyoriExpression(snapshot.expression)) return
       if (!isStageMotionGroup(snapshot.motionGroup)) return
       expression = snapshot.expression
+      await applyMappedExpression(snapshot.expression)
       await playMotion(snapshot.motionGroup)
       setStatus(status, expressionLabel(snapshot.expression))
     }
@@ -169,6 +216,7 @@ export async function mountLive2DPet(config: PetPageConfig): Promise<MountedLive
     window.addEventListener('message', onLipSyncMessage)
 
     await setExpression(expression)
+    laidOut = resize() || laidOut
     setStatus(status, '模型已就绪')
 
     return {
@@ -216,16 +264,18 @@ async function mountFromPage(): Promise<void> {
   const config = readPetPageConfig(window.__DSH_FRIEND_PET_CONFIG__)
   if (!config) return
   const status = document.getElementById(config.statusId)
-  mountPetAsrClient({
-    window,
-    document,
-    factory: (ctx) => startAsrClient({
-      window: ctx.window as FriendAsrBrowserGlobals,
-      settingsScope: createSnapshotAsrSettingsBinder(),
-      ...(ctx.onSend === undefined ? {} : { onSend: ctx.onSend }),
-    }),
-    onSend: postPetStageChat,
-  })
+  if (config.embed !== true) {
+    mountPetAsrClient({
+      window,
+      document,
+      factory: (ctx) => startAsrClient({
+        window: ctx.window as FriendAsrBrowserGlobals,
+        settingsScope: createSnapshotAsrSettingsBinder({ pollMs: PET_ASR_SETTINGS_POLL_MS }),
+        ...(ctx.onSend === undefined ? {} : { onSend: ctx.onSend }),
+      }),
+      onSend: postPetStageChat,
+    })
+  }
   try {
     window.__DSH_FRIEND_PET__ = await mountLive2DPet(config)
   } catch (error) {
@@ -234,3 +284,34 @@ async function mountFromPage(): Promise<void> {
 }
 
 void mountFromPage()
+
+async function assertRemoteMocSupported(modelUrl: string, runtimeMax: number): Promise<void> {
+  const fetchImpl = (globalThis as { fetch?: typeof fetch }).fetch
+  if (fetchImpl === undefined) {
+    return
+  }
+  try {
+    const modelResponse = await fetchImpl(modelUrl)
+    if (!modelResponse.ok) {
+      return
+    }
+    const document = await modelResponse.json() as { FileReferences?: { Moc?: unknown } }
+    const moc = document.FileReferences?.Moc
+    if (typeof moc !== 'string' || moc.length === 0) {
+      return
+    }
+    const mocUrl = new URL(moc, new URL(modelUrl, 'http://dsh.local')).pathname
+    const mocResponse = await fetchImpl(mocUrl)
+    if (!mocResponse.ok) {
+      return
+    }
+    const version = readMoc3Version(new Uint8Array(await mocResponse.arrayBuffer()))
+    if (version !== undefined && moc3ExceedsRuntime(version, runtimeMax)) {
+      throw new Error(formatMocVersionError(version, runtimeMax))
+    }
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('模型版本')) {
+      throw error
+    }
+  }
+}

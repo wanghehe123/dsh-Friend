@@ -15,6 +15,7 @@ describe('standalone pet page configuration', () => {
       statusId: 'friend-live2d-status',
       initialExpression: 'neutral',
       targetFps: 30,
+      embed: false,
     })
 
     expect(readPetPageConfig({
@@ -23,6 +24,14 @@ describe('standalone pet page configuration', () => {
       statusId: 'friend-live2d-status',
       initialExpression: 'neutral',
     })).toBeUndefined()
+
+    expect(readPetPageConfig({
+      modelUrl: '/friend/assets/vendor/hiyori/hiyori_free/runtime/hiyori_free_t08.model3.json',
+      canvasId: 'friend-live2d',
+      statusId: 'friend-live2d-status',
+      initialExpression: 'neutral',
+      embed: true,
+    })?.embed).toBe(true)
 
     expect(readPetPageConfig({
       modelUrl: '/friend/assets/models/neko/runtime/neko.model3.json',
@@ -37,6 +46,22 @@ describe('standalone pet page configuration', () => {
       statusId: 'friend-live2d-status',
       initialExpression: 'neutral',
     })).toBeUndefined()
+
+    expect(readPetPageConfig({
+      modelUrl: '/friend/assets/models/export-v3/naiwa-live2d-v3.model3.json',
+      canvasId: 'friend-live2d',
+      statusId: 'friend-live2d-status',
+      initialExpression: 'neutral',
+      map: {
+        mouthOpenParam: 'ParamMouthOpenY',
+        expressions: { happy: 'expressions/smile.exp3.json' },
+        motions: { Idle: ['motions/idle.motion3.json'] },
+      },
+    })?.map).toEqual({
+      mouthOpenParam: 'ParamMouthOpenY',
+      expressions: { happy: 'expressions/smile.exp3.json' },
+      motions: { Idle: ['motions/idle.motion3.json'] },
+    })
   })
 
   it('turns every UI expression into a real stage cue', () => {

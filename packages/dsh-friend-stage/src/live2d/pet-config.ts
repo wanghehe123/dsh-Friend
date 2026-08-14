@@ -1,6 +1,7 @@
+import { readFriendModelMap, type FriendModelMap } from '../model-map.ts'
+import type { StageCue } from '../work-cue.ts'
 import { isHiyoriExpression, type HiyoriExpression } from './hiyori-adapter.ts'
 import { readStageTargetFps } from './stage-settings.ts'
-import type { StageCue } from '../work-cue.ts'
 
 export type PetPageConfig = Readonly<{
   modelUrl: string
@@ -8,6 +9,8 @@ export type PetPageConfig = Readonly<{
   statusId: string
   initialExpression: HiyoriExpression
   targetFps: number
+  embed: boolean
+  map?: FriendModelMap
 }>
 
 const cues: Readonly<Record<HiyoriExpression, StageCue>> = {
@@ -45,7 +48,16 @@ export function readPetPageConfig(value: unknown): PetPageConfig | undefined {
   ) {
     return undefined
   }
-  return { modelUrl, canvasId, statusId, initialExpression, targetFps: readStageTargetFps(value) }
+  const map = readFriendModelMap(value.map)
+  return {
+    modelUrl,
+    canvasId,
+    statusId,
+    initialExpression,
+    targetFps: readStageTargetFps(value),
+    embed: value.embed === true,
+    ...(map !== undefined ? { map } : {}),
+  }
 }
 
 export function cueForExpression(expression: HiyoriExpression): StageCue {

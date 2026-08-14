@@ -83,16 +83,32 @@ export function createBubbleController(options: BubbleControllerOptions): Bubble
     applyChatSnapshot(snapshot) {
       const assistantText = snapshot.assistantText
       const typing = snapshot.typing || snapshot.status === 'sending' || snapshot.status === 'typing'
+      const error = snapshot.error
+      const hasContent = typing || assistantText.length > 0 || error.length > 0
+      if (!hasContent) {
+        return
+      }
+      const unchanged = (
+        state.open
+        && state.assistantText === assistantText
+        && state.typing === typing
+        && state.error === error
+      )
       emit({
         open: true,
         input: state.input,
         assistantText,
         typing,
-        error: snapshot.error,
+        error,
       })
-      if (!typing && (assistantText.length > 0 || snapshot.error.length > 0)) {
-        scheduleHide()
+      if (unchanged) {
+        return
       }
+      if (typing) {
+        hideAt = undefined
+        return
+      }
+      scheduleHide()
     },
     dismiss() {
       hideAt = undefined

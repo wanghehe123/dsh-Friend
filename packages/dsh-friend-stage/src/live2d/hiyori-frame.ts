@@ -17,19 +17,28 @@ export function applyHiyoriFrame(
   model: HiyoriParameterWriter,
   expression: HiyoriExpression,
   lipSyncMouthOpen = 0,
+  mouthOpenParam = 'ParamMouthOpenY',
 ): void {
   const preset = getHiyoriExpressionPreset(expression)
   for (const [id, value] of Object.entries(preset)) {
-    if (id !== 'ParamMouthOpenY') {
+    if (id !== 'ParamMouthOpenY' && id !== mouthOpenParam) {
       model.setParameterValueById(id, value)
     }
   }
 
   const expressionMouthOpen = preset.ParamMouthOpenY ?? 0
   model.setParameterValueById(
-    'ParamMouthOpenY',
+    mouthOpenParam,
     Math.max(expressionMouthOpen, clampUnit(lipSyncMouthOpen)),
   )
+}
+
+export function applyLipSyncFrame(
+  model: HiyoriParameterWriter,
+  lipSyncMouthOpen: number,
+  mouthOpenParam = 'ParamMouthOpenY',
+): void {
+  model.setParameterValueById(mouthOpenParam, clampUnit(lipSyncMouthOpen))
 }
 
 function clampUnit(value: number): number {

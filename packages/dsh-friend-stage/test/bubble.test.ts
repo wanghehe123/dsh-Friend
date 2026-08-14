@@ -48,4 +48,25 @@ describe('bubble shortcut chat', () => {
     bubble.tick(now)
     expect(bubble.getState().open).toBe(false)
   })
+
+  it('does not reset the hide timer when the same snapshot is applied again', () => {
+    let now = 1_000
+    const bubble = createBubbleController({
+      send: async () => undefined,
+      timeoutMs: 2_000,
+      now: () => now,
+    })
+    bubble.applyChatSnapshot({ status: 'ready', assistantText: '好的', typing: false, error: '' })
+    now = 2_500
+    bubble.applyChatSnapshot({ status: 'ready', assistantText: '好的', typing: false, error: '' })
+    now = 3_000
+    bubble.tick(now)
+    expect(bubble.getState().open).toBe(false)
+  })
+
+  it('does not open an empty idle snapshot', () => {
+    const bubble = createBubbleController({ send: async () => undefined })
+    bubble.applyChatSnapshot({ status: 'ready', assistantText: '', typing: false, error: '' })
+    expect(bubble.getState().open).toBe(false)
+  })
 })

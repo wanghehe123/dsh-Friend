@@ -36,4 +36,22 @@ describe('Hiyori expression frame', () => {
 
     expect(values.get('ParamMouthOpenY')).toBe(0.85)
   })
+
+  it('writes lip sync to the mapped mouth parameter', () => {
+    const values = new Map<string, number>()
+
+    applyHiyoriFrame(
+      {
+        setParameterValueById(id, value) {
+          values.set(id, value)
+        },
+      },
+      'neutral',
+      0.4,
+      'ParamMouthOpen',
+    )
+
+    expect(values.get('ParamMouthOpen')).toBe(0.4)
+    expect(values.get('ParamMouthOpenY')).toBeUndefined()
+  })
 })

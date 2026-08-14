@@ -37,7 +37,7 @@ export function createChatRoutes(options: ChatRouteOptions): readonly WebRoute[]
           options.chat.beginSend(text.trim())
           const result = await options.send(text.trim())
           if (!result.sent) {
-            options.chat.markFailed('Companion session did not accept the message')
+            options.chat.markFailed(result.error ?? 'Companion session did not accept the message')
             return writeJson(response, { ok: false, ...options.chat.snapshot() }, 502)
           }
           options.chat.markSent(result.sessionId)

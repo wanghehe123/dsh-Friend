@@ -8,9 +8,14 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { generateDefaultFriendMap } from '../src/model-map.ts'
 import {
   BUILTIN_HIYORI_NAME,
+  BUILTIN_NAILONG_LABEL,
+  BUILTIN_NAILONG_NAME,
   HIYORI_DEFAULT_MAP,
   deleteUserModel,
+  ensureBuiltinNailong,
+  readFriendMap,
   readModelCatalog,
+  resolveBundledNailongZip,
   resolveCurrentModel,
   uploadModelZip,
 } from '../src/models.ts'
@@ -118,6 +123,91 @@ describe('model zip upload', () => {
     const after = await deleteUserModel(root, 'user')
     expect(after.current).toBe(BUILTIN_HIYORI_NAME)
     expect((await resolveCurrentModel(root)).name).toBe(BUILTIN_HIYORI_NAME)
+  })
+})
+
+function nailongFixtureZip(): Uint8Array {
+  return modelZip({
+    'naiwa-live2d-v3.model3.json': JSON.stringify({
+      Version: 3,
+      FileReferences: {
+        Moc: 'naiwa-live2d-v3.moc3',
+        Expressions: [
+          { Name: 'calm', File: 'expressions/calm.exp3.json' },
+          { Name: 'smile', File: 'expressions/smile.exp3.json' },
+          { Name: 'surprise', File: 'expressions/surprise.exp3.json' },
+        ],
+        Motions: { Idle: [{ File: 'motions/idle.motion3.json' }] },
+      },
+    }),
+    'expressions/calm.exp3.json': '{}',
+    'expressions/smile.exp3.json': '{}',
+    'expressions/surprise.exp3.json': '{}',
+    'motions/idle.motion3.json': '{}',
+  })
+}
+
+describe('built-in 奶龙 Live2D', () => {
+  it('is absent from the catalog until the runtime zip is installed', async () => {
+    const root = await tempRoot()
+    const catalog = await readModelCatalog(root)
+    expect(catalog.models.map((model) => model.name)).toEqual([BUILTIN_HIYORI_NAME])
+  })
+
+  it('extracts the runtime zip into vendor/nailong and lists 奶龙 as builtin', async () => {
+    const root = await tempRoot()
+    const installed = await ensureBuiltinNailong({ dataRoot: root, archive: nailongFixtureZip() })
+    expect(installed?.name).toBe(BUILTIN_NAILONG_NAME)
+    expect(installed?.kind).toBe('builtin')
+    expect(installed?.label).toBe(BUILTIN_NAILONG_LABEL)
+    expect(installed?.model3Relative).toBe('vendor/nailong/naiwa-live2d-v3.model3.json')
+
+    const catalog = await readModelCatalog(root)
+    expect(catalog.models.map((model) => model.name)).toEqual([
+      BUILTIN_HIYORI_NAME,
+      BUILTIN_NAILONG_NAME,
+    ])
+    expect(catalog.models.find((model) => model.name === BUILTIN_NAILONG_NAME)?.label)
+      .toBe('奶龙')
+  })
+
+  it('is idempotent when vendor/nailong already exists', async () => {
+    const root = await tempRoot()
+    await ensureBuiltinNailong({ dataRoot: root, archive: nailongFixtureZip() })
+    const second = await ensureBuiltinNailong({ dataRoot: root, archive: new Uint8Array([1, 2, 3]) })
+    expect(second?.model3Relative).toBe('vendor/nailong/naiwa-live2d-v3.model3.json')
+    const catalog = await readModelCatalog(root)
+    expect(catalog.models.filter((model) => model.name === BUILTIN_NAILONG_NAME)).toHaveLength(1)
+  })
+
+  it('refuses to delete 奶龙 or upload over the reserved name', async () => {
+    const root = await tempRoot()
+    await ensureBuiltinNailong({ dataRoot: root, archive: nailongFixtureZip() })
+    await expect(deleteUserModel(root, BUILTIN_NAILONG_NAME)).rejects.toThrow(/奶龙|built-in|reserved/i)
+    await expect(uploadModelZip({
+      dataRoot: root,
+      archive: modelZip({ 'other.model3.json': '{}' }),
+      name: BUILTIN_NAILONG_NAME,
+    })).rejects.toThrow(/reserved/)
+    const catalog = await readModelCatalog(root)
+    expect(catalog.models.some((model) => model.name === BUILTIN_NAILONG_NAME)).toBe(true)
+  })
+
+  it('maps smile/calm/surprise and Idle instead of the Hiyori motion fixture', async () => {
+    const root = await tempRoot()
+    const model = await ensureBuiltinNailong({ dataRoot: root, archive: nailongFixtureZip() })
+    expect(model).toBeDefined()
+    const map = await readFriendMap(root, model!)
+    expect(map.expressions.happy).toBe('expressions/smile.exp3.json')
+    expect(map.expressions.neutral).toBe('expressions/calm.exp3.json')
+    expect(map.expressions.surprised).toBe('expressions/surprise.exp3.json')
+    expect(map.motions.Idle).toEqual(['motions/idle.motion3.json'])
+    expect(map.motions.Tap).toBeUndefined()
+  })
+
+  it('resolves the repo runtime zip by walking up from the package', () => {
+    const zipPath = resolveBundledNailongZip()
+    expect(zipPath).toMatch(/naiwa-live2d-v3-sdk4\.2-runtime\.zip$/)
   })
 })
 

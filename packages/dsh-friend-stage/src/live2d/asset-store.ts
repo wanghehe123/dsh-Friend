@@ -1,19 +1,20 @@
-import { access } from 'node:fs/promises'
+import { access, readFile } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 
 import { resolveFriendDataDir } from '@wish233/dsh-friend-shared'
 
 import {
+  CUBISM_CORE_OFFICIAL_SOURCE_URL,
+  CUBISM_SDK_RELEASE,
+  CUBISM_SDK_RELEASE_RELATIVE_PATH,
   HIYORI_MODEL_RELATIVE_PATH,
   LIVE2D_CORE_RELATIVE_PATH,
 } from './asset-layout.ts'
 
 /** Official URLs recorded with each local installation for traceability. */
 export const HIYORI_OFFICIAL_SOURCE_URL = 'https://cubism.live2d.com/sample-data/bin/hiyori/hiyori_en.zip'
-// pixi-live2d-display 0.4 targets the Cubism 4-compatible Core API. Core 4
-// R7 is obtained from this official SDK archive, not the newer Core 6 endpoint.
-export const CUBISM_CORE_OFFICIAL_SOURCE_URL = 'https://cubism.live2d.com/sdk-web/bin/CubismSdkForWeb-4-r.7.zip'
+export { CUBISM_CORE_OFFICIAL_SOURCE_URL, CUBISM_SDK_RELEASE }
 export const LIVE2D_VENDOR_NOTICE_RELATIVE_PATH = 'vendor/NOTICE.txt'
 
 export type Live2DAssetStatus = Readonly<{
@@ -38,7 +39,12 @@ export function resolveFriendDataRoot(
 export async function inspectLive2DAssets(dataRoot: string): Promise<Live2DAssetStatus> {
   const modelPath = join(dataRoot, HIYORI_MODEL_RELATIVE_PATH)
   const corePath = join(dataRoot, LIVE2D_CORE_RELATIVE_PATH)
-  const [modelReady, coreReady] = await Promise.all([fileExists(modelPath), fileExists(corePath)])
+  const [modelReady, coreFileReady, coreReleaseReady] = await Promise.all([
+    fileExists(modelPath),
+    fileExists(corePath),
+    coreReleaseMatches(dataRoot),
+  ])
+  const coreReady = coreFileReady && coreReleaseReady
   const missing: ('model' | 'core')[] = []
   if (!modelReady) missing.push('model')
   if (!coreReady) missing.push('core')
@@ -64,6 +70,15 @@ The original model ReadMe.txt remains in the Hiyori directory. These files are
 kept in local DSH data only and are not redistributed in this plugin package.
 Use is subject to the applicable Live2D terms accepted during installation.
 `
+}
+
+async function coreReleaseMatches(dataRoot: string): Promise<boolean> {
+  try {
+    const text = (await readFile(join(dataRoot, CUBISM_SDK_RELEASE_RELATIVE_PATH), 'utf8')).trim()
+    return text === CUBISM_SDK_RELEASE
+  } catch {
+    return false
+  }
 }
 
 async function fileExists(path: string): Promise<boolean> {

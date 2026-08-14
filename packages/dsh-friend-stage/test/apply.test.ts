@@ -47,7 +47,14 @@ describe('stage apply()', () => {
     apply(ctx)
 
     expect(name).toBe('@wish233/dsh-friend-stage')
-    expect(inject).toEqual(['webServer', 'tools', 'settings', 'agents'])
+    expect(inject).toEqual([
+      'webServer',
+      'tools',
+      'settings',
+      'agents',
+      'agentDefaultModel',
+      'agentPresets',
+    ])
     expect(routes.some((route) => route.path === FRIEND_EVENTS_PATH && route.kind === 'exact')).toBe(true)
     expect(routes.some((route) => route.path === '/friend/assets' && route.kind === 'prefix')).toBe(true)
     expect(routes.some((route) => route.path === '/friend/live2d/progress')).toBe(true)

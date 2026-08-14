@@ -25,6 +25,10 @@ import {
   type Live2DIntegrity,
 } from './integrity.ts'
 import {
+  CUBISM_SDK_RELEASE,
+  CUBISM_SDK_RELEASE_RELATIVE_PATH,
+} from './asset-layout.ts'
+import {
   extractZipToDirectory,
   isHiyoriFreeEntry,
   pickCubismCorePayload,
@@ -210,6 +214,7 @@ export async function installOfficialLive2DAssets(
       const pendingCore = join(coreDirectory, `.live2dcubismcore-${process.pid}-${Date.now()}.tmp`)
       await writeFile(pendingCore, cubismCore)
       await rename(pendingCore, before.corePath)
+      await writeFile(join(options.dataRoot, CUBISM_SDK_RELEASE_RELATIVE_PATH), `${CUBISM_SDK_RELEASE}\n`, 'utf8')
     }
 
     await writeVendorNotice(options.dataRoot, options.now)

@@ -69,7 +69,7 @@ describe('official Live2D installer', () => {
     expect(status.integrity).toBe('hash-pending')
     expect(download).toHaveBeenCalledTimes(2)
     expect(download.mock.calls.map(([url]) => url)).toContain(
-      'https://cubism.live2d.com/sdk-web/bin/CubismSdkForWeb-4-r.7.zip',
+      'https://cubism.live2d.com/sdk-web/bin/CubismSdkForWeb-5-r.5.zip',
     )
     expect(extractCubismCore).toHaveBeenCalledTimes(1)
     await expect(readFile(join(root, 'vendor/hiyori/hiyori_free/ReadMe.txt'), 'utf8'))
@@ -199,8 +199,8 @@ describe('official Live2D installer', () => {
 
   it('extracts Cubism Core from the official archive path without spawning unzip', async () => {
     const archive = zipSync({
-      'CubismSdkForWeb-4-r.7/Core/live2dcubismcore.min.js': cubismCoreSource,
-      'CubismSdkForWeb-4-r.7/README.md': strToU8('sdk'),
+      'CubismSdkForWeb-5-r.5/Core/live2dcubismcore.min.js': cubismCoreSource,
+      'CubismSdkForWeb-5-r.5/README.md': strToU8('sdk'),
     })
     const payload = extractOfficialCubismCore(archive)
     expect(new TextDecoder().decode(payload)).toContain('Live2D Cubism Core')

@@ -28,10 +28,17 @@ import {
 
 import { createChatRoutes } from './chat-routes.ts'
 import { createChatTracker, getSharedChatTracker, type ChatTracker } from './chat-state.ts'
-import { bindPersonaSend, type CompanionReplyWatch, type CompanionSend } from './companion-send.ts'
+import { bindPersonaSend, type CompanionReplyWatch, type CompanionSend, type CompanionSendContext } from './companion-send.ts'
 import { createCompanionStageSink } from './reply-bridge.ts'
 import { createModelRoutes } from './model-routes.ts'
-import { resolveCurrentModel, type InstalledModel } from './models.ts'
+import {
+  pendingBuiltinNailongInstall,
+  readFriendMap,
+  resolveCurrentModel,
+  scheduleBuiltinNailongInstall,
+  type InstalledModel,
+} from './models.ts'
+import type { FriendModelMap } from './model-map.ts'
 
 import { resolveFriendAssetPath } from './live2d/asset-layout.ts'
 import {
@@ -93,11 +100,17 @@ export {
 } from './tools.ts'
 export {
   BUILTIN_HIYORI_NAME,
+  BUILTIN_NAILONG_LABEL,
+  BUILTIN_NAILONG_NAME,
   HIYORI_DEFAULT_MAP,
   MAX_MODEL_ZIP_BYTES,
+  NAILONG_DEFAULT_MAP,
   deleteUserModel,
+  ensureBuiltinNailong,
   readModelCatalog,
+  resolveBundledNailongZip,
   resolveCurrentModel,
+  scheduleBuiltinNailongInstall,
   selectCurrentModel,
   uploadModelZip,
 } from './models.ts'
@@ -116,7 +129,14 @@ export {
 } from './float-stage.ts'
 
 export const name = '@wish233/dsh-friend-stage'
-export const inject = ['webServer', 'tools', 'settings', 'agents'] as const
+export const inject = [
+  'webServer',
+  'tools',
+  'settings',
+  'agents',
+  'agentDefaultModel',
+  'agentPresets',
+] as const
 export const FRIEND_STAGE_RUNTIME_PATH = '/friend/stage/runtime'
 
 export type StageApplyRole = 'host' | 'companion-preset'
@@ -130,6 +150,8 @@ export type StageApplyContext = {
     update?(namespace: string, patch: Record<string, unknown>): Promise<void>
   }
   agents?: FriendAgentRegistry
+  agentDefaultModel?: CompanionSendContext['agentDefaultModel']
+  agentPresets?: CompanionSendContext['agentPresets']
   /**
    * Cordis `Context.on`. Not a service — do not add it to `inject`.
    * Official: `ctx.on('session/event', …)` (`@deepseek-ai/dsh-session`).
@@ -224,12 +246,12 @@ export function renderPetPage(
   transparent: boolean,
   assets: Pick<Live2DAssetStatus, 'ready' | 'missing'>,
   targetFps: number = LIVE2D_TARGET_FPS,
-  options: Readonly<{ embed?: boolean; modelUrl?: string }> = {},
+  options: Readonly<{ embed?: boolean; modelUrl?: string; map?: FriendModelMap }> = {},
 ): string {
   const state = assets.ready ? 'ready' : 'missing'
   const embed = options.embed === true
   const content = assets.ready
-    ? renderReadyViewer(targetFps, options.modelUrl, embed)
+    ? renderReadyViewer(targetFps, options.modelUrl, embed, options.map)
     : renderInstaller(assets.missing)
 
   return `<!doctype html>
@@ -262,10 +284,10 @@ export function renderPetPage(
       .bubble { display: grid; gap: .4rem; }
       .bubble[hidden] { display: none; }
       .bubble input { width: 100%; padding: .45rem .6rem; border-radius: .55rem; border: 1px solid #475569; background: #0f172a; color: inherit; font: inherit; }
-      html[data-embed="true"] main { width: 100%; min-height: 100vh; padding: 0; gap: 0; grid-template-rows: 1fr auto; }
-      html[data-embed="true"] #friend-live2d { height: 100%; border-radius: 0; background: transparent; }
+      html[data-embed="true"] main { display: block; position: relative; width: 100%; min-height: 100vh; padding: 0; gap: 0; }
+      html[data-embed="true"] #friend-live2d { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 0; background: transparent; }
       html[data-embed="true"] .toolbar { display: none; }
-      html[data-embed="true"] .bubble { border-radius: 0; }
+      html[data-embed="true"] .bubble { display: none !important; }
     </style>
   </head>
   <body>
@@ -278,6 +300,7 @@ function renderReadyViewer(
   targetFps: number,
   modelUrl = '/friend/assets/vendor/hiyori/hiyori_free/runtime/hiyori_free_t08.model3.json',
   embed = false,
+  map?: FriendModelMap,
 ): string {
   const config = JSON.stringify({
     modelUrl,
@@ -285,7 +308,19 @@ function renderReadyViewer(
     statusId: 'friend-live2d-status',
     initialExpression: 'neutral',
     targetFps,
+    embed,
+    ...(map !== undefined ? { map } : {}),
   })
+  const bubbleMarkup = embed
+    ? ''
+    : [
+        '<section class="bubble" data-friend-bubble data-embed="false" data-open="false">',
+        '<p data-friend-typing hidden>正在输入…</p>',
+        '<p data-friend-bubble-text></p>',
+        '<input id="friend-bubble-input" data-friend-input type="text" enterkeyhint="send" aria-label="快捷聊天" placeholder="回车发送">',
+        '</section>',
+      ].join('')
+  const bubbleScript = embed ? '' : renderPetBubbleScript()
 
   return `
       <canvas id="friend-live2d" width="768" height="960" aria-label="Live2D companion"></canvas>
@@ -302,16 +337,12 @@ function renderReadyViewer(
         <span id="friend-live2d-status" class="status">正在加载官方 Hiyori 模型…</span>
         <span id="friend-sse-state" class="status" hidden>失联</span>
       </section>
-      <section class="bubble" data-friend-bubble data-embed="${String(embed)}">
-        <p data-friend-typing hidden>正在输入…</p>
-        <p data-friend-bubble-text></p>
-        <input id="friend-bubble-input" data-friend-input type="text" enterkeyhint="send" aria-label="快捷聊天" placeholder="回车发送">
-      </section>
+      ${bubbleMarkup}
       <script>window.__DSH_FRIEND_PET_CONFIG__ = ${config};</script>
       <script src="/friend/assets/vendor/cubism-core/live2dcubismcore.min.js" defer></script>
       <script src="/friend/stage/pet.iife.js" defer></script>
       ${renderPerformanceSseScript()}
-      ${renderPetBubbleScript()}`
+      ${bubbleScript}`
 }
 
 function renderPerformanceSseScript(): string {
@@ -408,15 +439,27 @@ function renderPetBubbleScript(): string {
   return `<script>
         (() => {
           const input = document.getElementById('friend-bubble-input');
+          const root = document.querySelector('[data-friend-bubble]');
           const text = document.querySelector('[data-friend-bubble-text]');
           const typing = document.querySelector('[data-friend-typing]');
           const hideMs = 8000;
           let hideTimer;
+          let lastAssistant = '';
+          let lastTyping = false;
           const show = (assistant, isTyping) => {
             if (text) text.textContent = assistant || '';
             if (typing) typing.hidden = !isTyping;
+            if (root) root.dataset.open = (isTyping || Boolean(assistant)) ? 'true' : 'false';
+            const unchanged = assistant === lastAssistant && isTyping === lastTyping;
+            lastAssistant = assistant;
+            lastTyping = isTyping;
+            if (unchanged) return;
             clearTimeout(hideTimer);
-            if (!isTyping && assistant) hideTimer = setTimeout(() => { if (text) text.textContent = ''; }, hideMs);
+            if (!isTyping && assistant) hideTimer = setTimeout(() => {
+              if (text) text.textContent = '';
+              if (root) root.dataset.open = 'false';
+              lastAssistant = '';
+            }, hideMs);
           };
           const pull = async () => {
             try {
@@ -545,12 +588,14 @@ export function createStageRoutes(options: StageRouteOptions = {}): readonly Web
       path: '/friend/pet',
       async handler(request, response) {
         if (!isGet(request)) return writeText(response, 'Method Not Allowed', 405)
+        await pendingBuiltinNailongInstall(dataRoot)?.catch(() => undefined)
         const current = await resolveModel()
+        const map = await readFriendMap(dataRoot, current)
         writeHtml(response, renderPetPage(
           isTransparentRequest(request),
           await assets.inspect(),
           resolveTargetFps(),
-          { embed: isEmbedRequest(request), modelUrl: current.modelUrl },
+          { embed: isEmbedRequest(request), modelUrl: current.modelUrl, map },
         ))
       },
     },
@@ -770,6 +815,7 @@ function applyHost(ctx: StageApplyContext, performance: PerformanceTracker, conf
     push.push({ type: snapshot.lastAction, payload: snapshot })
   })
   const dataRoot = resolveFriendDataDir()
+  void scheduleBuiltinNailongInstall(dataRoot).catch(() => undefined)
   for (const route of createStageRoutes({
     dataRoot,
     progressTracker: tracker,

@@ -131,6 +131,15 @@ describe('float overlay pointer and menu wiring', () => {
     delete (globalThis as { __DSH_FRIEND_TTS__?: { stopAll(): void } }).__DSH_FRIEND_TTS__
   })
 
+  it('delegates the microphone to the pet iframe and offers a desktop popout', () => {
+    const document = createFakeOverlayDocument()
+    mountFriendStageOverlay({ document, window: createFakeOverlayWindow() })
+    const host = document.attached[0]
+    const iframe = host === undefined ? null : querySelectorDeep(host, 'iframe')
+    expect(iframe?.getAttribute('allow')).toBe('microphone; autoplay')
+    expect(host === undefined ? null : querySelectorDeep(host, '[data-action="popout"]'), 'popout button missing').toBeTruthy()
+  })
+
   it('opens the friend config hash from the float settings button', () => {
     const document = createFakeOverlayDocument()
     const windowLike = createFakeOverlayWindow()

@@ -6,7 +6,13 @@ import {
   wrapContextSessionEvents,
   type FriendSessionEventContext,
 } from '@wish233/dsh-friend-persona'
-import { bindHostSettings, type FriendAgentRegistry } from '@wish233/dsh-friend-shared'
+import {
+  bindHostSettings,
+  readDefaultModelSelection,
+  type FriendAgentRegistry,
+  type FriendDefaultModelContext,
+  type FriendPresetContext,
+} from '@wish233/dsh-friend-shared'
 
 import { StreamingTagParser } from './tag-parser.ts'
 
@@ -18,7 +24,11 @@ import { StreamingTagParser } from './tag-parser.ts'
  * stripped body text. {@link CompanionReplyWatch} remains a per-POST test
  * seam; production uses the process-wide `session/event` subscription.
  */
-export type CompanionSendResult = Readonly<{ sessionId: string; sent: boolean }>
+export type CompanionSendResult = Readonly<{
+  sessionId: string
+  sent: boolean
+  error?: string
+}>
 
 export type CompanionSend = (text: string) => Promise<CompanionSendResult>
 
@@ -33,16 +43,20 @@ export type CompanionSendContext = {
     get(namespace: string): unknown
     update?(namespace: string, patch: Record<string, unknown>): Promise<void>
   }
+  agentPresets?: FriendPresetContext['agentPresets'] | undefined
+  agentDefaultModel?: FriendDefaultModelContext['agentDefaultModel'] | undefined
   on?: FriendSessionEventContext['on']
 }
 
 /**
  * Build a send function from host `ctx.agents` / `ctx.settings`.
  *
- * Callers must declare those names on `export const inject`. Cordis resolves
- * services in the Proxy `get` trap — they are never own properties — so
- * `hasOwnProperty` probes always miss. A missing `agents` value returns
- * `undefined` so the route can 503.
+ * Callers must declare `agents`, `settings`, `agentDefaultModel`, and
+ * `agentPresets` on `export const inject`. Without the last two, create
+ * leaves `deployment:persona` in place and `{{model}}` has no value.
+ * Cordis resolves services in the Proxy `get` trap — they are never own
+ * properties — so `hasOwnProperty` probes always miss. A missing `agents`
+ * value returns `undefined` so the route can 503.
  */
 export function bindPersonaSend(ctx: CompanionSendContext): CompanionSend | undefined {
   const agents = ctx.agents
@@ -61,7 +75,35 @@ export function bindPersonaSend(ctx: CompanionSendContext): CompanionSend | unde
         return settings.update(namespace, patch)
       },
     }))
-  return (text) => sendToCompanion(text, { registry: agents, store })
+  return (text) => sendToCompanion(text, {
+    registry: agents,
+    store,
+    ...companionSendExtras(ctx),
+  })
+}
+
+function companionSendExtras(
+  ctx: CompanionSendContext,
+): {
+  getDefaultModel?: () => ReturnType<typeof readDefaultModelSelection>
+  mountPreset?: (agentCtx: unknown, id: string) => Promise<void>
+} {
+  const presets = ctx.agentPresets
+  const defaultModel = ctx.agentDefaultModel
+  return {
+    ...(presets !== undefined && typeof presets.mount === 'function'
+      ? {
+          mountPreset: async (agentCtx: unknown, id: string) => {
+            await presets.mount?.(agentCtx, id)
+          },
+        }
+      : {}),
+    ...(defaultModel === undefined
+      ? {}
+      : {
+          getDefaultModel: () => readDefaultModelSelection({ agentDefaultModel: defaultModel }),
+        }),
+  }
 }
 
 /**

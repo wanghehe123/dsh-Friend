@@ -13,6 +13,7 @@ export type FriendModelMap = Readonly<{
 }>
 
 export type Model3FileReferences = Readonly<{
+  Moc?: string
   Expressions?: readonly Readonly<{ Name?: string; File?: string }>[]
   Motions?: Readonly<Record<string, readonly Readonly<{ File?: string }>[]>>
   Parameters?: readonly Readonly<{ Id?: string }>[]
@@ -24,13 +25,43 @@ export type Model3Document = Readonly<{
 }>
 
 const EXPRESSION_ALIASES: Readonly<Record<HiyoriExpression, readonly string[]>> = {
-  neutral: ['neutral', 'idle', 'normal', 'default'],
+  neutral: ['neutral', 'idle', 'normal', 'default', 'calm'],
   happy: ['happy', 'smile', 'joy', 'laugh'],
   shy: ['shy', 'embarrassed', 'blush'],
   sad: ['sad', 'cry', 'sorrow'],
   surprised: ['surprised', 'surprise', 'shock', 'error'],
   sleepy: ['sleepy', 'sleep', 'tired'],
   angry: ['angry', 'mad', 'rage'],
+}
+
+export function readFriendModelMap(value: unknown): FriendModelMap | undefined {
+  if (typeof value !== 'object' || value === null) return undefined
+  const record = value as Record<string, unknown>
+  if (typeof record.mouthOpenParam !== 'string' || record.mouthOpenParam.length === 0) {
+    return undefined
+  }
+  const expressions = isRecord(record.expressions) ? record.expressions : {}
+  const motions = isRecord(record.motions) ? record.motions : {}
+  const expressionOut: FriendExpressionMap = {}
+  for (const [key, file] of Object.entries(expressions)) {
+    if (typeof file === 'string' && file.length > 0) {
+      expressionOut[key as HiyoriExpression] = file
+    }
+  }
+  const motionOut: FriendMotionMap = {}
+  for (const [group, files] of Object.entries(motions)) {
+    if (!Array.isArray(files)) continue
+    motionOut[group] = files.filter((file): file is string => typeof file === 'string' && file.length > 0)
+  }
+  return {
+    mouthOpenParam: record.mouthOpenParam,
+    expressions: expressionOut,
+    motions: motionOut,
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 export function isModel3Document(value: unknown): value is Model3Document {

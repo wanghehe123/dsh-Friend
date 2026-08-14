@@ -6,6 +6,7 @@ import { headerValue, isGet, queryParam, readJsonBody, readZipUpload, writeJson,
 import {
   MAX_MODEL_ZIP_BYTES,
   deleteUserModel,
+  pendingBuiltinNailongInstall,
   readFriendMap,
   readModelCatalog,
   resolveCurrentModel,
@@ -29,6 +30,7 @@ export function createModelRoutes(options: ModelRouteOptions): readonly WebRoute
       path: '/friend/models',
       async handler(request, response) {
         if (!isGet(request)) return writeText(response, 'Method Not Allowed', 405)
+        await pendingBuiltinNailongInstall(dataRoot)?.catch(() => undefined)
         writeJson(response, await readModelCatalog(dataRoot))
       },
     },

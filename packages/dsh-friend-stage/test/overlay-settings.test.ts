@@ -10,7 +10,13 @@ import { describe, expect, it } from 'vitest'
 
 import { FRIEND_SETTINGS_NAMESPACES } from '@wish233/dsh-friend-shared/universal'
 
-import { CORE_ENABLED_FIELD, CORE_SETTINGS_NAMESPACE, readCoreEnabled } from '../src/core-gate.ts'
+import {
+  CORE_ENABLED_FIELD,
+  CORE_FLOAT_ENABLED_FIELD,
+  CORE_SETTINGS_NAMESPACE,
+  readCoreEnabled,
+  readCoreStageVisible,
+} from '../src/core-gate.ts'
 import { bindCoreSettings, bindOverlaySettings, bindPlaybackSettings, mountFriendStageOverlay } from '../src/overlay.ts'
 import {
   createFakeOverlayDocument,
@@ -68,6 +74,25 @@ describe('friend-core.enabled gates the float and its iframe', () => {
     expect(readCoreEnabled(undefined)).toBe(true)
     expect(readCoreEnabled({ [CORE_ENABLED_FIELD]: false })).toBe(false)
     expect(readCoreEnabled({ [CORE_ENABLED_FIELD]: true })).toBe(true)
+    expect(readCoreStageVisible({ [CORE_ENABLED_FIELD]: true, [CORE_FLOAT_ENABLED_FIELD]: false })).toBe(false)
+  })
+
+  it('hides the host when the config-center float toggle turns off', () => {
+    const document = createFakeOverlayDocument()
+    const coreSettings = createMemorySettingsScope({ enabled: true, floatEnabled: true })
+    mountFriendStageOverlay({
+      document,
+      window: createFakeOverlayWindow(),
+      coreSettings,
+    })
+    const host = document.attached[0]
+    expect(host?.hidden).toBe(false)
+
+    coreSettings.value.floatEnabled = false
+    coreSettings.notify()
+    expect(host?.hidden).toBe(true)
+    const iframe = host === undefined ? null : querySelectorDeep(host, 'iframe')
+    expect(iframe?.getAttribute('src')).toBe('about:blank')
   })
 
   it('hides the host and blanks the pet iframe when the master switch turns off', () => {

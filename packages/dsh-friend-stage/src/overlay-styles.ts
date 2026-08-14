@@ -53,8 +53,16 @@ export const FRIEND_OVERLAY_CSS = `
   box-sizing: border-box;
   pointer-events: auto;
   cursor: grab;
-  background: color-mix(in srgb, var(--dsw-bg-elevated, #1a1d24) 72%, transparent);
-  border-bottom: 1px solid color-mix(in srgb, var(--dsw-border, #2a2f3a) 80%, transparent);
+  background: transparent;
+  border-bottom: none;
+  opacity: 0;
+  transition: opacity 160ms ease;
+}
+.dsh-friend-float-chrome:hover .dsh-friend-float-drag,
+.dsh-friend-float-chrome:focus-within .dsh-friend-float-drag,
+.dsh-friend-float-chrome[data-dragging="true"] .dsh-friend-float-drag,
+.dsh-friend-float-chrome[data-menu="true"] .dsh-friend-float-drag {
+  opacity: 1;
 }
 .dsh-friend-float-drag:active {
   cursor: grabbing;
@@ -117,6 +125,45 @@ export const FRIEND_OVERLAY_CSS = `
   pointer-events: auto;
   color: var(--dsw-fg, #e8eaed);
   font: 13px/1.45 ui-sans-serif, system-ui, sans-serif;
+}
+.dsh-friend-float-chrome [data-friend-bubble][hidden],
+.dsh-friend-float-chrome [data-friend-menu][hidden] {
+  display: none !important;
+}
+.dsh-friend-float-chrome [data-friend-bubble] {
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  top: auto;
+  max-height: 36%;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--dsw-bg-elevated, #1a1d24) 82%, transparent);
+  border: 1px solid color-mix(in srgb, var(--dsw-border, #2a2f3a) 80%, transparent);
+}
+.dsh-friend-float-chrome [data-friend-input] {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 6px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--dsw-border, #2a2f3a) 80%, transparent);
+  background: color-mix(in srgb, var(--dsw-bg, #111318) 88%, transparent);
+  color: inherit;
+  font: inherit;
+}
+.dsh-friend-float-chrome [data-friend-menu] {
+  top: 28px;
+  right: 8px;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--dsw-bg-elevated, #1a1d24) 92%, transparent);
+  border: 1px solid color-mix(in srgb, var(--dsw-border, #2a2f3a) 80%, transparent);
 }
 `
 

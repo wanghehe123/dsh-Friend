@@ -39,6 +39,12 @@ describe('float overlay stylesheet injection', () => {
     expect(FRIEND_OVERLAY_CSS).toContain('cursor: nwse-resize')
     expect(FRIEND_OVERLAY_CSS).toContain('cursor: nesw-resize')
     expect(FRIEND_OVERLAY_CSS).toContain('background: transparent')
+    expect(FRIEND_OVERLAY_CSS).toContain('opacity: 0')
+    expect(FRIEND_OVERLAY_CSS).toContain('.dsh-friend-float-chrome:hover .dsh-friend-float-drag')
+    expect(FRIEND_OVERLAY_CSS).toContain('[data-dragging="true"]')
+    expect(FRIEND_OVERLAY_CSS).toContain('[data-friend-bubble][hidden]')
+    expect(FRIEND_OVERLAY_CSS).toContain('max-height: 36%')
+    expect(FRIEND_OVERLAY_CSS).toContain('overflow-y: auto')
   })
 
   it('skips injection on the jsdom-less overlay fake that has no head', () => {

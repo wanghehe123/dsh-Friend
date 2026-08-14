@@ -1,7 +1,7 @@
 import { FRIEND_SETTINGS_NAMESPACES, type FriendSettingsNamespace } from '@wish233/dsh-friend-shared/universal'
 
 import { createBubbleController, handleBubbleKeydown } from './bubble.ts'
-import { CORE_SETTINGS_NAMESPACE, readCoreEnabled } from './core-gate.ts'
+import { CORE_SETTINGS_NAMESPACE, readCoreStageVisible } from './core-gate.ts'
 import {
   applyCornerResize,
   applyLiveMute,
@@ -22,6 +22,15 @@ import {
   type ResizeHandle,
 } from './float-stage.ts'
 import { readStageUiSettings } from './live2d/stage-settings.ts'
+import {
+  canRequestDesktopPopout,
+  requestDesktopPopout,
+  FRIEND_ASR_RESUME_EVENT,
+  FRIEND_ASR_YIELD_EVENT,
+  FRIEND_DESKTOP_POPOUT_EVENT,
+  PET_IFRAME_ALLOW,
+  type DesktopPopoutHost,
+} from './desktop-popout.ts'
 import {
   ensureFriendOverlayStyles,
   isOverlayStyleDocument,
@@ -88,7 +97,7 @@ export type OverlayPointerEvent = {
   target?: { value?: string }
 }
 
-export type OverlayWindow = {
+export type OverlayWindow = DesktopPopoutHost & {
   innerWidth: number
   innerHeight: number
   location: { assign(url: string): void }
@@ -133,8 +142,9 @@ export function mountFriendStageOverlay(options: MountOverlayOptions): OverlayHa
   const corner = chooseAvoidingCorner(petPresent)
   let rect = rectFromSettings(settings, { width: win.innerWidth, height: win.innerHeight }, corner)
   let hidden = settings.floatHidden
+  let poppedOut = false
   let muted = readInitialMuted(settings, options.coreSettings, options.playbackSettings)
-  let coreEnabled = readCoreEnabled(options.coreSettings?.getSnapshot().value)
+  let coreEnabled = readCoreStageVisible(options.coreSettings?.getSnapshot().value)
   let menuOpen = false
   let drag: { kind: DragKind; from: FloatPoint; start: FloatRect } | undefined
   let capture: { target: OverlayPointerTarget; pointerId: number } | undefined
@@ -187,8 +197,27 @@ export function mountFriendStageOverlay(options: MountOverlayOptions): OverlayHa
   }
 
   const applyChrome = (): void => {
-    applyHostStyle(host, rect, !coreEnabled || hidden)
+    applyHostStyle(host, rect, !coreEnabled || hidden || poppedOut)
     syncIframe()
+  }
+
+  const openDesktopPopout = (): void => {
+    if (poppedOut || !canRequestDesktopPopout(win)) {
+      return
+    }
+    void requestDesktopPopout(win, { width: rect.width, height: rect.height }).then((result) => {
+      if (result === undefined) {
+        return
+      }
+      poppedOut = true
+      applyChrome()
+      dispatchFriendWindowEvent(win, FRIEND_ASR_YIELD_EVENT)
+      void result.closed.then(() => {
+        poppedOut = false
+        applyChrome()
+        dispatchFriendWindowEvent(win, FRIEND_ASR_RESUME_EVENT)
+      })
+    })
   }
 
   const applyStageSnapshot = (): void => {
@@ -206,7 +235,7 @@ export function mountFriendStageOverlay(options: MountOverlayOptions): OverlayHa
   }
 
   const applyCoreSnapshot = (): void => {
-    coreEnabled = readCoreEnabled(options.coreSettings?.getSnapshot().value)
+    coreEnabled = readCoreStageVisible(options.coreSettings?.getSnapshot().value)
     applyChrome()
   }
 
@@ -248,6 +277,7 @@ export function mountFriendStageOverlay(options: MountOverlayOptions): OverlayHa
   const onPointerUp = (): void => {
     if (drag === undefined) return
     drag = undefined
+    chrome.dataset.dragging = 'false'
     releaseCapturedPointer()
     persistRect()
   }
@@ -255,6 +285,7 @@ export function mountFriendStageOverlay(options: MountOverlayOptions): OverlayHa
   const startDrag = (kind: DragKind, event: OverlayPointerEvent): void => {
     event.preventDefault()
     drag = { kind, from: { x: event.clientX, y: event.clientY }, start: rect }
+    chrome.dataset.dragging = 'true'
     capturePointer(event)
   }
 
@@ -266,6 +297,7 @@ export function mountFriendStageOverlay(options: MountOverlayOptions): OverlayHa
   chrome.addEventListener('contextmenu', (event) => {
     event.preventDefault()
     menuOpen = !menuOpen
+    chrome.dataset.menu = menuOpen ? 'true' : 'false'
     const menu = host.querySelector('[data-friend-menu]')
     if (menu) menu.hidden = !menuOpen
   })
@@ -294,7 +326,10 @@ export function mountFriendStageOverlay(options: MountOverlayOptions): OverlayHa
       void persistFloatHidden(store, true)
     },
     onListen: () => {
-      win.dispatchEvent({ type: 'dsh-friend:toggle-listen' })
+      dispatchFriendWindowEvent(win, 'dsh-friend:toggle-listen')
+    },
+    onPopout: () => {
+      openDesktopPopout()
     },
     onSettings: () => {
       dispatchFriendWindowEvent(win, 'dsh-friend:open-settings')
@@ -337,8 +372,12 @@ export function mountFriendStageOverlay(options: MountOverlayOptions): OverlayHa
   const unsubStage = options.settings?.subscribe(applyStageSnapshot)
   const unsubCore = options.coreSettings?.subscribe(applyCoreSnapshot)
   const unsubPlayback = options.playbackSettings?.subscribe(applyPlaybackSnapshot)
+  const onDesktopPopout = (): void => {
+    openDesktopPopout()
+  }
   win.addEventListener?.(FRIEND_MUTE_EVENT, onExternalMute)
   win.addEventListener?.(FRIEND_UNMUTE_EVENT, onExternalMute)
+  win.addEventListener?.(FRIEND_DESKTOP_POPOUT_EVENT, onDesktopPopout)
   hydrateMutedFromSnapshot(options.fetch ?? globalFetch, (next) => {
     muted = next
     syncMuteLabel()
@@ -374,6 +413,7 @@ export function mountFriendStageOverlay(options: MountOverlayOptions): OverlayHa
       unsubPlayback?.()
       win.removeEventListener?.(FRIEND_MUTE_EVENT, onExternalMute)
       win.removeEventListener?.(FRIEND_UNMUTE_EVENT, onExternalMute)
+      win.removeEventListener?.(FRIEND_DESKTOP_POPOUT_EVENT, onDesktopPopout)
       if (poll !== undefined) clearInterval(poll)
       releaseCapturedPointer()
       doc.removeEventListener('pointermove', onPointerMove)
@@ -435,7 +475,7 @@ function renderChromeHtml(muted: boolean): string {
     <button type="button" data-resize="top-right" aria-label="resize top right"></button>
     <button type="button" data-resize="bottom-left" aria-label="resize bottom left"></button>
     <button type="button" data-resize="bottom-right" aria-label="resize bottom right"></button>
-    <iframe title="dsh-Friend stage" src="${PET_EMBED_SRC}" sandbox="allow-scripts allow-same-origin"></iframe>
+    <iframe title="dsh-Friend stage" src="${PET_EMBED_SRC}" allow="${PET_IFRAME_ALLOW}" sandbox="allow-scripts allow-same-origin"></iframe>
     <div data-friend-bubble hidden>
       <p data-friend-typing hidden>…</p>
       <p data-friend-bubble-text></p>
@@ -446,6 +486,7 @@ function renderChromeHtml(muted: boolean): string {
       <button type="button" data-action="mute">${muted ? '取消静音' : '静音'}</button>
       <button type="button" data-action="hide">隐藏</button>
       <button type="button" data-action="listen">切换监听</button>
+      <button type="button" data-action="popout">弹出到桌面</button>
       <button type="button" data-action="settings">打开配置中心</button>
     </menu>
   `
@@ -465,12 +506,14 @@ function bindMenu(host: OverlayElement, actions: {
   onMute: () => void
   onHide: () => void
   onListen: () => void
+  onPopout: () => void
   onSettings: () => void
 }): void {
   const mapping: Record<string, () => void> = {
     mute: actions.onMute,
     hide: actions.onHide,
     listen: actions.onListen,
+    popout: actions.onPopout,
     settings: actions.onSettings,
   }
   for (const [action, run] of Object.entries(mapping)) {

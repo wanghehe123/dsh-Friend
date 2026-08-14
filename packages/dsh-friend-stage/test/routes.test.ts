@@ -1,4 +1,8 @@
-import { describe, expect, it } from 'vitest'
+import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+
+import { afterEach, describe, expect, it } from 'vitest'
 
 type Response = {
   statusCode: number
@@ -14,16 +18,38 @@ type Route = {
   handler: (request: { url?: string; method?: string }, response: Response) => void | Promise<void>
 }
 
+type InstalledModel = {
+  name: string
+  kind: 'builtin' | 'user'
+  model3Relative: string
+  modelUrl: string
+}
+
 type StageModule = {
   createStageRoutes: (options?: {
+    dataRoot?: string
     assetStore?: {
       inspect: () => Promise<{ ready: boolean; missing: readonly string[] }>
       install: (licenseAccepted: boolean) => Promise<{ ready: boolean; missing: readonly string[] }>
     }
     resolveTargetFps?: () => number
     resolveCoreEnabled?: () => boolean
+    resolveCurrentModel?: () => Promise<InstalledModel>
   }) => readonly Route[]
 }
+
+const builtinHiyori: InstalledModel = {
+  name: 'hiyori',
+  kind: 'builtin',
+  model3Relative: 'vendor/hiyori/hiyori_free/runtime/hiyori_free_t08.model3.json',
+  modelUrl: '/friend/assets/vendor/hiyori/hiyori_free/runtime/hiyori_free_t08.model3.json',
+}
+
+const temporaryRoots: string[] = []
+
+afterEach(async () => {
+  await Promise.all(temporaryRoots.splice(0).map((root) => rm(root, { recursive: true, force: true })))
+})
 
 async function loadStage(): Promise<StageModule | undefined> {
   try {
@@ -58,7 +84,10 @@ describe('stage routes', () => {
     const stage = await loadStage()
 
     expect(stage, 'stage host entry must export its routes').toBeDefined()
-    const pet = stage?.createStageRoutes({ assetStore: readyAssets }).find((route) => route.path === '/friend/pet')
+    const pet = stage?.createStageRoutes({
+      assetStore: readyAssets,
+      resolveCurrentModel: async () => builtinHiyori,
+    }).find((route) => route.path === '/friend/pet')
     expect(pet).toMatchObject({ kind: 'exact', path: '/friend/pet' })
 
     const response = createResponse()
@@ -90,13 +119,49 @@ describe('stage routes', () => {
     expect(response.body).not.toMatch(/new Speech\s*\(/)
   })
 
+  it('embeds the selected user model and friend.map.json on the pet page', async () => {
+    const stage = await loadStage()
+    const root = await mkdtemp(join(tmpdir(), 'dsh-friend-pet-map-'))
+    temporaryRoots.push(root)
+    const modelDir = join(root, 'models/export-v3')
+    await mkdir(modelDir, { recursive: true })
+    await writeFile(join(modelDir, 'naiwa-live2d-v3.model3.json'), JSON.stringify({
+      Version: 3,
+      FileReferences: {
+        Expressions: [{ Name: 'smile', File: 'expressions/smile.exp3.json' }],
+        Motions: { Idle: [{ File: 'motions/idle.motion3.json' }] },
+      },
+    }))
+    await writeFile(join(root, 'models/catalog.json'), JSON.stringify({ current: 'export-v3' }))
+
+    const pet = stage?.createStageRoutes({
+      dataRoot: root,
+      assetStore: readyAssets,
+    }).find((route) => route.path === '/friend/pet')
+    const response = createResponse()
+    await pet?.handler({ method: 'GET', url: '/friend/pet' }, response)
+
+    expect(response.body).toContain('/friend/assets/models/export-v3/naiwa-live2d-v3.model3.json')
+    expect(response.body).toContain('"mouthOpenParam":"ParamMouthOpenY"')
+    expect(response.body).toContain('expressions/smile.exp3.json')
+    expect(response.body).toContain('motions/idle.motion3.json')
+    expect(response.body).not.toContain('/friend/assets/vendor/hiyori/hiyori_free/runtime/hiyori_free_t08.model3.json')
+  })
+
   it('renders an embeddable transparent pet page for the in-page iframe', async () => {
     const stage = await loadStage()
-    const pet = stage?.createStageRoutes({ assetStore: readyAssets }).find((route) => route.path === '/friend/pet')
+    const pet = stage?.createStageRoutes({
+      assetStore: readyAssets,
+      resolveCurrentModel: async () => builtinHiyori,
+    }).find((route) => route.path === '/friend/pet')
     const response = createResponse()
     await pet?.handler({ method: 'GET', url: '/friend/pet?transparent=1&embed=1' }, response)
     expect(response.body).toContain('data-transparent="true"')
     expect(response.body).toContain('data-embed="true"')
+    expect(response.body).toContain('html[data-embed="true"] .toolbar { display: none; }')
+    expect(response.body).not.toContain('data-friend-bubble')
+    expect(response.body).not.toContain('/friend/stage/chat')
+    expect(response.body).toContain('/friend/stage/pet.iife.js')
   })
 
   it('embeds a configured FPS cap and serves installer SSE wiring when assets are missing', async () => {
@@ -106,6 +171,7 @@ describe('stage routes', () => {
     const ready = stage?.createStageRoutes({
       assetStore: readyAssets,
       resolveTargetFps: () => 24,
+      resolveCurrentModel: async () => builtinHiyori,
     }).find((route) => route.path === '/friend/pet')
     const readyResponse = createResponse()
     await ready?.handler({ method: 'GET', url: '/friend/pet' }, readyResponse)

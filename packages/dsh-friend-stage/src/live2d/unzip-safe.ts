@@ -3,6 +3,10 @@ import { dirname, isAbsolute, relative, resolve } from 'node:path'
 
 import { unzipSync } from 'fflate'
 
+import { CUBISM_CORE_ARCHIVE_ENTRY } from './asset-layout.ts'
+
+export { CUBISM_CORE_ARCHIVE_ENTRY }
+
 /** Refuse a single zip entry larger than this (official Core + Hiyori FREE are far smaller). */
 export const MAX_ZIP_ENTRY_BYTES = 64 * 1024 * 1024
 /** Refuse an archive whose kept entries exceed this uncompressed total. */
@@ -90,8 +94,6 @@ export function isHiyoriFreeEntry(posixPath: string): boolean {
 export function isCubismCoreEntry(posixPath: string): boolean {
   return posixPath.replace(/\\/gu, '/').endsWith('Core/live2dcubismcore.min.js')
 }
-
-export const CUBISM_CORE_ARCHIVE_ENTRY = 'CubismSdkForWeb-4-r.7/Core/live2dcubismcore.min.js'
 
 export function pickCubismCorePayload(entries: Readonly<Record<string, Uint8Array>>): Uint8Array {
   const exact = entries[CUBISM_CORE_ARCHIVE_ENTRY]

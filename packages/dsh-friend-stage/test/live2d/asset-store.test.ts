@@ -50,6 +50,7 @@ describe('official Live2D asset store', () => {
     await mkdir(join(root, 'vendor/cubism-core'), { recursive: true })
     await writeFile(model, '{}')
     await writeFile(core, '/* Live2D Cubism Core */')
+    await writeFile(join(root, 'vendor/cubism-core/sdk-release.txt'), 'CubismSdkForWeb-5-r.5\n')
 
     expect(await inspectLive2DAssets(root)).toMatchObject({
       ready: true,
@@ -59,13 +60,29 @@ describe('official Live2D asset store', () => {
     })
   })
 
+  it('treats a Cubism 4 Core leftover as missing so the installer can replace it', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'dsh-friend-stage-assets-'))
+    temporaryRoots.push(root)
+    const model = join(root, 'vendor/hiyori/hiyori_free/runtime/hiyori_free_t08.model3.json')
+    const core = join(root, 'vendor/cubism-core/live2dcubismcore.min.js')
+    await mkdir(join(root, 'vendor/hiyori/hiyori_free/runtime'), { recursive: true })
+    await mkdir(join(root, 'vendor/cubism-core'), { recursive: true })
+    await writeFile(model, '{}')
+    await writeFile(core, '/* Live2D Cubism Core 4 */')
+
+    expect(await inspectLive2DAssets(root)).toMatchObject({
+      ready: false,
+      missing: ['core'],
+    })
+  })
+
   it('persists attribution and official source URLs alongside vendor assets', () => {
     const notice = renderVendorNotice('2026-08-14T00:00:00.000Z')
 
     expect(notice).toContain(HIYORI_OFFICIAL_SOURCE_URL)
     expect(notice).toContain(CUBISM_CORE_OFFICIAL_SOURCE_URL)
     expect(CUBISM_CORE_OFFICIAL_SOURCE_URL).toBe(
-      'https://cubism.live2d.com/sdk-web/bin/CubismSdkForWeb-4-r.7.zip',
+      'https://cubism.live2d.com/sdk-web/bin/CubismSdkForWeb-5-r.5.zip',
     )
     expect(notice).toContain('not redistributed')
   })

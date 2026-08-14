@@ -1,9 +1,10 @@
 # dsh-Friend Live2D stage
 
 `@wish233/dsh-friend-stage` provides the standalone companion viewer at
-`/friend/pet`. It renders the official **Hiyori Momose - FREE** Cubism model
-with PixiJS and `pixi-live2d-display`, rather than using a static image or a
-mock animation.
+`/friend/pet`. Built-in models are **奶龙** (first-party Cubism 4.2 runtime zip
+extracted to `vendor/nailong/`) and official **Hiyori Momose - FREE** (downloaded
+after the user accepts Live2D terms). Rendering uses PixiJS and
+`pixi-live2d-display`.
 
 ## First run
 
@@ -12,7 +13,7 @@ mock animation.
 3. Read and accept the applicable official Live2D terms in the page, then
    select **下载并启用 Live2D**.
 
-The page downloads the Hiyori FREE model and the official Cubism 4 R7 Core to
+The page downloads the Hiyori FREE model and the official Cubism 5 R5 Core to
 `$DSH_HOME/friend/vendor/` (or `~/.dsh/friend/vendor/` when `DSH_HOME` is not
 set). They are deliberately excluded from this package, Git, and npm. The
 original model `ReadMe.txt` and an attribution `NOTICE.txt` remain alongside
@@ -41,8 +42,8 @@ never writes `vendor/` and leaves a retryable tree (only
 To fill the placeholders:
 
 1. Download the URLs recorded in `vendor-integrity.json`.
-2. `shasum -a 256 hiyori_en.zip CubismSdkForWeb-4-r.7.zip`
-3. Extract `CubismSdkForWeb-4-r.7/Core/live2dcubismcore.min.js` and hash that
+2. `shasum -a 256 hiyori_en.zip CubismSdkForWeb-5-r.5.zip`
+3. Extract `CubismSdkForWeb-5-r.5/Core/live2dcubismcore.min.js` and hash that
    file too.
 4. Replace each `"TODO"` with the lowercase 64-character hex digest.
 5. Runtime override (no file edit): `FRIEND_LIVE2D_HIYORI_ZIP_SHA256`,

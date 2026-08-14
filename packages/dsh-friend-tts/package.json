@@ -1,0 +1,45 @@
+{
+  "name": "@wish233/dsh-friend-tts",
+  "version": "0.1.0",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "description": "TTS provider seam、队列缓存、文本预处理、播放与口型",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "types": "./lib/client.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "LICENSE",
+    "README.md",
+    "THIRD-PARTY-NOTICES.md"
+  ],
+  "scripts": {
+    "build": "tsdown --config tsdown.config.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dsh": {
+    "client": {
+      "platform": "web",
+      "inject": ["settingsScope"]
+    }
+  },
+  "dependencies": {
+    "@wish233/dsh-friend-shared": "workspace:*",
+    "@wish233/dsh-friend-persona": "workspace:*",
+    "@wish233/dsh-friend-stage": "workspace:*",
+    "ws": "8.21.3"
+  }
+}

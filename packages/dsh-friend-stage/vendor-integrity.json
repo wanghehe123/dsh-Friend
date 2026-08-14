@@ -1,0 +1,9 @@
+{
+  "comment": "Expected sha256 hex digests of official Live2D downloads. Placeholder TODO means hashes are not filled yet — install may proceed but reports integrity: hash-pending. Never invent a digest. Update without changing TypeScript: replace TODO with the lowercase 64-char hex of each official file, or set FRIEND_LIVE2D_HIYORI_ZIP_SHA256 / FRIEND_LIVE2D_CUBISM_SDK_ZIP_SHA256 / FRIEND_LIVE2D_CUBISM_CORE_JS_SHA256. See README.",
+  "hiyoriZipUrl": "https://cubism.live2d.com/sample-data/bin/hiyori/hiyori_en.zip",
+  "cubismSdkZipUrl": "https://cubism.live2d.com/sdk-web/bin/CubismSdkForWeb-4-r.7.zip",
+  "cubismCoreArchiveEntry": "CubismSdkForWeb-4-r.7/Core/live2dcubismcore.min.js",
+  "hiyoriZipSha256": "TODO",
+  "cubismSdkZipSha256": "TODO",
+  "cubismCoreJsSha256": "TODO"
+}

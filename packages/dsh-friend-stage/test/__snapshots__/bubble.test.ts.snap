@@ -1,0 +1,11 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`bubble shortcut chat > renders streaming assistant chunks into the open bubble 1`] = `
+{
+  "assistantText": "你好呀",
+  "error": "",
+  "input": "",
+  "open": true,
+  "typing": false,
+}
+`;

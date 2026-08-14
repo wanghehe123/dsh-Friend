@@ -1,0 +1,62 @@
+{
+  "name": "@wish233/dsh-friend-stage",
+  "version": "0.1.0",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "type": "module",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./client": {
+      "types": "./lib/client.d.ts",
+      "default": "./lib/client.js"
+    },
+    "./pet": {
+      "default": "./lib/pet.iife.js"
+    },
+    "./tags": {
+      "types": "./lib/tags.d.ts",
+      "default": "./lib/tags.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "LICENSE",
+    "README.md",
+    "THIRD-PARTY-NOTICES.md",
+    "vendor-integrity.json"
+  ],
+  "scripts": {
+    "build": "node ../../scripts/check-pixi-live2d.mjs && tsdown --config tsdown.config.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dsh": {
+    "client": {
+      "platform": "web",
+      "inject": ["settingsScope"]
+    }
+  },
+  "dependencies": {
+    "@wish233/dsh-friend-shared": "workspace:*",
+    "@wish233/dsh-friend-persona": "workspace:*",
+    "@wish233/dsh-friend-asr": "workspace:*",
+    "fflate": "0.8.3"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1",
+    "@deepseek-ai/dsh-host-webserver": "^0.1.0-rc.6"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "4.0.1",
+    "@deepseek-ai/dsh-host-webserver": "0.1.0-rc.6",
+    "pixi-live2d-display": "0.4.0",
+    "pixi.js": "6.5.10"
+  }
+}

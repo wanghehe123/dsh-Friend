@@ -21,6 +21,7 @@ import {
 import { createSettingsRoutes } from '../src/routes.ts'
 import { createShellHeartbeatStore } from '../src/shell-heartbeat.ts'
 import { FRIEND_GITHUB_RELEASES_PAGE } from '../src/github-repo.ts'
+import { FRIEND_PACKAGE_VERSION } from '../src/about.ts'
 import { zipEntryNames } from '../src/export-zip.ts'
 
 type FakeResponse = {
@@ -204,7 +205,7 @@ describe('settings host routes', () => {
       fetchImpl: async () => ({
         ok: true,
         async json() {
-          return { tag_name: 'v0.1.0' }
+          return { tag_name: `v${FRIEND_PACKAGE_VERSION}` }
         },
       }),
     }).handler({ method: 'GET', url: FRIEND_SETTINGS_UPDATE_PATH } as never, update as never)

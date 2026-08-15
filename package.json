@@ -1,6 +1,6 @@
 {
   "name": "dsh-friend",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "人格化伴侣插件 for DeepSeek Harness (DSH)：角色卡、语音、Live2D 舞台、本地记忆与工作陪伴。",
   "keywords": [

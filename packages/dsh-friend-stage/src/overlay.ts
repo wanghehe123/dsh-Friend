@@ -39,7 +39,13 @@ import {
 
 export const STAGE_SETTINGS_NAMESPACE = FRIEND_SETTINGS_NAMESPACES.stage
 export const PET_EMBED_SRC = '/friend/pet?transparent=1&embed=1'
+export const PET_IFRAME_IDLE_SRC = `data:text/html;charset=utf-8,${encodeURIComponent(
+  '<!doctype html><html><head><style>html,body{margin:0;background:transparent}</style></head><body></body></html>',
+)}`
 export const CHAT_PATH = '/friend/stage/chat'
+export const FRIEND_SETTINGS_SNAPSHOT_PATH = '/friend/settings/snapshot'
+export const SETTINGS_SNAPSHOT_POLL_MS = 1_000
+export const FRIEND_CORE_STAGE_EVENT = 'dsh-friend:core-stage' as const
 
 export type OverlaySettingsScope = {
   getSnapshot(): { value: unknown }
@@ -97,13 +103,18 @@ export type OverlayPointerEvent = {
   target?: { value?: string }
 }
 
+export type OverlayWindowEvent = {
+  type: string
+  detail?: unknown
+}
+
 export type OverlayWindow = DesktopPopoutHost & {
   innerWidth: number
   innerHeight: number
   location: { assign(url: string): void }
-  dispatchEvent(event: { type: string }): boolean
-  addEventListener?(type: string, listener: (event: { type: string }) => void): void
-  removeEventListener?(type: string, listener: (event: { type: string }) => void): void
+  dispatchEvent(event: OverlayWindowEvent): boolean
+  addEventListener?(type: string, listener: (event: OverlayWindowEvent) => void): void
+  removeEventListener?(type: string, listener: (event: OverlayWindowEvent) => void): void
 }
 
 export type OverlayFetch = (
@@ -144,7 +155,8 @@ export function mountFriendStageOverlay(options: MountOverlayOptions): OverlayHa
   let hidden = settings.floatHidden
   let poppedOut = false
   let muted = readInitialMuted(settings, options.coreSettings, options.playbackSettings)
-  let coreEnabled = readCoreStageVisible(options.coreSettings?.getSnapshot().value)
+  let coreEnabled = false
+  let snapshotGate: boolean | undefined
   let menuOpen = false
   let drag: { kind: DragKind; from: FloatPoint; start: FloatRect } | undefined
   let capture: { target: OverlayPointerTarget; pointerId: number } | undefined
@@ -192,7 +204,7 @@ export function mountFriendStageOverlay(options: MountOverlayOptions): OverlayHa
   const syncIframe = (): void => {
     const iframe = host.querySelector('iframe')
     if (iframe === null) return
-    const src = coreEnabled ? PET_EMBED_SRC : 'about:blank'
+    const src = coreEnabled ? PET_EMBED_SRC : PET_IFRAME_IDLE_SRC
     if (iframe.getAttribute?.('src') !== src) iframe.setAttribute('src', src)
   }
 
@@ -235,7 +247,8 @@ export function mountFriendStageOverlay(options: MountOverlayOptions): OverlayHa
   }
 
   const applyCoreSnapshot = (): void => {
-    coreEnabled = readCoreStageVisible(options.coreSettings?.getSnapshot().value)
+    if (snapshotGate === undefined) return
+    coreEnabled = snapshotGate
     applyChrome()
   }
 
@@ -363,10 +376,17 @@ export function mountFriendStageOverlay(options: MountOverlayOptions): OverlayHa
     syncMuteLabel()
   }
 
-  const onExternalMute = (event: { type: string }): void => {
+  const onExternalMute = (event: OverlayWindowEvent): void => {
     muted = event.type === FRIEND_MUTE_EVENT
     syncMuteLabel()
     applyLiveMute(muted)
+  }
+
+  const onCoreStage = (event: OverlayWindowEvent): void => {
+    if (!isRecord(event.detail)) return
+    snapshotGate = readCoreStageVisible(event.detail)
+    coreEnabled = snapshotGate
+    applyChrome()
   }
 
   const unsubStage = options.settings?.subscribe(applyStageSnapshot)
@@ -378,13 +398,42 @@ export function mountFriendStageOverlay(options: MountOverlayOptions): OverlayHa
   win.addEventListener?.(FRIEND_MUTE_EVENT, onExternalMute)
   win.addEventListener?.(FRIEND_UNMUTE_EVENT, onExternalMute)
   win.addEventListener?.(FRIEND_DESKTOP_POPOUT_EVENT, onDesktopPopout)
-  hydrateMutedFromSnapshot(options.fetch ?? globalFetch, (next) => {
-    muted = next
-    syncMuteLabel()
-  })
+  win.addEventListener?.(FRIEND_CORE_STAGE_EVENT, onCoreStage)
+
+  const fetchImpl = options.fetch ?? globalFetch
+  const applyCoreFromSnapshot = (body: unknown): boolean => {
+    if (!isRecord(body) || !isRecord(body.core)) return false
+    snapshotGate = readCoreStageVisible(body.core)
+    coreEnabled = snapshotGate
+    applyChrome()
+    return true
+  }
+  const applyMuteFromSnapshot = (body: unknown): void => {
+    if (!isRecord(body)) return
+    if (isRecord(body.tts) && typeof body.tts.muted === 'boolean') {
+      muted = body.tts.muted
+      syncMuteLabel()
+      return
+    }
+    if (isRecord(body.core) && typeof body.core.muted === 'boolean') {
+      muted = body.core.muted
+      syncMuteLabel()
+    }
+  }
+  const pullSettingsSnapshot = (includeMute: boolean): void => {
+    void fetchImpl(FRIEND_SETTINGS_SNAPSHOT_PATH).then(async (response) => {
+      if (!response.ok) return
+      const body = await response.json()
+      applyCoreFromSnapshot(body)
+      if (includeMute) applyMuteFromSnapshot(body)
+    }).catch(() => undefined)
+  }
+  pullSettingsSnapshot(true)
+  const snapshotPoll = setInterval(() => {
+    pullSettingsSnapshot(false)
+  }, SETTINGS_SNAPSHOT_POLL_MS)
 
   let poll: ReturnType<typeof setInterval> | undefined
-  const fetchImpl = options.fetch ?? globalFetch
   poll = setInterval(() => {
     if (!coreEnabled) return
     bubble.tick(Date.now())
@@ -414,6 +463,8 @@ export function mountFriendStageOverlay(options: MountOverlayOptions): OverlayHa
       win.removeEventListener?.(FRIEND_MUTE_EVENT, onExternalMute)
       win.removeEventListener?.(FRIEND_UNMUTE_EVENT, onExternalMute)
       win.removeEventListener?.(FRIEND_DESKTOP_POPOUT_EVENT, onDesktopPopout)
+      win.removeEventListener?.(FRIEND_CORE_STAGE_EVENT, onCoreStage)
+      clearInterval(snapshotPoll)
       if (poll !== undefined) clearInterval(poll)
       releaseCapturedPointer()
       doc.removeEventListener('pointermove', onPointerMove)
@@ -464,7 +515,9 @@ function applyHostStyle(host: OverlayElement, rect: FloatRect, hidden: boolean):
     `width:${rect.width}px`,
     `height:${rect.height}px`,
     `z-index:${FLOAT_Z_INDEX}`,
-    'pointer-events:auto',
+    hidden ? 'display:none' : 'display:block',
+    hidden ? 'visibility:hidden' : 'visibility:visible',
+    hidden ? 'pointer-events:none' : 'pointer-events:auto',
   ].join(';')
 }
 
@@ -475,7 +528,7 @@ function renderChromeHtml(muted: boolean): string {
     <button type="button" data-resize="top-right" aria-label="resize top right"></button>
     <button type="button" data-resize="bottom-left" aria-label="resize bottom left"></button>
     <button type="button" data-resize="bottom-right" aria-label="resize bottom right"></button>
-    <iframe title="dsh-Friend stage" src="${PET_EMBED_SRC}" allow="${PET_IFRAME_ALLOW}" sandbox="allow-scripts allow-same-origin"></iframe>
+    <iframe title="dsh-Friend stage" src="${PET_IFRAME_IDLE_SRC}" allow="${PET_IFRAME_ALLOW}" sandbox="allow-scripts allow-same-origin"></iframe>
     <div data-friend-bubble hidden>
       <p data-friend-typing hidden>…</p>
       <p data-friend-bubble-text></p>
@@ -605,20 +658,3 @@ function dispatchFriendWindowEvent(win: OverlayWindow, type: string): void {
   win.dispatchEvent({ type })
 }
 
-function hydrateMutedFromSnapshot(
-  fetchImpl: OverlayFetch,
-  apply: (muted: boolean) => void,
-): void {
-  void fetchImpl('/friend/settings/snapshot').then(async (response) => {
-    if (!response.ok) return
-    const body = await response.json()
-    if (!isRecord(body)) return
-    if (isRecord(body.tts) && typeof body.tts.muted === 'boolean') {
-      apply(body.tts.muted)
-      return
-    }
-    if (isRecord(body.core) && typeof body.core.muted === 'boolean') {
-      apply(body.core.muted)
-    }
-  }).catch(() => undefined)
-}

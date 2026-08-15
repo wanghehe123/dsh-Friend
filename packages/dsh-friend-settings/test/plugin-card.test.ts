@@ -71,4 +71,28 @@ describe('plugin card staged form', () => {
     form.set('enabled', true)
     expect(form.childControlsEnabled()).toBe(true)
   })
+
+  it('persists the master switch and float toggle without waiting for a full Save', async () => {
+    const writes: Array<[string, unknown]> = []
+    const form = createPluginCardForm({
+      core: { enabled: true, floatEnabled: true, volume: 1, muted: false, language: 'zh' },
+      persona: { currentSlug: 'default' },
+      coreScope: {
+        async set(field, value) {
+          writes.push([field, value])
+        },
+      },
+    })
+    form.set('enabled', false)
+    form.set('volume', 0.2)
+    await form.persistGates()
+    expect(writes).toEqual([
+      ['enabled', false],
+      ['floatEnabled', true],
+    ])
+    expect(form.getCommitted().enabled).toBe(false)
+    expect(form.getCommitted().volume).toBe(1)
+    expect(form.getDraft().volume).toBe(0.2)
+    expect(form.isDirty()).toBe(true)
+  })
 })

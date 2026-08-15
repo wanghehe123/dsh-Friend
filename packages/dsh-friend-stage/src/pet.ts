@@ -10,6 +10,11 @@ import {
 
 import { canvasPointFromClient } from './hit-test.ts'
 import {
+  applyPetPageEnabled,
+  fetchStageVisible,
+  PET_RUNTIME_POLL_MS,
+} from './pet-runtime.ts'
+import {
   aliasCubism4FrameworkModel,
   installCubism5DrawableRenderOrderCompat,
 } from './live2d/core5-compat.ts'
@@ -276,11 +281,33 @@ async function mountFromPage(): Promise<void> {
       onSend: postPetStageChat,
     })
   }
-  try {
-    window.__DSH_FRIEND_PET__ = await mountLive2DPet(config)
-  } catch (error) {
-    setStatus(status, `模型加载失败：${error instanceof Error ? error.message : String(error)}`)
+  const fetchImpl = window.fetch.bind(window)
+  let lastEnabled = true
+  const mountModel = async (): Promise<void> => {
+    try {
+      window.__DSH_FRIEND_PET__ = await mountLive2DPet(config)
+    } catch (error) {
+      setStatus(status, `模型加载失败：${error instanceof Error ? error.message : String(error)}`)
+    }
   }
+  const syncEnabled = async (): Promise<boolean> => {
+    const enabled = await fetchStageVisible(fetchImpl)
+    if (enabled === undefined) return lastEnabled
+    lastEnabled = enabled
+    applyPetPageEnabled(document, enabled, config.canvasId)
+    return enabled
+  }
+  const live = await syncEnabled()
+  if (live) {
+    await mountModel()
+  }
+  window.setInterval(() => {
+    void syncEnabled().then(async (enabled) => {
+      if (enabled && window.__DSH_FRIEND_PET__ === undefined) {
+        await mountModel()
+      }
+    })
+  }, PET_RUNTIME_POLL_MS)
 }
 
 void mountFromPage()

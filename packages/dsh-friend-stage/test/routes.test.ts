@@ -113,6 +113,8 @@ describe('stage routes', () => {
     expect(response.body).toContain('readyState === 2')
     expect(response.body).toContain('data-embed="false"')
     expect(response.body).toContain('/friend/stage/runtime')
+    expect(response.body).not.toContain('document.documentElement.hidden')
+    expect(response.body).not.toContain("style.visibility = 'hidden'")
     expect(response.body).toContain('setTargetFps')
     expect(response.body).toContain('id="friend-voice"')
     expect(response.body).not.toContain('webkitSpeechRecognition')
@@ -203,6 +205,22 @@ describe('stage routes', () => {
     await runtime?.handler({ method: 'GET', url: '/friend/stage/runtime' }, response)
     expect(response.statusCode).toBe(200)
     expect(JSON.parse(response.body)).toEqual({ enabled: false, targetFps: 24 })
+  })
+
+  it('still serves the Live2D embed when the host switch is off so a visible iframe is never a white box', async () => {
+    const stage = await loadStage()
+    const pet = stage?.createStageRoutes({
+      assetStore: readyAssets,
+      resolveCoreEnabled: () => false,
+    }).find((route) => route.path === '/friend/pet')
+    const response = createResponse()
+    await pet?.handler({ method: 'GET', url: '/friend/pet?transparent=1&embed=1' }, response)
+    expect(response.statusCode).toBe(200)
+    expect(response.body).toContain('friend-live2d')
+    expect(response.body).toContain('pet.iife.js')
+    expect(response.body).toContain('data-transparent="true"')
+    expect(response.body).toContain('background: transparent')
+    expect(response.body).not.toContain('data-friend-disabled')
   })
 
   it('exposes a machine-readable health check with Live2D asset status', async () => {

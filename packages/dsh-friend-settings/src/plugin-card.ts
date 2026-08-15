@@ -35,6 +35,7 @@ export type PluginCardForm = {
   childControlsEnabled(): boolean
   characters(): readonly PluginCardCharacter[]
   commit(): Promise<void>
+  persistGates(): Promise<void>
   discard(): void
 }
 
@@ -108,6 +109,17 @@ export function createPluginCardForm(options: CreatePluginCardFormOptions = {}):
       }
       committed = next
       draft = { ...next }
+    },
+    async persistGates() {
+      if (options.coreScope !== undefined) {
+        await options.coreScope.set(CORE_SETTING_FIELDS.enabled, draft.enabled)
+        await options.coreScope.set(CORE_SETTING_FIELDS.floatEnabled, draft.floatEnabled)
+      }
+      committed = {
+        ...committed,
+        enabled: draft.enabled,
+        floatEnabled: draft.floatEnabled,
+      }
     },
     discard() {
       committed = readCommitted()

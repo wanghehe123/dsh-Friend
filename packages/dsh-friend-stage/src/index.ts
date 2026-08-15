@@ -51,7 +51,7 @@ import {
   inspectLive2DAssets,
   type Live2DAssetStatus,
 } from './live2d/asset-store.ts'
-import { readCoreEnabled } from './core-gate.ts'
+import { readCoreStageVisible } from './core-gate.ts'
 import { LIVE2D_TARGET_FPS } from './live2d/performance.ts'
 import { readStageTargetFps } from './live2d/stage-settings.ts'
 import {
@@ -61,6 +61,7 @@ import {
 import {
   createPerformanceTracker,
   getSharedPerformanceTracker,
+  publishPerformanceTracker,
   type PerformanceSnapshot,
   type PerformanceTracker,
 } from './performance-state.ts'
@@ -89,6 +90,8 @@ export {
   applyStageTagEvents,
   createPerformanceTracker,
   getSharedPerformanceTracker,
+  publishPerformanceTracker,
+  FRIEND_PERFORMANCE_GLOBAL,
   resetSharedPerformanceTracker,
   type PerformanceSnapshot,
   type PerformanceTracker,
@@ -265,6 +268,10 @@ export function renderPetPage(
       * { box-sizing: border-box; }
       html, body { min-height: 100%; margin: 0; }
       html[data-transparent="true"], html[data-transparent="true"] body { background: transparent; }
+      html[data-embed="true"], html[data-embed="true"] body {
+        background: transparent !important;
+        color-scheme: none;
+      }
       body { min-height: 100vh; background: radial-gradient(circle at 50% 15%, #334155, #0f172a 62%); color: #e2e8f0; }
       main { width: min(100%, 52rem); min-height: 100vh; margin: 0 auto; display: grid; grid-template-rows: minmax(25rem, 1fr) auto; padding: 1rem; gap: .75rem; }
       #friend-live2d { display: block; width: 100%; height: min(74vh, 46rem); border-radius: 1.25rem; background: linear-gradient(180deg, rgb(14 165 233 / .14), rgb(15 23 42 / .08)); touch-action: none; }
@@ -390,7 +397,8 @@ function renderPerformanceSseScript(): string {
               const pet = window.__DSH_FRIEND_PET__;
               if (pet && typeof pet.setTargetFps === 'function') pet.setTargetFps(runtime.targetFps);
             }
-            const next = runtime.enabled !== false;
+            if (typeof runtime.enabled !== 'boolean') return;
+            const next = runtime.enabled;
             if (next === enabled) return;
             enabled = next;
             if (!enabled) {
@@ -779,6 +787,7 @@ export function apply(ctx: StageApplyContext, config: StageApplyOptions = {}): v
   logPluginMount(name)
   const role = config.role ?? 'host'
   const performance = config.performanceTracker ?? getSharedPerformanceTracker()
+  publishPerformanceTracker(performance)
   if (role === 'companion-preset') {
     applyCompanionPreset(ctx, performance)
     return
@@ -836,7 +845,7 @@ function applyHost(ctx: StageApplyContext, performance: PerformanceTracker, conf
       const settings = ctx.settings
       if (settings === undefined) return true
       try {
-        return readCoreEnabled(settings.get(FRIEND_SETTINGS_NAMESPACES.core))
+        return readCoreStageVisible(settings.get(FRIEND_SETTINGS_NAMESPACES.core))
       } catch {
         return true
       }

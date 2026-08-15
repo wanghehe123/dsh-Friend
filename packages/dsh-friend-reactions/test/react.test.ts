@@ -69,6 +69,21 @@ describe('reaction throttle', () => {
     expect(engine.react(event('tool-error'))?.expression).toBe('surprised')
   })
 
+  it('celebrates turn-success of the same turn without waiting out the global cooldown', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-08-14T12:00:00'))
+    const engine = createReactEngine({
+      settings: settings(),
+      now: () => Date.now(),
+      random: () => 0,
+    })
+    expect(engine.react(event('turn-start'))?.motionGroup).toBe('Thinking')
+    vi.advanceTimersByTime(5_000)
+    const celebration = engine.react(event('turn-success'))
+    expect(celebration?.cue).toBe('success')
+    expect(celebration?.motionGroup).toBe('Celebrate')
+  })
+
   it('bans every reaction inside a quiet-hours window', () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date('2026-08-14T23:30:00'))

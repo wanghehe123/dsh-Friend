@@ -27,6 +27,11 @@ export const FRIEND_OVERLAY_CSS = `
   box-sizing: border-box;
   background: transparent;
 }
+#dsh-friend-float[hidden] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
 .dsh-friend-float-chrome {
   position: relative;
   width: 100%;
@@ -41,6 +46,7 @@ export const FRIEND_OVERLAY_CSS = `
   height: 100%;
   border: 0;
   background: transparent;
+  color-scheme: none;
   pointer-events: auto;
 }
 .dsh-friend-float-drag {

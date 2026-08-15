@@ -95,6 +95,13 @@ export function createPerformanceTracker(
 
 let shared = createPerformanceTracker()
 
+/** Process-wide seam so work reactions can play cues without importing this package. */
+export const FRIEND_PERFORMANCE_GLOBAL = '__DSH_FRIEND_PERFORMANCE__' as const
+
+export function publishPerformanceTracker(tracker: PerformanceTracker): void {
+  ;(globalThis as Record<string, unknown>)[FRIEND_PERFORMANCE_GLOBAL] = tracker
+}
+
 export function getSharedPerformanceTracker(): PerformanceTracker {
   return shared
 }
@@ -102,6 +109,7 @@ export function getSharedPerformanceTracker(): PerformanceTracker {
 /** Test seam: host apply() and companion-preset apply() share one process tracker. */
 export function resetSharedPerformanceTracker(): void {
   shared = createPerformanceTracker()
+  publishPerformanceTracker(shared)
 }
 
 export function applyStageTagEvents(

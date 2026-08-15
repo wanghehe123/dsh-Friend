@@ -139,6 +139,7 @@ export function applyReactions(
     }
     pushFrame?.(snapshot)
     config.push?.({ type: 'reaction', payload: snapshot })
+    playReactionCueOnStage(snapshot)
     return snapshot
   }
 
@@ -205,6 +206,24 @@ export function normalizeSessionEventArgs(args: readonly unknown[]): {
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+/** Same name stage publishes from `performance-state.ts`. Keep in lockstep. */
+const FRIEND_PERFORMANCE_GLOBAL = '__DSH_FRIEND_PERFORMANCE__' as const
+
+function playReactionCueOnStage(snapshot: ReactionSnapshot): void {
+  if (snapshot.cue === undefined) {
+    return
+  }
+  const tracker = (globalThis as Record<string, unknown>)[FRIEND_PERFORMANCE_GLOBAL]
+  if (!isPlainObject(tracker)) {
+    return
+  }
+  const playCue = tracker.playCue
+  if (typeof playCue !== 'function') {
+    return
+  }
+  playCue(snapshot.cue)
 }
 
 export { FRIEND_SETTINGS_NAMESPACES, FRIEND_PRESET_IDS }

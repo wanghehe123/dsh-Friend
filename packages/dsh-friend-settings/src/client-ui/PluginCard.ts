@@ -8,6 +8,7 @@ import {
   type SettingsFieldWriter,
 } from '../plugin-card.ts'
 import { friendReact } from './friend-react.ts'
+import { dispatchFriendCoreStage } from './core-stage.ts'
 import { getJson, isRecord } from './http.ts'
 import { readFriendSettingsSnapshot } from './settings-patch.ts'
 
@@ -84,6 +85,10 @@ export function PluginCardView(props: {
   const childrenOn = props.form.childControlsEnabled()
   const dirty = props.form.isDirty()
   const redraw = (): void => bump((value) => value + 1)
+  const applyGates = (): void => {
+    dispatchFriendCoreStage(props.form.getDraft())
+    void props.form.persistGates().then(redraw, redraw)
+  }
   const title = t('card.title', lang)
   const subtitle = t('card.subtitle', lang)
   const showBody = !collapsible || open
@@ -133,6 +138,7 @@ export function PluginCardView(props: {
         onChange: (event: { target: { checked: boolean } }) => {
           props.form.set('enabled', event.target.checked)
           redraw()
+          applyGates()
         },
       }),
     ),
@@ -147,6 +153,7 @@ export function PluginCardView(props: {
         onChange: (event: { target: { checked: boolean } }) => {
           props.form.set('floatEnabled', event.target.checked)
           redraw()
+          applyGates()
         },
       }),
     ),

@@ -1,6 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest'
 
 import { PluginCardView } from '../src/client-ui/PluginCard.ts'
+import { FRIEND_CORE_STAGE_EVENT } from '../src/client-ui/core-stage.ts'
 import { createPluginCardForm } from '../src/plugin-card.ts'
 import {
   installFakeReact,
@@ -59,5 +60,43 @@ describe('plugin card disclosure', () => {
     expect(cardRoot(opened)?.props['data-open']).toBe('true')
     expect(queryByAction(opened, 'toggle-card')?.props['aria-expanded']).toBe('true')
     expect(queryAll(opened, (node) => node.props.className === 'dsh-friend-card-body')).toHaveLength(1)
+  })
+
+  it('writes the master switch immediately and broadcasts core-stage', async () => {
+    const writes: Array<[string, unknown]> = []
+    const events: Array<{ type: string; detail?: unknown }> = []
+    const previous = globalThis.dispatchEvent
+    globalThis.dispatchEvent = ((event: Event) => {
+      const custom = event as CustomEvent<unknown>
+      events.push({ type: custom.type, detail: custom.detail })
+      return true
+    }) as typeof dispatchEvent
+    try {
+      const form = createPluginCardForm({
+        core: { enabled: true, floatEnabled: true, volume: 1, muted: false, language: 'zh' },
+        persona: { currentSlug: 'default' },
+        characters: [{ slug: 'default', name: '小友' }],
+        coreScope: {
+          async set(field, value) {
+            writes.push([field, value])
+          },
+        },
+      })
+      const tree = mount(() => PluginCardView({ form, collapsible: false }))
+      const enabled = queryAll(tree, (node) => node.props.type === 'checkbox')[0]
+      ;(enabled?.props.onChange as (event: { target: { checked: boolean } }) => void)({
+        target: { checked: false },
+      })
+      await Promise.resolve()
+      await Promise.resolve()
+      expect(form.getDraft().enabled).toBe(false)
+      expect(writes).toContainEqual(['enabled', false])
+      expect(events).toContainEqual({
+        type: FRIEND_CORE_STAGE_EVENT,
+        detail: { enabled: false, floatEnabled: true },
+      })
+    } finally {
+      globalThis.dispatchEvent = previous
+    }
   })
 })

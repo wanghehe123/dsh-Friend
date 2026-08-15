@@ -80,6 +80,7 @@ describe('stage apply()', () => {
       response as never,
     )
     expect(settingsGet).toHaveBeenCalledWith(FRIEND_SETTINGS_NAMESPACES.stage)
+    expect(response.body).toContain('friend-live2d')
   })
 
   it('subscribes to companion replies and writes stripped body onto the chat snapshot', () => {
@@ -123,5 +124,27 @@ describe('stage apply()', () => {
     expect(chat.snapshot().assistantText).toBe('你好呀')
     expect(chat.snapshot().typing).toBe(false)
     expect(performance.snapshot().expression).toBe('happy')
+  })
+
+  it('publishes the performance tracker so work reactions can play cues', () => {
+    const performance = createPerformanceTracker()
+    const bag = globalThis as { __DSH_FRIEND_PERFORMANCE__?: unknown }
+    const previous = bag.__DSH_FRIEND_PERFORMANCE__
+    apply({
+      webServer: {
+        register() {
+          return () => undefined
+        },
+      },
+      effect(execute) {
+        return execute()
+      },
+    }, { performanceTracker: performance })
+    expect(bag.__DSH_FRIEND_PERFORMANCE__).toBe(performance)
+    if (previous === undefined) {
+      delete bag.__DSH_FRIEND_PERFORMANCE__
+    } else {
+      bag.__DSH_FRIEND_PERFORMANCE__ = previous
+    }
   })
 })

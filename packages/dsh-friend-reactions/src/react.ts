@@ -59,7 +59,10 @@ export function createReactEngine(options: ReactEngineOptions): ReactEngine {
       return { allowed: false, reason: 'dnd' }
     }
     const t = now()
-    if (t - lastAny < settings.globalCooldownMs) {
+    // turn-start always fires first and would otherwise spend the 45s global
+    // window, so the same turn's celebration never starts. Kind cooldown still
+    // spaces celebrations 5 minutes apart.
+    if (event.kind !== 'turn-success' && t - lastAny < settings.globalCooldownMs) {
       return { allowed: false, reason: 'global' }
     }
     const previousKind = lastKind.get(event.kind)

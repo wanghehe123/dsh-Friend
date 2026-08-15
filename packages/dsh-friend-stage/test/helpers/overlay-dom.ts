@@ -65,6 +65,7 @@ export function createFakeOverlayDocument(): FakeOverlayDocument {
 export function createFakeOverlayWindow(): OverlayWindow & { events: string[]; assigned: string[] } {
   const events: string[] = []
   const assigned: string[] = []
+  const listeners = new Map<string, Array<(event: { type: string; detail?: unknown }) => void>>()
   return {
     events,
     assigned,
@@ -75,8 +76,19 @@ export function createFakeOverlayWindow(): OverlayWindow & { events: string[]; a
         assigned.push(url)
       },
     },
+    addEventListener(type, listener) {
+      const list = listeners.get(type) ?? []
+      list.push(listener)
+      listeners.set(type, list)
+    },
+    removeEventListener(type, listener) {
+      const list = listeners.get(type)
+      if (list === undefined) return
+      listeners.set(type, list.filter((item) => item !== listener))
+    },
     dispatchEvent(event) {
       events.push(event.type)
+      for (const listener of listeners.get(event.type) ?? []) listener(event)
       return true
     },
   }

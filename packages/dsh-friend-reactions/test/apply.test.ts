@@ -89,6 +89,54 @@ describe('apply() role split', () => {
     handle.dispose()
   })
 
+  it('celebrates turn/end completed after the same turn start without waiting 45s', () => {
+    const listeners: Array<(...args: unknown[]) => void> = []
+    let now = 1_000
+    const ctx = hostCtx({
+      on(_event: string, handler: (...args: unknown[]) => void) {
+        listeners.push(handler)
+        return () => undefined
+      },
+    })
+    const handle = applyReactions(ctx, { role: 'host', now: () => now, random: () => 0 })
+    listeners[0]?.(codingSession(), { type: 'turn/start', data: { turn: 1 } })
+    expect(handle.engine.last()?.kind).toBe('turn-start')
+    now = 6_000
+    listeners[0]?.(
+      codingSession(),
+      { type: 'turn/end', data: { turn: 1, reason: { kind: 'completed' } } },
+    )
+    expect(handle.engine.last()?.kind).toBe('turn-success')
+    expect(handle.engine.last()?.cue).toBe('success')
+    handle.dispose()
+  })
+
+  it('plays the reaction cue on the shared stage tracker so the pet SSE can see it', () => {
+    const cues: string[] = []
+    const bag = globalThis as { __DSH_FRIEND_PERFORMANCE__?: { playCue(name: string): void } }
+    const previous = bag.__DSH_FRIEND_PERFORMANCE__
+    bag.__DSH_FRIEND_PERFORMANCE__ = {
+      playCue(name) {
+        cues.push(name)
+      },
+    }
+    try {
+      const handle = applyReactions(hostCtx(), { role: 'host', now: () => 1_000, random: () => 0 })
+      handle.notify(
+        codingSession(),
+        { type: 'turn/end', data: { turn: 1, reason: { kind: 'completed' } } },
+      )
+      expect(cues).toEqual(['success'])
+      handle.dispose()
+    } finally {
+      if (previous === undefined) {
+        delete bag.__DSH_FRIEND_PERFORMANCE__
+      } else {
+        bag.__DSH_FRIEND_PERFORMANCE__ = previous
+      }
+    }
+  })
+
   it('companion-preset is a defensive no-op (neither preset yml mounts this plugin)', () => {
     const routes: Array<{ path: string }> = []
     const ctx = hostCtx({

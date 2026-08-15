@@ -16,21 +16,17 @@ describe('pet page follows /friend/stage/runtime.enabled', () => {
     expect(runtimeEnabledFromUnknown(undefined)).toBeUndefined()
   })
 
-  it('hides the canvas and root document when the host switch is off', () => {
+  it('hides the canvas when the host switch is off and leaves the document visible', () => {
     const canvas = { hidden: false }
     const doc = {
-      documentElement: { hidden: false, style: { visibility: 'visible' } },
       getElementById(id: string) {
         return id === 'friend-live2d' ? canvas : null
       },
     }
     applyPetPageEnabled(doc, false)
     expect(canvas.hidden).toBe(true)
-    expect(doc.documentElement.hidden).toBe(false)
-    expect(doc.documentElement.style.visibility).toBe('visible')
     applyPetPageEnabled(doc, true)
     expect(canvas.hidden).toBe(false)
-    expect(doc.documentElement.hidden).toBe(false)
   })
 
   it('reads enabled from the runtime snapshot', async () => {

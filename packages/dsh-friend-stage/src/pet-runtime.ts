@@ -6,8 +6,7 @@ export const PET_RUNTIME_POLL_MS = 1_000
 export const PET_LIVE2D_CANVAS_ID = 'friend-live2d'
 
 export type PetRuntimeDocument = {
-  documentElement: { hidden: boolean; style: { visibility: string } }
-  getElementById(id: string): { hidden: boolean } | null
+  getElementById(id: string): { hidden: boolean | string } | null
 }
 
 export function runtimeEnabledFromUnknown(value: unknown): boolean | undefined {
